@@ -67,6 +67,26 @@
         if ($Shortcut -and $added.Count) { Say "Added OmniOne to $($added -join ' and ')." }
     }
 
+    # A running OmniOne keeps some of its files locked (esbuild.exe, native
+    # modules), so npm can't replace them. Close it first. When OmniOne.exe
+    # itself runs this as its updater it has already stopped its server, and
+    # it must not be closed (-IncludeApp is only for installing).
+    function Stop-RunningOmniOne([switch]$IncludeApp) {
+        $root = $AppDir.TrimEnd('\') + '\'
+        $procs = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.ProcessId -ne $PID -and (
+                ($_.ExecutablePath -and $_.ExecutablePath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase) -and ($IncludeApp -or $_.Name -ne 'OmniOne.exe')) -or
+                ($_.CommandLine -and $_.CommandLine.IndexOf($root, [StringComparison]::OrdinalIgnoreCase) -ge 0 -and $_.Name -in 'node.exe', 'cmd.exe', 'esbuild.exe')
+            )
+        })
+        $oldCmd = Join-Path $OmniHome 'OmniOne.cmd'
+        $procs += @(Get-CimInstance Win32_Process -Filter "Name='cmd.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -and $_.CommandLine.IndexOf($oldCmd, [StringComparison]::OrdinalIgnoreCase) -ge 0 })
+        if (-not $procs.Count) { return }
+        Say 'Closing the running OmniOne...'
+        foreach ($p in $procs) { & taskkill.exe /PID $p.ProcessId /T /F 2>&1 | Out-Null }
+        Start-Sleep -Seconds 2
+    }
+
     # Windows' "Installed apps" entry (per user, no administrator needed).
     # Uninstall runs OmniOne.exe --uninstall, which asks first.
     function Register-App($version) {
@@ -153,6 +173,8 @@
     } finally { $wc.Dispose() }
 
     # --- Put the new files in place; remove files the new version dropped ------------
+    if ($Installing) { Stop-RunningOmniOne -IncludeApp }
+    elseif ($lockChanged) { Stop-RunningOmniOne }
     foreach ($f in $todo) {
         $dest = Join-Path $AppDir ($f.p -replace '/', '\')
         $src = Join-Path $stage ($f.p -replace '/', '\')
