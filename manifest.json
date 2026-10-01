@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.1",
- "build": "5b290ebd8176",
- "commit": "2bf2b38f9108",
- "date": "2026-10-01T10:44:52-04:00",
+ "build": "24d7a5dadc35",
+ "commit": "e5cfec24b6ed",
+ "date": "2026-10-01T10:45:20-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -37,7 +37,7 @@
   },
   {
    "p": "build.json",
-   "h": "7672d96748739356ed181ed26465b8d97515c4a05851d69ae2c967e8bbf10278",
+   "h": "bec3857837c03cba1d7cbde23e565a508d4202ca6cb07eeb77964f364e2ef3c6",
    "s": 120
   },
   {
