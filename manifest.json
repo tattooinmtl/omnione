@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.1",
- "build": "91848ddc865a",
- "commit": "09932aa30628",
- "date": "2026-10-01T16:34:54-04:00",
+ "build": "498d7c6235ed",
+ "commit": "3f61f6fe839e",
+ "date": "2026-10-01T17:22:37-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -37,7 +37,7 @@
   },
   {
    "p": "build.json",
-   "h": "a404072bb9b2568efec12911e7f74c03f52b9d09610e948cd2914f4188024ee4",
+   "h": "746afaaed28e6b3005e1bdba2adfd067569a87a17832ace676b2e9fd82af95ec",
    "s": 120
   },
   {
@@ -127,8 +127,8 @@
   },
   {
    "p": "server/cloud.js",
-   "h": "821bdf1ebe66f5ba2df7b7e81a272d56f090473ba7476e6768b8e72ee71e3add",
-   "s": 9176
+   "h": "ffc28e5c115038ab600b83bc694460906c62399e0aca51764b60a26570d77a48",
+   "s": 10443
   },
   {
    "p": "server/desktop.js",
@@ -262,18 +262,23 @@
   },
   {
    "p": "server/toolRegistry.js",
-   "h": "0b7c3b85c951abda321f312a66ad778768d2d5ee03ac350829ff6b23c897f268",
-   "s": 6888
+   "h": "8a6fa720eac52a12d04894296c7da4d2bf549946b61a129753a16c800d2b2d24",
+   "s": 7299
   },
   {
    "p": "server/tools.js",
-   "h": "20356d428a46b9338b053889eac9030fb74e93b1ed8d6ba5e47cb01ee026d418",
-   "s": 17547
+   "h": "447e120c0e90411ce1438caea9816dd12e447d53cc24b008d718bf77901ab6a3",
+   "s": 18532
   },
   {
    "p": "server/tools/boards.js",
    "h": "90f912db23eeee1b994d61442fe5bca1a0dfa5ce67c3e931e10c284c941392b6",
    "s": 20166
+  },
+  {
+   "p": "server/tools/computer.js",
+   "h": "835ac050380dceaf145468ebe0835557206323b948a1ff086e4f1278db5c16f4",
+   "s": 12297
   },
   {
    "p": "server/tools/fixes.js",
@@ -317,8 +322,8 @@
   },
   {
    "p": "server/tools/register.js",
-   "h": "2bb0f14c0e8520c3352731a6ae727f29d13a09ab64badac53f7143fb9ec8cfa2",
-   "s": 631
+   "h": "77b966d2266d6a17e580ed314a430f3fd8f636cea13f85506faa048c697425f2",
+   "s": 656
   },
   {
    "p": "server/tools/shell.js",

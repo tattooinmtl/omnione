@@ -11,6 +11,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 import { logSearch } from './searchLog.js';
+import { isConnected, cloudSearch } from './cloud.js';
 
 // --- web search ------------------------------------------------------------
 // DuckDuckGo's HTML endpoint. No key, no quota. We strip the page down to
@@ -77,8 +78,23 @@ function describeFetchError(e) {
   return `fetch failed: ${e?.message || e}`;
 }
 
-export async function webSearch({ q, max = 8 }, ctx = {}) {
+export async function webSearch({ q, max = 8, category = 'general' }, ctx = {}) {
   if (!q || typeof q !== 'string') return { ok: false, error: 'q is required' };
+  // With a connected account: the private Global Warning Networks search
+  // (SearXNG on search.globalwarningnetworks.com, through the website).
+  // Otherwise, or if it fails, DuckDuckGo's HTML page below.
+  let note = '';
+  if (isConnected()) {
+    try {
+      const r = await cloudSearch({ q, category, limit: Math.max(1, Math.min(20, Number(max) || 8)) }, { signal: ctx.signal });
+      const results = (r.results || []).map((x) => ({ title: x.title, url: x.url, snippet: x.snippet }));
+      logSearch(q, results);
+      return { ok: true, result: { query: q, source: 'search.globalwarningnetworks.com', category: r.category, answers: r.answers || [], count: results.length, results } };
+    } catch (e) {
+      if (ctx.signal?.aborted) throw e;
+      note = `GWN search unavailable (${e.message}); used DuckDuckGo instead.`;
+    }
+  }
   const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`;
   let html;
   try {
@@ -134,7 +150,7 @@ export async function webSearch({ q, max = 8 }, ctx = {}) {
     }
   }
   logSearch(q, results);
-  return { ok: true, result: { query: q, count: results.length, results } };
+  return { ok: true, result: { query: q, source: 'duckduckgo', ...(note ? { note } : {}), count: results.length, results } };
 }
 
 // DDG wraps every result in a redirect like

@@ -140,6 +140,7 @@ function requireToken() {
 }
 
 function signOutLocally() {
+  computerPass = null;
   const s = load();
   delete s.token;
   delete s.user;
@@ -249,6 +250,33 @@ export async function forumPost({ category, title, body }, { signal } = {}) {
 export async function forumComment({ postId, comment }, { signal } = {}) {
   return api('POST', 'forum/comment', { token: requireToken(), body: { post_id: postId, comment }, signal });
 }
+
+// --- web search and the computer (through the website) ------------------------------
+//
+// search.globalwarningnetworks.com and computers.globalwarningnetworks.com
+// need keys that can't ship in a public app; the website holds them and
+// answers for a connected account.
+
+export function isConnected() {
+  return Boolean(token());
+}
+
+export async function cloudSearch({ q, category = 'general', limit = 8 }, { signal } = {}) {
+  const p = new URLSearchParams({ q, category, limit: String(limit) });
+  return api('GET', `search?${p}`, { token: requireToken(), signal });
+}
+
+let computerPass = null; // { url, token, bot, until }
+
+/* A pass for the account's own computer, reused until shortly before it expires. */
+export async function computerSession({ signal, fresh = false } = {}) {
+  if (!fresh && computerPass && computerPass.until > Date.now() + 60_000) return computerPass;
+  const r = await api('POST', 'computer/session', { token: requireToken(), signal });
+  computerPass = { url: String(r.url).replace(/\/+$/, ''), token: r.token, bot: r.bot, until: Date.now() + (Number(r.expires_in) || 3600) * 1000 };
+  return computerPass;
+}
+
+export function _resetComputerPassForTest() { computerPass = null; }
 
 // --- usage sync ----------------------------------------------------------------------
 

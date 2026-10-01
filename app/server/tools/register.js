@@ -18,3 +18,4 @@ import './mind.js';
 import './forum.js';
 import './pc.js';
 import './fixes.js';
+import './computer.js';

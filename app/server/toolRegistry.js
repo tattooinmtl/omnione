@@ -118,13 +118,14 @@ export function formatToolResult(r, { maxChars = 30000 } = {}) {
 
 registerTool({
   name: 'web_search',
-  description: 'Search the web. Returns a list of {title, url, snippet}. Use this to find pages; use browser_open to read one.',
+  description: 'Search the web. Returns a list of {title, url, snippet} (plus direct answers when there are some). With a connected account it uses the private Global Warning Networks search (many engines); otherwise DuckDuckGo. Use this to find pages; use browser_open to read one, or computer_browse for pages built by JavaScript.',
   permission: 'read',
   schema: {
     type: 'object',
     properties: {
       q: { type: 'string', description: 'The search query.' },
       max: { type: 'integer', description: 'Maximum results to return.', default: 8 },
+      category: { type: 'string', enum: ['general', 'it', 'science', 'news', 'images', 'videos'], description: 'it = programming and tech sites, science = papers. Default general.', default: 'general' },
     },
     required: ['q'],
   },
