@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.1",
- "build": "84fa5550e39e",
- "commit": "faf72322a914",
- "date": "2026-10-01T10:11:40-04:00",
+ "build": "e091d617117f",
+ "commit": "223917cac6d9",
+ "date": "2026-10-01T10:41:15-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -32,12 +32,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "49250c7030ae5e6f69edf5cb163822956ee633914d38da297606c5ab2ddceb44",
-   "s": 7482880
+   "h": "cb5b37edd367e3ea1a6906ac997de5836af6e8ec165f364d6c24340f38756421",
+   "s": 7544832
   },
   {
    "p": "build.json",
-   "h": "09460261c78cb31a7955ecca5cf81cc44e47a3a199d9c8d4cc3c63ed3ab5b453",
+   "h": "101378674276db18c544469eea9f8c127283ae3fb8e7372a36b9f764f5d76b2b",
    "s": 120
   },
   {

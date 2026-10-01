@@ -52,6 +52,7 @@
         $added = @()
         foreach ($place in $places) {
             if (-not $Shortcut -and -not (Test-Path $place.Path)) { continue }
+            if ($Shortcut -and $env:OMNIONE_NO_DESKTOP -and $place.Name -eq 'the desktop') { continue }
             try {
                 $lnk = (New-Object -ComObject WScript.Shell).CreateShortcut($place.Path)
                 $lnk.TargetPath = $Exe
@@ -64,6 +65,26 @@
             } catch { }
         }
         if ($Shortcut -and $added.Count) { Say "Added OmniOne to $($added -join ' and ')." }
+    }
+
+    # Windows' "Installed apps" entry (per user, no administrator needed).
+    # Uninstall runs OmniOne.exe --uninstall, which asks first.
+    function Register-App($version) {
+        if (-not (Test-Path $Exe)) { return }
+        try {
+            $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OmniOne'
+            New-Item -Path $key -Force | Out-Null
+            $size = 0
+            try { $size = [int]((Get-ChildItem -LiteralPath $AppDir -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum / 1KB) } catch { }
+            $values = [ordered]@{
+                DisplayName = 'OmniOne'; DisplayVersion = "$version"; Publisher = 'Global Warning Networks'
+                DisplayIcon = "$Exe,0"; InstallLocation = $OmniHome
+                UninstallString = "`"$Exe`" --uninstall"; URLInfoAbout = 'https://omnione.globalwarningnetworks.com'
+            }
+            foreach ($k in $values.Keys) { Set-ItemProperty -Path $key -Name $k -Value $values[$k] }
+            foreach ($k in 'NoModify', 'NoRepair') { Set-ItemProperty -Path $key -Name $k -Value 1 -Type DWord }
+            if ($size) { Set-ItemProperty -Path $key -Name EstimatedSize -Value $size -Type DWord }
+        } catch { }
     }
 
     if ($Installing) {
@@ -200,9 +221,15 @@
         [IO.File]::WriteAllText((Join-Path $OmniHome 'update.ps1'), $upd.Content, $Utf8)
     } catch { }
 
-    if (-not $Installing) { Say "OmniOne is updated to $label." Green; return }
+    if (-not $Installing) {
+        # Keep the Installed apps entry current (version, size), if there is one.
+        if (Test-Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\OmniOne') { Register-App $m.version }
+        Say "OmniOne is updated to $label." Green
+        return
+    }
 
     Write-Launchers -Shortcut:(-not $env:OMNIONE_NO_SHORTCUT)
+    if (-not $env:OMNIONE_NO_SHORTCUT) { Register-App $m.version }
     Remove-Item -LiteralPath (Join-Path $OmniHome 'version.txt') -Force -ErrorAction SilentlyContinue
 
     Write-Host ''

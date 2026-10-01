@@ -6,14 +6,18 @@ tray icon, from [Global Warning Networks](https://omnione.globalwarningnetworks.
 
 ## Install (Windows)
 
-You need [Node.js](https://nodejs.org) 20 or newer. Then open **PowerShell** and run:
+**[Download OmniOne-Setup.exe](https://github.com/tattooinmtl/omnione/releases/latest/download/OmniOne-Setup.exe)**
+and double-click it. It installs Node.js too if you don't have it. If Windows
+shows "Windows protected your PC", click **More info**, then **Run anyway**.
+
+Or, with [Node.js](https://nodejs.org) 20 or newer already installed, open **PowerShell** and run:
 
 ```powershell
 irm https://raw.githubusercontent.com/tattooinmtl/omnione/main/install.ps1 | iex
 ```
 
-OmniOne installs into `%USERPROFILE%\.omnione`, adds a Start menu item and a
-desktop icon, and starts. It runs in its own window and in the system tray,
+OmniOne installs into `%USERPROFILE%\.omnione`, adds a Start menu item, a
+desktop icon and an entry in Windows' Installed apps (to uninstall), and starts. It runs in its own window and in the system tray,
 and **updates itself** each time it starts.
 
 Your settings, API keys, Omi-One's memory and your chats stay on your PC and
