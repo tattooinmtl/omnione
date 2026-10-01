@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.1",
- "build": "00dd796c5714",
- "commit": "eb8b212516e0",
- "date": "2026-10-01T11:28:46-04:00",
+ "build": "d415765267e6",
+ "commit": "eccf6f9287a3",
+ "date": "2026-10-01T13:20:29-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -37,7 +37,7 @@
   },
   {
    "p": "build.json",
-   "h": "dcd6b33337c44137cd22530ebd68e6f9c3541b1aec8ccafc64be080766421d51",
+   "h": "d43f0c6ab4ee2732785690a2268c6cdb34ad628bcb9622ccbe94fc7221625512",
    "s": 120
   },
   {
@@ -116,6 +116,11 @@
    "s": 7498
   },
   {
+   "p": "server/btw.js",
+   "h": "dff1f3614558ef64ed59fd236fd73a8d413e2f4b59e2578cec4a8bca78e3cf45",
+   "s": 3299
+  },
+  {
    "p": "server/checkpoints.js",
    "h": "489c7c6b5edbcb1b2addceb4b6fc4dfc7d11c8f9a9e734e9b50bd95bfae0dbfa",
    "s": 4853
@@ -152,8 +157,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "aa33717d8ae22b0e3958c0311b0ece507a14fc5eec1363b59e5d50961ad7391f",
-   "s": 40714
+   "h": "25a8bd8af14883acad22860018306aaea0544416c01c19d1194642accfdb8364",
+   "s": 42062
   },
   {
    "p": "server/mcp.js",
@@ -812,13 +817,13 @@
   },
   {
    "p": "src/components/AiPanel.css",
-   "h": "43b60fcd9096aa804b71d939d95e1aac11d733f7c2b22e94fe1e8bf7c37644d6",
-   "s": 5917
+   "h": "e1327de503fd7ce68d8782c33d80dd40d8578f8d6f77cc1d1030a7814fb855c6",
+   "s": 6919
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "23011d9c9b7a12da5d3d852dc68d3a218f8b3e757dfad9352c4e31589ac20e33",
-   "s": 25167
+   "h": "523fb0a89b6de0c2cd341168aec8e5f2a1af23644a929cb89bf6b3f5cb5a3310",
+   "s": 27504
   },
   {
    "p": "src/components/AppShell.css",
@@ -867,8 +872,8 @@
   },
   {
    "p": "src/components/CommandPalette.jsx",
-   "h": "df45f0949be2c830c94a6cdbd84fa8e431f075edf1c5d6531402579ee11e9dc4",
-   "s": 5071
+   "h": "e90b2948c8b263ac2df7911042fec78378fa08809a1d4cb34b6ce8c125da8134",
+   "s": 5187
   },
   {
    "p": "src/components/ContextMeter.css",

@@ -84,7 +84,8 @@ import { readSoul, writeSoul } from './mind/prompt.js';
 import { beat, startHeartbeat, heartbeatStatus, onHeartbeatEvent } from './mind/heartbeat.js';
 import { synthesizeSpeech } from './tools/media.js';
 import { publicAccount, startConnect, pollConnect, cancelConnect, refreshAccount, disconnect, syncUsage, CloudError } from './cloud.js';
-import { getStats, usageEntries, flushStats } from './stats.js';
+import { getStats, usageEntries, flushStats, recordUsage } from './stats.js';
+import { askBtw, BtwError } from './btw.js';
 import {
   scanSkills,
   getSkills,
@@ -482,6 +483,30 @@ app.post('/api/sessions/:id/fork', (req, res) => {
 //   UserPromptSubmit — before the first model call, can rewrite the prompt
 //   PreToolUse       — before each tool call, can rewrite args or block
 //   PostToolUse      — after each tool call
+// /btw: a quick side question. One model call, no tools, nothing saved to
+// the conversation, and it doesn't wait for (or disturb) a run in progress.
+app.post('/api/btw', async (req, res) => {
+  const { question, sessionId } = req.body || {};
+  const active = getActiveSettings();
+  const provider = providerById(active.provider);
+  if (!provider) return res.status(400).json({ error: `Unknown provider "${active.provider}"` });
+  const model = resolveModel(provider.id, provider.defaultModel);
+  const apiKey = getProviderKey(provider.id);
+  if (provider.apiStyle !== 'stub' && !apiKey) {
+    return res.status(400).json({ error: `No API key saved for ${provider.label}. Open Settings and add one.` });
+  }
+  const ac = new AbortController();
+  res.on('close', () => { if (!res.writableEnded) ac.abort(); });
+  try {
+    const { answer, usage } = await askBtw({ question, sessionId: typeof sessionId === 'string' ? sessionId : null, provider, model, apiKey, signal: ac.signal });
+    if (usage) recordUsage({ provider: provider.id, model, usage, kind: 'btw' });
+    res.json({ answer });
+  } catch (e) {
+    if (ac.signal.aborted) return;
+    res.status(e instanceof BtwError ? e.status : 500).json({ error: e.message || 'The side question failed.' });
+  }
+});
+
 app.post('/api/generate', async (req, res) => {
   let { prompt, currentCode, sessionId, maxIterations } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {

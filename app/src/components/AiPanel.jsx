@@ -358,10 +358,45 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     runSkill: (name) => runSkill(name),
   };
 
+  // /btw <question>: a quick side question. Works while Omi-One is busy;
+  // the answer shows here but isn't added to the conversation (see server/btw.js).
+  const askBtw = async (question) => {
+    const id = `btw-${Date.now()}`;
+    setHistory((h) => [...h, { role: 'btw', id, text: question, answer: null }]);
+    setShowHistory(true);
+    const set = (patch) => setHistory((h) => h.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+    try {
+      const r = await fetch('/api/btw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, sessionId: sessionIdRef.current }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || `status ${r.status}`);
+      set({ answer: j.answer });
+    } catch (e) {
+      set({ answer: e.message || 'The side question failed.', failed: true });
+    }
+  };
+  const dismissBtw = (id) => setHistory((h) => h.filter((m) => m.id !== id));
+
   const submit = () => {
     if (paletteOpen) return;
-    if (!prompt.trim() || generating) return;
     const text = prompt.trim();
+    const btw = text.match(/^\/btw(?:\s+([\s\S]*))?$/i);
+    if (btw) {
+      const question = (btw[1] || '').trim();
+      if (!question) { api.toast && api.toast('Type your question after /btw', 'info'); return; }
+      setPrompt('');
+      if (taRef.current) taRef.current.style.height = 'auto';
+      askBtw(question);
+      return;
+    }
+    if (!text) return;
+    if (generating) {
+      api.toast && api.toast('Omi-One is working. Use /btw to ask something on the side, or press Stop.', 'info');
+      return;
+    }
     setHistory((h) => [...h, { role: 'user', text }]);
     setPrompt('');
     setActiveSkill(null);
@@ -382,7 +417,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   const onChange = (e) => {
     const v = e.target.value;
     setPrompt(v);
-    setPaletteOpen(v.startsWith('/'));
+    setPaletteOpen(v.startsWith('/') && !/^\/btw\s/i.test(v));
   };
 
   const onKey = (e) => {
@@ -453,12 +488,23 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       <div className="ai-panel__middle">
         {showHistory && history.length > 0 && (
           <div className="ai-panel__history">
-            {history.map((m, i) => (
+            {history.map((m, i) => (m.role === 'btw' ? (
+              <div key={m.id} className="ai-panel__btw" role="note">
+                <div className="ai-panel__btw-head">
+                  <span className="ai-panel__btw-tag">BTW</span>
+                  <span className="ai-panel__btw-q">{m.text}</span>
+                  <button type="button" className="ai-panel__btw-x" onClick={() => dismissBtw(m.id)} aria-label="Dismiss" title="Dismiss">×</button>
+                </div>
+                <div className={`ai-panel__btw-a${m.failed ? ' is-failed' : ''}`}>
+                  {m.answer === null ? <span className="ai-panel__btw-wait">Omi-One is answering…</span> : m.answer}
+                </div>
+              </div>
+            ) : (
               <div key={i} className={`ai-panel__row ai-panel__row-${m.role}`}>
                 <span className="ai-panel__row-role">{m.role === 'user' ? 'You' : 'AI'}</span>
                 <span className="ai-panel__row-text">{m.text}</span>
               </div>
-            ))}
+            )))}
             <div ref={histEndRef} />
           </div>
         )}
@@ -527,13 +573,14 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
               onKeyDown={onKey}
               onInput={onInput}
               placeholder={
-                settings.hasOwnKey
+                generating
+                  ? 'Omi-One is working… type /btw to ask something on the side'
+                  : settings.hasOwnKey
                   ? 'Describe a project, type "/" for commands, or pick a skill…'
                   : settings.provider === 'gwn-local'
                     ? 'Describe a project, or type "/" to browse commands and skills…'
                     : 'Add an API key in Settings, or switch provider to OmniOne Local…'
               }
-              disabled={generating}
             />
             {generating ? (
               <button

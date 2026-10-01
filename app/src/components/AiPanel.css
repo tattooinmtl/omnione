@@ -240,3 +240,36 @@
 .ai-panel__prompt-wrap {
   position: relative;
 }
+
+/* /btw: a side question and its answer (not part of the conversation) */
+.ai-panel__btw {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border: 1px dashed rgba(245, 177, 76, 0.45);
+  border-radius: 4px;
+  background: rgba(245, 177, 76, 0.05);
+  font-size: 13px;
+}
+.ai-panel__btw-head { display: flex; align-items: baseline; gap: 8px; }
+.ai-panel__btw-tag {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #f5b14c;
+}
+.ai-panel__btw-q { flex: 1; color: var(--fg); white-space: pre-wrap; }
+.ai-panel__btw-x {
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--fg-dim);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.ai-panel__btw-x:hover { color: var(--fg); }
+.ai-panel__btw-a { margin-top: 6px; color: var(--blue-2); white-space: pre-wrap; line-height: 1.5; }
+.ai-panel__btw-a.is-failed { color: var(--red); }
+.ai-panel__btw-wait { color: var(--fg-dim); font-style: italic; }

@@ -12,6 +12,7 @@ import './CommandPalette.css';
 
 const STATIC_COMMANDS = [
   { trigger: 'help',     description: 'Show keyboard shortcuts and the full command list',     run: (api) => api.runHelp() },
+  { trigger: 'btw',      description: 'Ask a quick side question, even while Omi-One is working', run: () => {} },
   { trigger: 'skills',   description: 'Open the skills list (arrow-key navigator)',            run: (api) => api.openSkills() },
   { trigger: 'drafts',   description: 'Review skills the agent proposed from its own sessions', run: (api) => api.openDrafts() },
   { trigger: 'save',     description: 'Save the current project as a JSON file',               run: (api) => api.saveProject() },
