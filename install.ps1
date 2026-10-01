@@ -136,7 +136,11 @@
     if (Test-Path $StateFile) { try { $old = [IO.File]::ReadAllText($StateFile) | ConvertFrom-Json } catch { } }
     $label = "v$($m.version) (build $($m.build))"
     if (-not $Installing) { Write-Launchers }
-    if (-not $Installing -and $old -and $old.build -eq $m.build -and (Test-Path (Join-Path $AppDir 'node_modules'))) {
+    # The dependency set that was last installed completely; a failed or
+    # interrupted npm ci never records one, so it gets retried.
+    $lockHash = "$(($m.files | Where-Object { $_.p -eq 'package-lock.json' } | Select-Object -First 1).h)"
+    $depsOk = $old -and "$($old.deps)" -eq $lockHash -and (Test-Path (Join-Path $AppDir 'node_modules\.bin'))
+    if (-not $Installing -and $old -and $old.build -eq $m.build -and $depsOk) {
         Say "OmniOne $label is up to date." DarkGray
         return
     }
@@ -154,7 +158,7 @@
         }
         $todo += $f
     }
-    $lockChanged = @($todo | Where-Object { $_.p -eq 'package-lock.json' }).Count -gt 0
+    $depsNeeded = -not $depsOk -or @($todo | Where-Object { $_.p -eq 'package-lock.json' }).Count -gt 0
     if ($todo.Count) { Say "Downloading $($todo.Count) file$(if ($todo.Count -ne 1) { 's' })..." }
     $wc = New-Object System.Net.WebClient
     try {
@@ -174,7 +178,7 @@
 
     # --- Put the new files in place; remove files the new version dropped ------------
     if ($Installing) { Stop-RunningOmniOne -IncludeApp }
-    elseif ($lockChanged) { Stop-RunningOmniOne }
+    elseif ($depsNeeded) { Stop-RunningOmniOne }
     foreach ($f in $todo) {
         $dest = Join-Path $AppDir ($f.p -replace '/', '\')
         $src = Join-Path $stage ($f.p -replace '/', '\')
@@ -203,7 +207,7 @@
     }
 
     # --- Dependencies, only when they changed ---------------------------------------------
-    if ($lockChanged -or -not (Test-Path (Join-Path $AppDir 'node_modules'))) {
+    if ($depsNeeded) {
         Say 'Installing dependencies (a minute or two the first time)...'
         Push-Location $AppDir
         try {
@@ -234,7 +238,7 @@
         Pop-Location
     }
 
-    $state = @{ version = $m.version; build = $m.build; commit = $m.commit; files = @($m.files | ForEach-Object { $_.p }) }
+    $state = @{ version = $m.version; build = $m.build; commit = $m.commit; deps = $lockHash; files = @($m.files | ForEach-Object { $_.p }) }
     [IO.File]::WriteAllText($StateFile, ($state | ConvertTo-Json -Depth 3 -Compress), $Utf8)
 
     # --- Keep this updater itself current ---------------------------------------------------
