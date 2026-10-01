@@ -261,7 +261,15 @@ export async function* runAgent({
     const results = [];
     const runConfig = { provider, model, apiKey };
     for (const group of groupForParallel(toolUses, sessionId)) {
-      if (signal?.aborted) { cancelPending(sessionId); return; }
+      if (signal?.aborted) {
+        cancelPending(sessionId);
+        // Answer every call before stopping, so the saved chat stays valid
+        // for the next message (providers reject an unanswered tool call).
+        const done = new Set(results.map((r) => r?.toolUseId));
+        const skipped = toolUses.filter((c) => !done.has(c.id)).map((c) => errorBlock(c, 'Run cancelled before this tool ran.'));
+        appendMessage(sessionId, toolResultMessage([...results, ...skipped]));
+        return;
+      }
       if (group.length === 1) {
         // runOneTool yields events (approval prompts, checkpoints, the result)
         // and returns the block to append to the conversation. The provider

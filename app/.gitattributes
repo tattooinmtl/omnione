@@ -1,0 +1,12 @@
+# Left out of the published app (scripts/publish.mjs uses git archive).
+# Development-only material users don't need.
+backup/ export-ignore
+tests/ export-ignore
+.claude/ export-ignore
+ddg-probe.py export-ignore
+ddg-probe.py.archived export-ignore
+test-combine.mjs.done export-ignore
+test-stream.py.done export-ignore
+vitest.config.js export-ignore
+scripts/ export-ignore
+scripts/hooks/* text eol=lf

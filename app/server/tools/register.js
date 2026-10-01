@@ -16,3 +16,5 @@ import './pi.js';
 import './media.js';
 import './mind.js';
 import './forum.js';
+import './pc.js';
+import './fixes.js';

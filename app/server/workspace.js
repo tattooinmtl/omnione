@@ -60,6 +60,18 @@ export function setWorkspaceRoot(dir) {
   return cachedRoot;
 }
 
+/* Back to the default folder inside the app. */
+export function resetWorkspaceRoot() {
+  try { fs.rmSync(CONFIG_PATH, { force: true }); } catch { /* nothing to remove */ }
+  cachedRoot = null;
+  ignoreCache.clear();
+  return getWorkspaceRoot();
+}
+
+export function isDefaultWorkspace() {
+  return getWorkspaceRoot() === fs.realpathSync(DEFAULT_ROOT);
+}
+
 /* Test hook — swap the root without writing config. */
 export function _setWorkspaceRootForTest(dir) {
   cachedRoot = dir ? fs.realpathSync(dir) : null;

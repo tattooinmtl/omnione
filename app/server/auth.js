@@ -13,6 +13,12 @@
 //      cannot set headers themselves, arrive authenticated.
 //   2. A Host header check, so a rebound DNS name pointing at 127.0.0.1
 //      is rejected even if the attacker somehow learns the token.
+//
+// When the server serves the built UI itself (OmniOne.exe, no Vite), there is
+// no proxy to add the header, so the page gets an HttpOnly, SameSite=Strict
+// cookie instead. The cookie is honoured only on requests the browser marks
+// Sec-Fetch-Site: same-origin, i.e. from OmniOne's own page: another site,
+// even one on a different localhost port, can't use it.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -75,11 +81,33 @@ export function isLocalHostHeader(hostHeader) {
   return host === 'localhost' || host === '127.0.0.1' || host === '::1';
 }
 
+export const UI_COOKIE = 'omni_ui';
+
+/* The cookie value: derived from the token, so it can't be replayed as the header. */
+export function uiCookieValue() {
+  return crypto.createHmac('sha256', ensureToken()).update('omnione-ui-cookie').digest('hex');
+}
+
+function cookieFrom(req, name) {
+  for (const part of String(req.headers.cookie || '').split(';')) {
+    const i = part.indexOf('=');
+    if (i > 0 && part.slice(0, i).trim() === name) return part.slice(i + 1).trim();
+  }
+  return '';
+}
+
 export function authMiddleware(req, res, next) {
   if (PUBLIC_PATHS.has(req.path)) return next();
 
   if (!isLocalHostHeader(req.headers.host)) {
     return res.status(403).json({ error: 'Forbidden: this server only accepts loopback Host headers.' });
+  }
+
+  // The UI itself (HTML, scripts, images) is public; only the API is gated.
+  if (!req.path.startsWith('/api/') && req.path !== '/api') return next();
+
+  if (req.headers['sec-fetch-site'] === 'same-origin' && safeEqual(cookieFrom(req, UI_COOKIE), uiCookieValue())) {
+    return next();
   }
 
   // Header first (what the Vite proxy injects). The query fallback exists so

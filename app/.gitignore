@@ -35,3 +35,13 @@ website/
 resend_apikey.txt
 *apikey*.txt
 *.key
+
+
+# Doctor: fixes Omi-One prepared and their backups (personal)
+.gwn-fixes/
+
+# OmniOne.exe builds (the pre-push hook builds it into the website copy)
+shell/*.exe
+
+# The local clone of the public distribution repo (scripts/publish.mjs)
+.omnione-dist/

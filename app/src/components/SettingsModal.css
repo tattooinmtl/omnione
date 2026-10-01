@@ -179,3 +179,150 @@
 .cap-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .cap-table .muted { color: var(--fg-dim); }
 .cap-table tr.is-active td { background: rgba(95, 168, 255, 0.08); color: var(--blue-2); }
+
+/* Omi-One's folder */
+.settings-modal__section { margin: 4px 0 8px; }
+.settings-modal__section .hint { margin-bottom: 12px; }
+.settings-modal__ws-current {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background: #000;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.settings-modal__ws-current code { flex: 1 1 auto; color: var(--fg); }
+.settings-modal__ws-tag {
+  flex: none;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+.settings-modal__warn {
+  font-size: 12px;
+  color: #f5b14c;
+  margin: 0 0 10px;
+  padding: 4px 8px;
+  border-left: 2px solid #f5b14c;
+  background: rgba(245, 177, 76, 0.08);
+}
+.settings-modal__ghost {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--blue-2);
+  border: 1px solid var(--blue-2);
+  background: transparent;
+  border-radius: 2px;
+  padding: 7px 12px;
+}
+.settings-modal__ghost:hover:not(:disabled) { background: rgba(95, 168, 255, 0.1); }
+.settings-modal__ghost:disabled, .settings-modal__save:disabled { opacity: 0.45; cursor: default; }
+.settings-modal__body form.settings-modal__ws-type { margin: 12px 0 0; }
+.settings-modal__section > .settings-modal__status,
+.settings-modal__section > .settings-modal__error { margin: 10px 0 0; display: inline-block; }
+
+/* Tabs */
+.settings-modal__tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-modal__tabs button {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 11px 14px 9px;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+.settings-modal__tabs button:hover { color: var(--fg); }
+.settings-modal__tabs button.is-on { color: var(--blue-2); border-bottom-color: var(--blue-2); }
+.settings-modal__body { min-height: 360px; }
+.settings-modal__body > .settings-modal__section:first-child h4 { margin-top: 0; }
+.settings-modal__section + .settings-modal__section { margin-top: 22px; padding-top: 4px; border-top: 1px solid var(--border); }
+
+.settings-modal__lead { font-size: 13px; color: var(--fg-dim); margin: 0 0 10px; line-height: 1.5; }
+.settings-modal__note { font-size: 12px; color: var(--fg-dim); margin: 8px 0 0; }
+
+.settings-modal__disclose {
+  background: none;
+  border: none;
+  color: var(--blue-2);
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  padding: 4px 0;
+  margin: 4px 0 8px;
+  cursor: pointer;
+}
+
+/* What Omi-One may do on the PC */
+.settings-modal__rules { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 8px; }
+.settings-modal__rules li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+  padding: 8px 10px 8px 34px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  position: relative;
+}
+.settings-modal__rules li b { color: var(--fg); font-weight: 600; }
+.settings-modal__rules li::before {
+  position: absolute;
+  left: 11px;
+  top: 8px;
+  font-weight: 700;
+}
+.settings-modal__rules li.is-yes::before { content: '✓'; color: #3fb8a8; }
+.settings-modal__rules li.is-no::before { content: '✕'; color: var(--red); }
+.settings-modal__rules li.is-hold::before { content: '⏸'; color: #f5b14c; }
+
+/* On/off switch */
+.settings-modal__switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.settings-modal__switch-row b { display: block; font-size: 14px; color: var(--fg); font-weight: 600; }
+.settings-modal__switch-row span { font-size: 12.5px; color: var(--fg-dim); }
+.settings-modal__switch {
+  flex: none;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #000;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+}
+.settings-modal__switch span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--fg-dim);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.settings-modal__switch.is-on { background: rgba(47, 123, 255, 0.35); border-color: var(--blue-2); }
+.settings-modal__switch.is-on span { transform: translateX(20px); background: #fff; }
+.settings-modal__switch:disabled { opacity: 0.4; cursor: default; }
+.settings-modal__switch:focus-visible, .settings-modal__tabs button:focus-visible { outline: 2px solid var(--blue-2); outline-offset: 2px; }
+
+.settings-modal__about { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 13px; margin: 0; }
+.settings-modal__about dt { color: var(--fg-dim); }
+.settings-modal__about dd { margin: 0; color: var(--fg); }

@@ -22,7 +22,11 @@ import './tools/register.js';
 import { killAllJobs } from './tools/shell.js';
 import { webSearch, browserOpen } from './tools.js';
 import { recentSearches } from './searchLog.js';
-import { getWorkspaceRoot, setWorkspaceRoot, walkWorkspace } from './workspace.js';
+import { getWorkspaceRoot, setWorkspaceRoot, resetWorkspaceRoot, isDefaultWorkspace, walkWorkspace } from './workspace.js';
+import { pickFolder } from './folderPicker.js';
+import { serveBuiltUi } from './ui.js';
+import { desktopExe, getAutostart, setAutostart, isElevated } from './desktop.js';
+import { listFixes, getFix, applyFix, rejectFix, undoFix } from './fixes.js';
 import {
   MODES, getMode, setMode, listPending, resolveApproval, cancelPending,
 } from './permissions.js';
@@ -295,14 +299,59 @@ app.post('/api/hooks/fire', async (req, res) => {
 });
 
 // --- workspace -------------------------------------------------------------
+// The one folder Omi-One's file tools can see and change. Set in Settings.
 app.get('/api/workspace', (_req, res) => {
-  res.json({ root: getWorkspaceRoot() });
+  res.json({ root: getWorkspaceRoot(), isDefault: isDefaultWorkspace() });
 });
 
 app.post('/api/workspace', (req, res) => {
   try {
-    const root = setWorkspaceRoot(req.body?.root);
-    res.json({ root });
+    const root = req.body?.reset ? resetWorkspaceRoot() : setWorkspaceRoot(req.body?.root);
+    res.json({ root, isDefault: isDefaultWorkspace() });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// --- Doctor & fixes ------------------------------------------------------------
+// Omi-One prepares fixes (propose_fix); only these routes, called from the
+// page when the user presses a button, change anything.
+app.get('/api/fixes', (_req, res) => res.json({ fixes: listFixes() }));
+
+app.post('/api/fixes/:id/:action', async (req, res) => {
+  const { id, action } = req.params;
+  if (!getFix(id)) return res.status(404).json({ error: 'No such fix.' });
+  try {
+    const fn = { apply: applyFix, reject: rejectFix, undo: undoFix }[action];
+    if (!fn) return res.status(404).json({ error: 'Unknown action.' });
+    res.json({ fix: await fn(id) });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// --- the desktop app ------------------------------------------------------------
+app.get('/api/app', async (_req, res) => {
+  res.json({
+    desktop: Boolean(desktopExe()),
+    version: (() => { try { return JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8')).version; } catch { return ''; } })(),
+    platform: process.platform,
+  });
+});
+
+app.get('/api/app/autostart', async (_req, res) => {
+  try { res.json(await getAutostart()); } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/app/autostart', async (req, res) => {
+  try { res.json(await setAutostart(Boolean(req.body?.enabled))); } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+/* Opens Windows' own "choose a folder" dialog on this PC. Only picks: the
+ * page saves the choice with POST /api/workspace. */
+app.post('/api/workspace/browse', async (_req, res) => {
+  try {
+    res.json({ root: await pickFolder(getWorkspaceRoot()) });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
@@ -958,10 +1007,22 @@ app.use('/api', (err, _req, res, _next) => {
 // --- boot ------------------------------------------------------------------
 // Declared last so every route is registered before the socket opens, and
 // exported so tests can drive the app without binding a port.
+// OmniOne.exe runs the server with --serve-ui: it serves the built app
+// (dist/) itself, so users don't run the Vite dev server at all.
+const SERVE_UI = process.argv.includes('--serve-ui') || process.env.OMNIONE_SERVE_UI === '1';
+if (SERVE_UI) serveBuiltUi(app);
+
 export { app };
 
 const isMain = process.argv[1]
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isMain && desktopExe() && await isElevated()) {
+  // OmniOne.exe never runs as administrator, so nothing Omi-One does can
+  // touch Windows' own files. The exe checks too; this is the second lock.
+  console.error('[omnione] refusing to run as administrator. Start OmniOne normally.');
+  process.exit(3);
+}
 
 if (isMain) {
   ensureToken();

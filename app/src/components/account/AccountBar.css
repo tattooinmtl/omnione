@@ -148,3 +148,15 @@
 }
 .acct-connect__actions button.is-ghost { background: none; border-color: rgba(143, 180, 200, 0.3); color: var(--fg-dim, #8a96a8); }
 @media (prefers-reduced-motion: reduce) { .acct-menu, .acct-connect__spin { animation: none; } }
+.acct-menu__badge {
+  margin-left: auto;
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #f5b14c;
+  color: #03080d;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}

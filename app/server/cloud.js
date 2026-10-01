@@ -33,8 +33,14 @@ export function _setCloudStateForTest(p) {
   pending = null;
 }
 
+/* The website this copy belongs to: the one it was installed from (the
+ * installer saves it), else the OmniOne site. Only https, or this PC. */
 export function siteUrl() {
-  return (process.env.OMNI_CLOUD_URL || DEFAULT_SITE).replace(/\/+$/, '');
+  if (process.env.OMNI_CLOUD_URL) return process.env.OMNI_CLOUD_URL.replace(/\/+$/, '');
+  let saved = '';
+  try { saved = String(JSON.parse(fs.readFileSync(statePath, 'utf8')).site || ''); } catch { /* not installed from a site */ }
+  if (/^https:\/\/[a-z0-9.-]+(:\d+)?$/i.test(saved) || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(saved)) return saved;
+  return DEFAULT_SITE;
 }
 
 function appVersion() {

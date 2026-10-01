@@ -1,0 +1,1069 @@
+{
+ "app": "omnione",
+ "version": "0.3.1",
+ "build": "84fa5550e39e",
+ "commit": "faf72322a914",
+ "date": "2026-10-01T10:11:40-04:00",
+ "files": [
+  {
+   "p": ".gitattributes",
+   "h": "266bd0abb360d699abbbc298e127ac1f7b624530ced4f56eef84d1e7e640f63e",
+   "s": 411
+  },
+  {
+   "p": ".gitignore",
+   "h": "6fd595c7d5281d6e645f2b79672d77754ad57d6229dd8e473e9d314b3fd52ba6",
+   "s": 886
+  },
+  {
+   "p": ".gwn-mcp.json",
+   "h": "e5b29621496d551a5b93b06367d793e13ec5c2c2fb4f4acd8579390bdcba2872",
+   "s": 26
+  },
+  {
+   "p": "PROGRESS.md",
+   "h": "2c84ea6013eb74cbe9d4ea48dca15c2748895d8cb9cde6353f14b44997cb52a0",
+   "s": 19739
+  },
+  {
+   "p": "README.md",
+   "h": "c634ceee8660bd5a87b1da27bb660c06af8f0d79bc007d6e86d62de56e120d02",
+   "s": 8010
+  },
+  {
+   "p": "bin/OmniOne.exe",
+   "h": "49250c7030ae5e6f69edf5cb163822956ee633914d38da297606c5ab2ddceb44",
+   "s": 7482880
+  },
+  {
+   "p": "build.json",
+   "h": "09460261c78cb31a7955ecca5cf81cc44e47a3a199d9c8d4cc3c63ed3ab5b453",
+   "s": 120
+  },
+  {
+   "p": "hooks/PostToolUse/audit-log.js",
+   "h": "89a02e0c1436ed2e63558058bd8e2673fc9288d05a4510f89d238b77e16f75b9",
+   "s": 1014
+  },
+  {
+   "p": "hooks/PreToolUse/safe-search.js",
+   "h": "2caff42511275af49cb456bee5af85056174a28b01ff4231785624029a894ea3",
+   "s": 970
+  },
+  {
+   "p": "hooks/UserPromptSubmit/strip-leak.js",
+   "h": "9c23da5ec1dec2eea1999b6675056b4882755b7460b5cceffdfd1733f1852e88",
+   "s": 1080
+  },
+  {
+   "p": "index.html",
+   "h": "8969d3ea933d4347934bdec00415e6dfaac31ee8a6e9b2b85891f3a708758d0a",
+   "s": 731
+  },
+  {
+   "p": "mind/SOUL.md",
+   "h": "cc8c58794fa878d53e5798c41564797cae7e9848b7fb77717910448102fda4bd",
+   "s": 1209
+  },
+  {
+   "p": "package-lock.json",
+   "h": "7315121375d9cfb52bf63dd8364777fa63ecdbb1414aa22cd13f74f7b6aee624",
+   "s": 183594
+  },
+  {
+   "p": "package.json",
+   "h": "0d8cd62ef34b4a4651c1d2d17d851a5c110b536ce70feeb2c0c33c4efd8e5996",
+   "s": 1191
+  },
+  {
+   "p": "public/omnione.ico",
+   "h": "9b7b00416d5ce389d82542663bfd2bffc3c52e07649940320a6bf6877b7bc2a4",
+   "s": 38974
+  },
+  {
+   "p": "public/videos/gwn-agent-harness.mp4",
+   "h": "77d4fd9d82366b7ce0df8b700565a6f07e2c60f46bf4806c657fde7fb3fc618a",
+   "s": 3545685
+  },
+  {
+   "p": "server/adapters.js",
+   "h": "5c98dd2bdab2204d2a42e5525e783f2a4663817d7417ce7876479c54e3f767dc",
+   "s": 16753
+  },
+  {
+   "p": "server/agent.js",
+   "h": "ee596d6687372ba7f684cd9b32119bde35467a92df1ad63fd20ae5e1d02ff0b2",
+   "s": 27056
+  },
+  {
+   "p": "server/auth.js",
+   "h": "a4a159abbf920660ec0c74c375bbe777e61e4e8d308185340fc9a93f519938c9",
+   "s": 5326
+  },
+  {
+   "p": "server/boards/detect.js",
+   "h": "136bb6122a070fc2ab118f2e50a7ac0d8dc0e81fa2bccf752156d4d239d5410d",
+   "s": 9163
+  },
+  {
+   "p": "server/boards/drivers.js",
+   "h": "fc6502cac8e3a4f4fa79b16a2ddebf386f6acfffdfcaab4ee72c441d8711df01",
+   "s": 6427
+  },
+  {
+   "p": "server/boards/toolchains.js",
+   "h": "f4af05d9f2c8c5befc16f38e363678dce004f71117f37ed18add5088463dc59d",
+   "s": 7498
+  },
+  {
+   "p": "server/checkpoints.js",
+   "h": "489c7c6b5edbcb1b2addceb4b6fc4dfc7d11c8f9a9e734e9b50bd95bfae0dbfa",
+   "s": 4853
+  },
+  {
+   "p": "server/cloud.js",
+   "h": "821bdf1ebe66f5ba2df7b7e81a272d56f090473ba7476e6768b8e72ee71e3add",
+   "s": 9176
+  },
+  {
+   "p": "server/desktop.js",
+   "h": "27ab2297a5d01f758dba18fbd59f8dc45cbbc14f3aa5787dfcfcd7eed18c9b82",
+   "s": 2795
+  },
+  {
+   "p": "server/doctor.js",
+   "h": "adf5ef25c05ce86bf5dbcd186b53b67f4cb7480ccb5915aabb75d2d93ba7caf3",
+   "s": 14159
+  },
+  {
+   "p": "server/fixes.js",
+   "h": "acb3e86ad000cafcadd7c83956b1d3f615c5a904488f286bdc430a9541c03204",
+   "s": 14958
+  },
+  {
+   "p": "server/folderPicker.js",
+   "h": "b4e28ae799a62d5b888bd854289c692dd69bbd32f7ed765a930809aa5dffa2cb",
+   "s": 1953
+  },
+  {
+   "p": "server/hooks.js",
+   "h": "bd731c9221df14a54eb100348c2fb65f4b1d146bb7f00e981532741f31c7f611",
+   "s": 8455
+  },
+  {
+   "p": "server/index.js",
+   "h": "aa33717d8ae22b0e3958c0311b0ece507a14fc5eec1363b59e5d50961ad7391f",
+   "s": 40714
+  },
+  {
+   "p": "server/mcp.js",
+   "h": "29df9792cd16a6716dc55947114aa6cb081c9dc2991ccdce24d82e8a9884d763",
+   "s": 3326
+  },
+  {
+   "p": "server/mind/heartbeat.js",
+   "h": "8f069572a1a5310eb1fdbc13c7c82133226f839c41cd30cd67c8b8c39d3d3a02",
+   "s": 8530
+  },
+  {
+   "p": "server/mind/journal.js",
+   "h": "8b3a6037d2ef31ebc84ab2129c5c18fe7866b5833c754118a00c96676f228beb",
+   "s": 1280
+  },
+  {
+   "p": "server/mind/memory.js",
+   "h": "dab7dbbb71a70ede38f45ba58ad784c1ab23dcfb6c628e84588abaf77dba1264",
+   "s": 8143
+  },
+  {
+   "p": "server/mind/prompt.js",
+   "h": "30cba8044d877a64040aeaea67022f8546a61ad3078063a2bbe4e302ae77b920",
+   "s": 4922
+  },
+  {
+   "p": "server/mind/state.js",
+   "h": "17f86f60cb35a10dd67a16650f5d586658367a10549637e483ab9183dc78c4d3",
+   "s": 8518
+  },
+  {
+   "p": "server/mind/store.js",
+   "h": "505244a8f1d8d924bee1c79c444e2c6e60ce5979b08f9f70baa5f826220dc9d6",
+   "s": 2600
+  },
+  {
+   "p": "server/pcAccess.js",
+   "h": "bcad6aed0c942235593c6669e5d0cbc227d9ae8946b56a8f2c1796033b24c1fa",
+   "s": 4934
+  },
+  {
+   "p": "server/permissions.js",
+   "h": "a5f42898502006cd449bccd7e1f2aa2cb4deffe45a8ebe90152ab9a68860556b",
+   "s": 5983
+  },
+  {
+   "p": "server/prompts.js",
+   "h": "75705ec1e0b369ea29702aef7e731149f4263866541485f3897e9ea8758433a2",
+   "s": 4830
+  },
+  {
+   "p": "server/providers.js",
+   "h": "cf333b73a7cba0fdc0db0914dde2122954b6fce3ddd793c984d0c98142bc7c96",
+   "s": 1274
+  },
+  {
+   "p": "server/reflection.js",
+   "h": "cc037d69f08ff046636b7f632668ff490a3cbd27d072bd9d990cc75a54d7e975",
+   "s": 8489
+  },
+  {
+   "p": "server/searchLog.js",
+   "h": "4f9f636d34d28ec1566c96339beb2be99e6dfe11122e16781375ce2c36de105e",
+   "s": 3157
+  },
+  {
+   "p": "server/secrets.js",
+   "h": "e58f0c2b7c66f61b65f59006e9ee0f84c72d667019dbb4d4e3ea07ab0a8ffdf3",
+   "s": 4257
+  },
+  {
+   "p": "server/sessions.js",
+   "h": "19d79d37d5f4a28b45c22cbc247bdba3c51b24360f5410e8763603ddf75d5a4d",
+   "s": 10462
+  },
+  {
+   "p": "server/skillDrafts.js",
+   "h": "9098b3ddbe87f8ed35757b3366700733db2cb8e2b5c6f43afa9d4b4e8d28a9b6",
+   "s": 5643
+  },
+  {
+   "p": "server/skills.js",
+   "h": "4534caea2ac2602352f69dd4b4269d0e75f31d70a3dfbcd5d2b7df2113fc40d2",
+   "s": 5648
+  },
+  {
+   "p": "server/stats.js",
+   "h": "f69e6f8668cffcdffcda09db65a08df55147bec08bd60cb65c7b00ce2ff08c30",
+   "s": 8911
+  },
+  {
+   "p": "server/stubTemplates.js",
+   "h": "5c6597bc6d378aeab9b641cacf0a760e8d737b445575692c16b979d9815c6f3e",
+   "s": 28480
+  },
+  {
+   "p": "server/subagent.js",
+   "h": "9ecfadfe777133d52292848e2269238a4682c6b9397339bcb5546b1ccf87463d",
+   "s": 4496
+  },
+  {
+   "p": "server/toolRegistry.js",
+   "h": "0b7c3b85c951abda321f312a66ad778768d2d5ee03ac350829ff6b23c897f268",
+   "s": 6888
+  },
+  {
+   "p": "server/tools.js",
+   "h": "20356d428a46b9338b053889eac9030fb74e93b1ed8d6ba5e47cb01ee026d418",
+   "s": 17547
+  },
+  {
+   "p": "server/tools/boards.js",
+   "h": "90f912db23eeee1b994d61442fe5bca1a0dfa5ce67c3e931e10c284c941392b6",
+   "s": 20166
+  },
+  {
+   "p": "server/tools/fixes.js",
+   "h": "2ce51dd69be5d2feaa1276981503f6de9a38461ecd37b48ddf9f78c36f4780b1",
+   "s": 3622
+  },
+  {
+   "p": "server/tools/forum.js",
+   "h": "afbf05c3536b7962c129268a5f2bc51e67ecfc610424ff5e9cfc152354a8dcb4",
+   "s": 3507
+  },
+  {
+   "p": "server/tools/fs.js",
+   "h": "167ec7008a0fc555f795d5c88ed6bf52e62b0aae88f2aaeac470ce18f52ba042",
+   "s": 13569
+  },
+  {
+   "p": "server/tools/media.js",
+   "h": "5c6107b912f4c57f048b38fc8c92e092d38e4922ba8ba4520fc365524640e7d0",
+   "s": 16779
+  },
+  {
+   "p": "server/tools/memory.js",
+   "h": "f7a3fb6071dd71999c79ee4896b80968b8f0fab2333250264c5a879e94b96f6d",
+   "s": 6245
+  },
+  {
+   "p": "server/tools/mind.js",
+   "h": "22c1c5f6d94dcea87c1c3bd68120fa74747f21015ef8307315d90a00a0d8f241",
+   "s": 9853
+  },
+  {
+   "p": "server/tools/pc.js",
+   "h": "292c1f8f35883ced1e12778f566820f884e10ecec36a53654d10e8df802c86ff",
+   "s": 8601
+  },
+  {
+   "p": "server/tools/pi.js",
+   "h": "2b9ce4cbd9ecfa5536ff01aaa674c28d2f016aa465e8bc22c397a3a1b43276a8",
+   "s": 8180
+  },
+  {
+   "p": "server/tools/register.js",
+   "h": "2bb0f14c0e8520c3352731a6ae727f29d13a09ab64badac53f7143fb9ec8cfa2",
+   "s": 631
+  },
+  {
+   "p": "server/tools/shell.js",
+   "h": "598648cdf9b68702afa8ad800d6e634e8e5b8196885d27540ed4e89c6b98425c",
+   "s": 9618
+  },
+  {
+   "p": "server/tools/skills.js",
+   "h": "49c0f08861c631c067cc602eb4b6fd8545928c94943482c6e526ec3b405f464b",
+   "s": 6034
+  },
+  {
+   "p": "server/tools/task.js",
+   "h": "c00df77893fa246828c7a3846d559d27ce375195abedbb62c1135739b7de34bd",
+   "s": 5878
+  },
+  {
+   "p": "server/tools/todo.js",
+   "h": "9bb6433bb3b2fb5a3da5ca730d8c3fda9f053cde7f3a6644ff69904ff3796e9c",
+   "s": 3774
+  },
+  {
+   "p": "server/ui.js",
+   "h": "61a3e2df572a5dd7873a1c264ff12357d2d78ce1df2d40f63cc4a07e017bf0e2",
+   "s": 1501
+  },
+  {
+   "p": "server/workspace.js",
+   "h": "cd04ace2eff2e7a09f09ea83e46197d162d71c1418ea8fe4d1877be2d811f7c3",
+   "s": 8989
+  },
+  {
+   "p": "skills/ascii-art/SKILL.md",
+   "h": "2d0b7edcfb32b5152bd7b2e0144bfbc7b961e97166948f465142f4d9f7b65602",
+   "s": 10878
+  },
+  {
+   "p": "skills/baoyu-comic/PORT_NOTES.md",
+   "h": "7b972eb085b2bba8cac857a0b376ef3aaa14eb4284c694601f814e5cb492a923",
+   "s": 5798
+  },
+  {
+   "p": "skills/baoyu-comic/SKILL.md",
+   "h": "bf53197be71633ce682ef9bf1d76ed7b231e001d6e93b81f0231629b46265b3f",
+   "s": 14868
+  },
+  {
+   "p": "skills/baoyu-comic/action.md",
+   "h": "25c4e88d717004462f4a30431b411beda76d0918b64c49085e0c00d86021b6e8",
+   "s": 2379
+  },
+  {
+   "p": "skills/baoyu-comic/analysis-framework.md",
+   "h": "6b874e0afda14ceae7560ddada78ad86652bb9f5d01b2031f9006182c281f90c",
+   "s": 5657
+  },
+  {
+   "p": "skills/baoyu-comic/auto-selection.md",
+   "h": "6339bbc7aaae2fe445f08c38aa9d4ec8a9a0176fc8fa0d0fff79c3c48518c9b3",
+   "s": 3652
+  },
+  {
+   "p": "skills/baoyu-comic/base-prompt.md",
+   "h": "a2ef6c8ad9ebe91a52fb638709b9a15b1976452e0d9ea9a34afc1eb4f19a9621",
+   "s": 3238
+  },
+  {
+   "p": "skills/baoyu-comic/chalk.md",
+   "h": "461bf54265e72f85629e6b96dc9e7f4a957cae47c08b8bc17106e9a63df729cc",
+   "s": 2891
+  },
+  {
+   "p": "skills/baoyu-comic/character-template.md",
+   "h": "2dc0b6bcacfb62b1772f55824ddb913afe811d9b147b839075d99beb178ddd38",
+   "s": 5056
+  },
+  {
+   "p": "skills/baoyu-comic/cinematic.md",
+   "h": "95dddd083fe3076b531f577247b7564177807a46fcde867bd37b78b41679a8b5",
+   "s": 473
+  },
+  {
+   "p": "skills/baoyu-comic/concept-story.md",
+   "h": "10ac0846f998f94b51d1b23f17482682d901fc334d0bdb9f5676dc2f0e718906",
+   "s": 5765
+  },
+  {
+   "p": "skills/baoyu-comic/dense.md",
+   "h": "b15718c66da3dea2e0cb4c2ed654a0e6b29ca6432978de22f4a169579ba48f7e",
+   "s": 438
+  },
+  {
+   "p": "skills/baoyu-comic/dramatic.md",
+   "h": "f1c2db177ba5d274d69aed39fd37e71209878b88f950653edfd76db75849a893",
+   "s": 2008
+  },
+  {
+   "p": "skills/baoyu-comic/energetic.md",
+   "h": "a4f77265452110c0a8e84298c86322870a7960e4782bc5290ae2bf039bb15014",
+   "s": 2278
+  },
+  {
+   "p": "skills/baoyu-comic/four-panel.md",
+   "h": "6e64e01b7a127b9ce7be8663cd4c8db80fb35ce5d14634149f3cc4df7b5a1d7c",
+   "s": 1428
+  },
+  {
+   "p": "skills/baoyu-comic/ink-brush.md",
+   "h": "36c730ce07d0a29651e919942d141b648decedfcc949b9c1f0f3653ca1ae5282",
+   "s": 2666
+  },
+  {
+   "p": "skills/baoyu-comic/ligne-claire.md",
+   "h": "bf54b0459743a95e82bd223ffa56b2b0098a143644586cb715cb4d98df72d66a",
+   "s": 2459
+  },
+  {
+   "p": "skills/baoyu-comic/manga.md",
+   "h": "8fb3d7d4ab0f633d36220f57aaffe080682258b01df5635caa553a194fc03d88",
+   "s": 2701
+  },
+  {
+   "p": "skills/baoyu-comic/minimalist.md",
+   "h": "b27f2bc4235d9d397902fb86fde666a5e283f9bb7ffb5a1ab8b5780d1a57a86e",
+   "s": 3486
+  },
+  {
+   "p": "skills/baoyu-comic/mixed.md",
+   "h": "10a0b347b3f2902e1aae01611d72139c5be6a54f846821e8f4cc43ca13cefd42",
+   "s": 452
+  },
+  {
+   "p": "skills/baoyu-comic/neutral.md",
+   "h": "46637018bc0c1a070b4fcf4ebefab3f200854688a0c575374ba793c680ee7cd5",
+   "s": 1419
+  },
+  {
+   "p": "skills/baoyu-comic/ohmsha-guide.md",
+   "h": "a2a41f2d453b831f91a8af2e72018c8ae29f77c527110f9a452e33e245bea7bf",
+   "s": 3063
+  },
+  {
+   "p": "skills/baoyu-comic/ohmsha.md",
+   "h": "7851cab4ec3c63d2fb372d5959b3af413f007383a96f94a973bb52b090e7b0d3",
+   "s": 4598
+  },
+  {
+   "p": "skills/baoyu-comic/partial-workflows.md",
+   "h": "33bacb20d21fd0d26be5468a21cf022f2f5b6432e0111ff5d494a16cb7d9b3b0",
+   "s": 3157
+  },
+  {
+   "p": "skills/baoyu-comic/realistic.md",
+   "h": "19993fcfc25a584bb99d4ae1ed63574d230c2946ea2867773e36f3e4ce18db60",
+   "s": 2864
+  },
+  {
+   "p": "skills/baoyu-comic/romantic.md",
+   "h": "558aa3f0e691705b418a21c2d287dfdcdac9f6f6e3cea461e3651d4579199b8d",
+   "s": 2243
+  },
+  {
+   "p": "skills/baoyu-comic/shoujo.md",
+   "h": "ec7fef31e23014eaceb0e38524458696293ea07082e3379ec55dfff4fc32c8f4",
+   "s": 3389
+  },
+  {
+   "p": "skills/baoyu-comic/splash.md",
+   "h": "b1339fc1a298fdfc7431db391d8e33a0d39c67395b821f9f0a2e44222e3a998e",
+   "s": 494
+  },
+  {
+   "p": "skills/baoyu-comic/standard.md",
+   "h": "49de2028be495673d2b4e8448f1a24fea3e5a500e277d0bd14acea52739ba4be",
+   "s": 463
+  },
+  {
+   "p": "skills/baoyu-comic/storyboard-template.md",
+   "h": "1d66549ac8995003408c232bcab8c2fdd352629559ef9cfa0d1a9dd7d7bebfd5",
+   "s": 4125
+  },
+  {
+   "p": "skills/baoyu-comic/vintage.md",
+   "h": "395383679be2cda458600219f5d4a44121f3f8a67a38367157a7f2acfcc2e3ed",
+   "s": 2266
+  },
+  {
+   "p": "skills/baoyu-comic/warm.md",
+   "h": "2d4b38d774820a50aaa9a9e14646b222bb576219e11e4747928d2f302024a6ef",
+   "s": 1956
+  },
+  {
+   "p": "skills/baoyu-comic/webtoon.md",
+   "h": "df350c4cfccf42132c11bf8c446eaf2ca32c569b24dcc6cb5cc3ab2d702fc9bf",
+   "s": 808
+  },
+  {
+   "p": "skills/baoyu-comic/workflow.md",
+   "h": "fce5001fa387910ee39426918392ddf740af388088937490e499f7744a12b876",
+   "s": 16606
+  },
+  {
+   "p": "skills/baoyu-comic/wuxia.md",
+   "h": "b51aa49bf5cd20d410eb858c5f6dcb5f5bdf756a1ad6caded43047d40a28d771",
+   "s": 3082
+  },
+  {
+   "p": "skills/brainstorming/SKILL.md",
+   "h": "e8c077a24c614b1be4e96ca08ddcac56e6a4880d7387dcbb3bd6a5eab4e90bb9",
+   "s": 10668
+  },
+  {
+   "p": "skills/brainstorming/_meta.json",
+   "h": "3a7c3cf8b92f856f1ba9ade7368b785c34afadeae5618c973e6787cd75acf0dc",
+   "s": 216
+  },
+  {
+   "p": "skills/brainstorming/frame-template.html",
+   "h": "7b9418e9939dded0cf8e6a5549a18162b7c7e5495deeefa83a12f3394b81395d",
+   "s": 8307
+  },
+  {
+   "p": "skills/brainstorming/helper.js",
+   "h": "78c3a22dd5e799623cab8908b0b03e764404efde2d2edc94a8814cf450a09e81",
+   "s": 5782
+  },
+  {
+   "p": "skills/brainstorming/server.cjs",
+   "h": "ee89af11506ac4933324c89a2cfb36b391fe611f82efb9eeb3b814e40825145f",
+   "s": 26416
+  },
+  {
+   "p": "skills/brainstorming/spec-document-reviewer-prompt.md",
+   "h": "793f2546815a28f2712f0dcb926ab96dc4a60145fbea6f9a08d88287ec8e15bc",
+   "s": 1796
+  },
+  {
+   "p": "skills/brainstorming/start-server.sh",
+   "h": "526f3fc34bbdc56d97532d84bf861a1113f9f08fec6479c3553c13ec627c2448",
+   "s": 7117
+  },
+  {
+   "p": "skills/brainstorming/stop-server.sh",
+   "h": "6a2f3f3b7ca84fde8ef3c43825d392e1f12126b52a93b42c4d4940779bac884d",
+   "s": 3383
+  },
+  {
+   "p": "skills/brainstorming/visual-companion.md",
+   "h": "7b0b3560c832ac6a6b53e34f4a0bbc1845fb40aab809d2d389ac1bbcfa07a734",
+   "s": 13596
+  },
+  {
+   "p": "skills/brandkit/SKILL.md",
+   "h": "79a107683395bc414dc4af0c7c57a6b7966a712b1f0ec6b8dd46a8f458fb8264",
+   "s": 17238
+  },
+  {
+   "p": "skills/classic-arcade-game-builder/SKILL.md",
+   "h": "6646c3b40e6f9dc99bb0ac87ccec9c0cbf40603916a48e3a96f71c8c1a97c831",
+   "s": 1031
+  },
+  {
+   "p": "skills/coder-ai-senior-developer/SKILL.md",
+   "h": "0c2bd448a211ed221d9f61d4460e8df4d1e25a8eb8334d14b33009dad0341bc9",
+   "s": 6499
+  },
+  {
+   "p": "skills/coder-ai-senior-developer/_meta.json",
+   "h": "1b0cb74d3e69f3f5c258322810be9b9284b6ec55c1ecda6f21c0ef1a1db06d5b",
+   "s": 150
+  },
+  {
+   "p": "skills/excalidraw/SKILL.md",
+   "h": "1035d010aa941234ea7c9d3f6b942dd68c834c229b673f9a9ba6a06d50d85eb3",
+   "s": 7499
+  },
+  {
+   "p": "skills/excalidraw/colors.md",
+   "h": "fb936983fb69f515032557a6c7baad5f555b8c0afa4c9e29ab38e7f4e3c45185",
+   "s": 1821
+  },
+  {
+   "p": "skills/excalidraw/dark-mode.md",
+   "h": "15130640ffaa9f1523fa8dfdeca6c7d80e369e9113fbad50eb04d32cf6789f94",
+   "s": 2350
+  },
+  {
+   "p": "skills/excalidraw/examples.md",
+   "h": "49c92c3c0ed493e4441ba27b8632c7c689ddfd8fdbf8a6eda82ed0e3e2bfa5f4",
+   "s": 14367
+  },
+  {
+   "p": "skills/excalidraw/upload.py",
+   "h": "0ef9854359c1d268f5d26e8f94f5b5c0f3b6242f59ec644e502d17d6d1cec82a",
+   "s": 3950
+  },
+  {
+   "p": "skills/game-designer/SKILL.md",
+   "h": "f70c25b76557a5cdb62c5a562500d23e6738151c266c8b7421aed5e667d0a994",
+   "s": 8689
+  },
+  {
+   "p": "skills/game-designer/_meta.json",
+   "h": "7fb9346ba803ef0d46e89755b4746181e528dd28219ff939d4b963f022ca6398",
+   "s": 138
+  },
+  {
+   "p": "skills/game-ui-design/SKILL.md",
+   "h": "3aa1fd7ebc8bfcd14e3c22d15709c0772ea4b2477ae12e0d4f7234d7dcaea260",
+   "s": 21049
+  },
+  {
+   "p": "skills/game-ui-design/_meta.json",
+   "h": "fa6f059d28bc241e71e09805f02b77364f7d161b24cfd3db955d6786b356b095",
+   "s": 139
+  },
+  {
+   "p": "skills/gaming/DESCRIPTION.md",
+   "h": "ce79921cfa64d35054632d9c2a400f591dfc6a1d0e4ed41835305bc1b7846cbe",
+   "s": 132
+  },
+  {
+   "p": "skills/gaming/SKILL.md",
+   "h": "58303d792f2df5b79c92f1eeb54edf130d87188329bd541eab73069b9707fde4",
+   "s": 6746
+  },
+  {
+   "p": "skills/gauntlet-loop/SKILL.md",
+   "h": "d458abaa2bfeb2e2b8180dcad2bc6aded7f89e571f75be1fb7588860a1364e25",
+   "s": 8285
+  },
+  {
+   "p": "skills/html-game-builder/SKILL.md",
+   "h": "cc3672f8430acb40b15d746188889cde5d492f2a5ba29a89771d8a780894a06a",
+   "s": 1379
+  },
+  {
+   "p": "skills/html-presentation-generator/SKILL.md",
+   "h": "25a8660185decf98d52f26f716afb385f87ffdaf6b2ee1fb9e655acaab868b04",
+   "s": 49421
+  },
+  {
+   "p": "skills/html-presentation-generator/_meta.json",
+   "h": "117dde280dc283b54784024572e5bd33b0da33438f1836fe6e652336d1583b42",
+   "s": 154
+  },
+  {
+   "p": "skills/nim-voxel-siege/SKILL.md",
+   "h": "6d2c9b537f11953509667cfc95028d2f3bfc53102fd5a05be6e76d51163ccc28",
+   "s": 15023
+  },
+  {
+   "p": "skills/okf-card-author/SKILL.md",
+   "h": "217c61961ecc4f3a2a61dd73410fae6e907042fb2af449a0c6a2b4eb8c639efc",
+   "s": 822
+  },
+  {
+   "p": "skills/pixel-art/ATTRIBUTION.md",
+   "h": "51fa6b6ab9990885c3a4e45d1418fe05ca5d73de0b1beb2aa82918ecce210a83",
+   "s": 2264
+  },
+  {
+   "p": "skills/pixel-art/SKILL.md",
+   "h": "851ade2cb7a3592c15e761d76a5e29394c700e7c0b68224a64036f8dfd158b8e",
+   "s": 7799
+  },
+  {
+   "p": "skills/pixel-art/__init__.py",
+   "h": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "s": 0
+  },
+  {
+   "p": "skills/pixel-art/palettes.md",
+   "h": "4b7cf85750f396853d63c4f881401066c15312d5f827605282ad9fd32a5a6dab",
+   "s": 1760
+  },
+  {
+   "p": "skills/pixel-art/palettes.py",
+   "h": "766ae27ddc82368e4aaa238d79fb84b0bd1404cd902b2530ba74ac147962a6f8",
+   "s": 7622
+  },
+  {
+   "p": "skills/pixel-art/pixel_art.py",
+   "h": "8dfd46a74bf367b0f9693e308439c707f175ed7281467f72d65877626191e4c6",
+   "s": 5973
+  },
+  {
+   "p": "skills/pixel-art/pixel_art_video.py",
+   "h": "0e2a0f5ae27626629780e3d289bede293ad9ac02dcb8d7528d88b49b9b5f5299",
+   "s": 12462
+  },
+  {
+   "p": "skills/pokemon-player/SKILL.md",
+   "h": "73af09bbb1be84c69c293bd9a46ed97e4d0e800be346877c40f76c772a68ca53",
+   "s": 8925
+  },
+  {
+   "p": "skills/sketch/SKILL.md",
+   "h": "69dd33c3f0ddf28a3b7e6cb145b30f46a553fe8ba2f57a53ac741bf4c77cb9fe",
+   "s": 9522
+  },
+  {
+   "p": "skills/skills/GLOSSARY-FORMAT.md",
+   "h": "408c96dce06be99b53a6e05b1e3201c900bcbb46ae3cf08ead8aa3e3cb545d8c",
+   "s": 2166
+  },
+  {
+   "p": "skills/skills/LEARNING-RECORD-FORMAT.md",
+   "h": "7bbbf6e325370633c77ec772cf4d30da19037ff2892c9e751f23e2696cf80888",
+   "s": 2823
+  },
+  {
+   "p": "skills/skills/MISSION-FORMAT.md",
+   "h": "ba1bc536615a6940414d96a1d87562f8f2684f56649d44ba15abaaf1833d0ce9",
+   "s": 1584
+  },
+  {
+   "p": "skills/skills/RESOURCES-FORMAT.md",
+   "h": "b5c7f17ce7c7b7f49a3a0007162e5024948c7b5c45c549643cafeb900ed431a6",
+   "s": 1958
+  },
+  {
+   "p": "skills/skills/SKILL.md",
+   "h": "35808c27b612041f16b29564a5de0a669f46fa76d96d7905348476baccbf6006",
+   "s": 4417
+  },
+  {
+   "p": "skills/skills/anti-sleep.sh",
+   "h": "29d564c0358221672f8194bb19666e71cf5e8cb59eb3bfae192a1b3662bcb1e6",
+   "s": 8181
+  },
+  {
+   "p": "skills/skills/batch-launches.md",
+   "h": "11f3c708527f61c9900452e14c2902fb57497a018983f1a3992828d9eeadbe1c",
+   "s": 4441
+  },
+  {
+   "p": "skills/skills/corral-design1.md",
+   "h": "b59873bfca25e053fc80a7eabd235536b93dd59bf263e5a6c9c65cea117078da",
+   "s": 17797
+  },
+  {
+   "p": "skills/skills/corral_agents.py",
+   "h": "91a31f08f435c6aea1647f22092d1a4eb4d43a7367e40f1d5a64cf3d992e3faa",
+   "s": 38585
+  },
+  {
+   "p": "skills/skills/install.md",
+   "h": "4a8f74084da95cba5c5af31201eb593f370630c0554dfa3e8267eaddf3eca52d",
+   "s": 9815
+  },
+  {
+   "p": "skills/skills/nim-towerdefence-demo.html",
+   "h": "93c20e6b920cada960ecbe9626168a56a2081f6d1431bfd2c2b9396bb93b1311",
+   "s": 35229
+  },
+  {
+   "p": "skills/skills/openai.yaml",
+   "h": "3bf863a8856d04a6a1c4f23b3aae6cbf5388544129662c55cc733c2d9c23bbbf",
+   "s": 45
+  },
+  {
+   "p": "skills/skills/pi-agent.md",
+   "h": "e6a76241167d46fa2b3da02c28f66604a255fb84664366ecdd4c1a7194899cdb",
+   "s": 13901
+  },
+  {
+   "p": "skills/skills/what-is-deepapi.md",
+   "h": "2d4036e73048c4bb8b4b81a0cfbe40271075456eec16465a576fc1028d01cbe4",
+   "s": 2990
+  },
+  {
+   "p": "skills/software-development/SKILL.md",
+   "h": "c2e3cb5131ecb40bb1ff51613f438aa2bb913b4600dda003025eebb3979df4c5",
+   "s": 8062
+  },
+  {
+   "p": "skills/threejs-tower-defense/SKILL.md",
+   "h": "c26c8037a300211203ca63d32532eb6a0ffc3938a5b5cd4cd4aab862f675b71a",
+   "s": 12916
+  },
+  {
+   "p": "skills/threejs-tower-defense/nim-towerdefence-demo.html",
+   "h": "93c20e6b920cada960ecbe9626168a56a2081f6d1431bfd2c2b9396bb93b1311",
+   "s": 35229
+  },
+  {
+   "p": "skills/web-coding/SKILL.md",
+   "h": "31908014c3ee4f20ef1244fdf96085f6716350cbc39a4acd0c867120c9039a64",
+   "s": 14833
+  },
+  {
+   "p": "src/App.jsx",
+   "h": "780cf4305f41946a51c06dd55b687c9724272267f0622cd67f2e04ffabaffafb",
+   "s": 380
+  },
+  {
+   "p": "src/components/AiPanel.css",
+   "h": "43b60fcd9096aa804b71d939d95e1aac11d733f7c2b22e94fe1e8bf7c37644d6",
+   "s": 5917
+  },
+  {
+   "p": "src/components/AiPanel.jsx",
+   "h": "23011d9c9b7a12da5d3d852dc68d3a218f8b3e757dfad9352c4e31589ac20e33",
+   "s": 25167
+  },
+  {
+   "p": "src/components/AppShell.css",
+   "h": "29c395aae7971107ffa75ac73c3426ad84bddc4a06037d498e7b6eaa4fd5fef4",
+   "s": 4951
+  },
+  {
+   "p": "src/components/AppShell.jsx",
+   "h": "a9127779044a631217e67e2354ca7c6c769310d7d1b54dab04b745d25610d173",
+   "s": 21582
+  },
+  {
+   "p": "src/components/ApprovalModal.css",
+   "h": "b0a9fb34522f2f8966e835434f4defda0252010d99e2fd972f4d42cdce6751b9",
+   "s": 3825
+  },
+  {
+   "p": "src/components/ApprovalModal.jsx",
+   "h": "76e527bc931529f0e266353cb11ff82ad993af8c572a5a3ad78bc3dcbbc8c823",
+   "s": 4652
+  },
+  {
+   "p": "src/components/CodeEditor.css",
+   "h": "9f8d3130f78e7cef4e8e83c127edf2e6488eefc26743f05e9aeeb41b15c2e367",
+   "s": 3165
+  },
+  {
+   "p": "src/components/CodeEditor.jsx",
+   "h": "9f946b2a1833623a1dce57e1275e8d1a83ffb1c76209d0d540215072439243a1",
+   "s": 6251
+  },
+  {
+   "p": "src/components/ComingSoon.css.obsolete",
+   "h": "46440f7e10df3b4bba1e9080bbde10c16b8ef22c98dc35ca1199c6a30f8ec607",
+   "s": 2888
+  },
+  {
+   "p": "src/components/ComingSoon.jsx.obsolete",
+   "h": "96a4a43ae859529656e1f65b6e11e3c665e765b762e4809832b0f51fe57b7a2b",
+   "s": 2042
+  },
+  {
+   "p": "src/components/CommandPalette.css",
+   "h": "8a3d07284434e3fa565f4941f01e40e69605074eff9f0831389a0d10deb611f3",
+   "s": 2469
+  },
+  {
+   "p": "src/components/CommandPalette.jsx",
+   "h": "df45f0949be2c830c94a6cdbd84fa8e431f075edf1c5d6531402579ee11e9dc4",
+   "s": 5071
+  },
+  {
+   "p": "src/components/ContextMeter.css",
+   "h": "07158c0c2fdef3330da05aed2c8ae68f847e41da333bb0d14a7a71206f5a4573",
+   "s": 1104
+  },
+  {
+   "p": "src/components/ContextMeter.jsx",
+   "h": "559c75be2f3a6275141d9edd07ec93b44e4d05e092f5a614bc53b4f58c142254",
+   "s": 2166
+  },
+  {
+   "p": "src/components/DraftsModal.css",
+   "h": "2ba16d86ebd7ced4be0ed717272d1af1c122afccf09ae6749e0ab1645d1b2e46",
+   "s": 5194
+  },
+  {
+   "p": "src/components/DraftsModal.jsx",
+   "h": "24b30003f44dc41d79be58e495756302bfbd774e9145ad9707cb98d54df45c5f",
+   "s": 8288
+  },
+  {
+   "p": "src/components/HelpModal.css",
+   "h": "91864e9e5664180b0a650a346240428d363a44e9d9e8fe4c8f17ebffa6b8ab8d",
+   "s": 2406
+  },
+  {
+   "p": "src/components/PresenceChat.jsx",
+   "h": "b311820a8ee769fa698000bdc5352d26621327aa0f6e6159d7652ed77030d1d5",
+   "s": 9601
+  },
+  {
+   "p": "src/components/PresenceView.css",
+   "h": "20091109670c0e20d97575ebafbccdc2360d40be16d31c5422c361036c44ae66",
+   "s": 18570
+  },
+  {
+   "p": "src/components/PresenceView.jsx",
+   "h": "85fc59f1c59d953657493b82af1822447abed7f55b84810105210a96b94c90e8",
+   "s": 23733
+  },
+  {
+   "p": "src/components/PreviewPanel.css",
+   "h": "c4b8eb39301a43bdcdc91428da4c23948d3800a483b5c077837e15fc636deec6",
+   "s": 1106
+  },
+  {
+   "p": "src/components/PreviewPanel.jsx",
+   "h": "0b3679092f2cae7859b65cd6e763c23f1c38cd728c220d78a3ac87ced179aeee",
+   "s": 1858
+  },
+  {
+   "p": "src/components/SettingsModal.css",
+   "h": "93ca948aa8205ef1787eccebd894f0a37be4351e2217527b944f245cfa8bd5f1",
+   "s": 9477
+  },
+  {
+   "p": "src/components/SettingsModal.jsx",
+   "h": "6b2e915f48c9a12c29fcf0ff241df522932c19dfd50799c3d6aea7e9fbf73a13",
+   "s": 15253
+  },
+  {
+   "p": "src/components/SkillsModal.css",
+   "h": "7d387aedc2e0ff4d8ff1d47ec141309eebe96470029b57df7c4bbbc658c1ae3c",
+   "s": 6126
+  },
+  {
+   "p": "src/components/SkillsModal.jsx",
+   "h": "35452a01a74b387dc50783405e7612ab065b3919a9de225e79b7cc223188510c",
+   "s": 10149
+  },
+  {
+   "p": "src/components/Splash.css",
+   "h": "6990bd7e44bb82545071cdc8564ae102c81c277b23f4cdd37583505ef1fd1bd7",
+   "s": 5825
+  },
+  {
+   "p": "src/components/Splash.jsx",
+   "h": "179990a5c1183ef0d905f32b8d90dec875b3982b1dc5023fed40ef2f229492d4",
+   "s": 3390
+  },
+  {
+   "p": "src/components/account/AccountBar.css",
+   "h": "80c5f687f584943bc5b47743dbc300f68da149287f4e742131d0ecb0b6db7605",
+   "s": 6062
+  },
+  {
+   "p": "src/components/account/AccountBar.jsx",
+   "h": "10454f9f1e00546a336aab831a93b99489382c6bbbd8fe59f8c5e18fd34480f1",
+   "s": 11970
+  },
+  {
+   "p": "src/components/doctor/DoctorView.css",
+   "h": "d4d2015856b9fbc3d144efd3df70433eb907b2974f41e77fb722c8657a8ac2a1",
+   "s": 6112
+  },
+  {
+   "p": "src/components/doctor/DoctorView.jsx",
+   "h": "1ddfddefcee6504cf9a443cb17db21eaaf90cdad1e0a15fdc1d352bc96716cfc",
+   "s": 8415
+  },
+  {
+   "p": "src/components/stats/LineChart.jsx",
+   "h": "4ed36c08a8025fa2d91c6c0213b66df3e21048c4d8ebbf96bcd2e51c9ed3346f",
+   "s": 7438
+  },
+  {
+   "p": "src/components/stats/StatsView.css",
+   "h": "5b3823a5252b2c551a538c0236d8be4edda0cccc87a0b387e341d35f9bc52672",
+   "s": 6888
+  },
+  {
+   "p": "src/components/stats/StatsView.jsx",
+   "h": "76497f7a04e3e371b5f46d666493f2b3feed39ebe3cca7f94ed7c1fa0ee5ddd6",
+   "s": 10102
+  },
+  {
+   "p": "src/hooks/useProviderTokenBudget.js",
+   "h": "30924577082ab5736be23481f99e55972a243e01f40c4246174e37d3bae5d623",
+   "s": 4594
+  },
+  {
+   "p": "src/main.jsx",
+   "h": "27c4eedd0c43d7598d320ebbf0fe5ca21868836361f7748c09da1e354102aea4",
+   "s": 353
+  },
+  {
+   "p": "src/presence/FaceScene.js",
+   "h": "9090a72310af2f0bcf0681bdd929b69a19c1128899737f59931041c9962f54d6",
+   "s": 26622
+  },
+  {
+   "p": "src/presence/NeuralCore.js",
+   "h": "5bf10c9cfebd31f376651957e66992f6cdbdd5f88dfcccfdc2f4de556ce9df60",
+   "s": 21488
+  },
+  {
+   "p": "src/presence/VoiceWave.js",
+   "h": "84fb0f02afe1137b1c8fbd4495f5f4c90a145c6646485bb756863f3cd709ee49",
+   "s": 5211
+  },
+  {
+   "p": "src/presence/emotion/appraisal.js",
+   "h": "e68defcff9d5e9600ad126146d4b71fd90b545c5516392c5b94a7a4af53dbc46",
+   "s": 13751
+  },
+  {
+   "p": "src/presence/emotion/core.js",
+   "h": "7b314cea9cbe82a0edb3f0d09ef396fa7b256b746710908985de6557a9910fbb",
+   "s": 8260
+  },
+  {
+   "p": "src/presence/emotion/face.js",
+   "h": "82c6c188bc0afeb0b9a160c7bf7227b570b4838a01889935b36bf809d98706e8",
+   "s": 11902
+  },
+  {
+   "p": "src/presence/emotionEngine.js",
+   "h": "2dbac4a1d92d299fa1639f6ccb068d616b19b703585b48f47b119c6ba34d23a6",
+   "s": 14140
+  },
+  {
+   "p": "src/presence/voice.js",
+   "h": "e31ac5e851da2fae10d8e36cb00ef06c2a193b961a55458c561252ebfb73c744",
+   "s": 8653
+  },
+  {
+   "p": "src/styles/global.css",
+   "h": "5983270ba63e477b12f15b3ab35758c357f2e7cfe245381b9e1cc39f3884761e",
+   "s": 2077
+  },
+  {
+   "p": "src/three/NeuralBackdrop.jsx",
+   "h": "08bb09e1aebf6b13076072487621c0fe655ba56d55db606706547205c8c64b3c",
+   "s": 3932
+  },
+  {
+   "p": "src/utils/gameFiles.js",
+   "h": "ae6a1a8d6107f136b961aa30a7bc9f740ad547bd2c5868d0f4a3ac6f10c390bc",
+   "s": 10576
+  },
+  {
+   "p": "src/utils/projectIO.js",
+   "h": "a714b611e85236e7c82058139b825d2759cf3fb9bda7c35616178aff4fd1d939",
+   "s": 2401
+  },
+  {
+   "p": "src/utils/projectStore.js",
+   "h": "1f3fe69752a902baf07847208f8a2e903bbc899c10533f6df9b32db76cbb71e5",
+   "s": 2942
+  },
+  {
+   "p": "vite.config.js",
+   "h": "7353e537db199a604faa307fbf3341f4380a67f4d23427335db025a90561aeac",
+   "s": 1634
+  }
+ ]
+}

@@ -7,15 +7,38 @@ import {
 } from '../hooks/useProviderTokenBudget.js';
 import './SettingsModal.css';
 
+/* Settings, in three tabs:
+ *   AI      provider, model, API key, and the provider chart
+ *   Access  Omi-One's folder, and what it may read and change on the PC
+ *   App     start with Windows, version
+ * The tray icon opens this window straight to a tab (#settings / #settings-app).
+ */
+
+const TABS = [
+  { id: 'ai', label: 'AI' },
+  { id: 'access', label: 'Access' },
+  { id: 'app', label: 'App' },
+];
+
+async function post(url, body) {
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `status ${r.status}`);
+  return j;
+}
+
+// --- AI -------------------------------------------------------------------------------
+
 const SAMPLE_KEY_HINT = 'sk-…';
 
-export default function SettingsModal({ onClose }) {
+function AiTab() {
   const [providers, setProviders] = useState([]);
   const [settings, setSettings] = useState({ provider: 'minimax', model: '', hasOwnKey: false, keyHint: null });
   const [apiKey, setApiKey] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [chart, setChart] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -37,10 +60,9 @@ export default function SettingsModal({ onClose }) {
       setSettings((s) => ({ ...s, ...next }));
       setApiKey('');
       setStatus('Saved.');
-      // Refresh providers so hasOwnKey column flips
       setProviders(await fetchProviders());
-    } catch (e) {
-      setError(e.message || 'Save failed');
+    } catch (err) {
+      setError(err.message || 'Save failed');
       setStatus('');
     } finally {
       setSaving(false);
@@ -55,8 +77,8 @@ export default function SettingsModal({ onClose }) {
       const next = await saveSettings({ provider: settings.provider, model: settings.model || undefined, apiKey: '' });
       setSettings((s) => ({ ...s, ...next }));
       setStatus('Key cleared.');
-    } catch (e) {
-      setError(e.message || 'Clear failed');
+    } catch (err) {
+      setError(err.message || 'Clear failed');
       setStatus('');
     }
   };
@@ -64,112 +86,269 @@ export default function SettingsModal({ onClose }) {
   const current = providers.find((p) => p.id === settings.provider);
 
   return (
-    <div className="settings-modal" role="dialog" aria-modal="true">
+    <>
+      <p className="hint">
+        Pick a provider and save your API key. The key never leaves this
+        machine: the local server stores it in <code>.gwn-secrets.json</code> and
+        only shows a 4-character hint here. The built-in <strong>OmniOne Local</strong> stub
+        works with no key.
+      </p>
+
+      <form onSubmit={save}>
+        <label>
+          <span>Provider</span>
+          <select value={settings.provider} onChange={(e) => setSettings((s) => ({ ...s, provider: e.target.value, model: '' }))}>
+            {providers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label}{p.builtIn ? ' (built-in)' : ''}{p.free ? ' · free' : ''}{p.hasOwnKey ? ' · key saved' : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Model <em>(default: {current ? current.defaultModel : 'auto'})</em></span>
+          <input
+            type="text"
+            placeholder={current ? current.defaultModel : 'model id'}
+            value={settings.model || ''}
+            onChange={(e) => setSettings((s) => ({ ...s, model: e.target.value }))}
+          />
+        </label>
+
+        <label>
+          <span>Your API key {settings.hasOwnKey && settings.keyHint && <em>(saved: {settings.keyHint})</em>}</span>
+          <div className="settings-modal__key-row">
+            <input
+              type="password"
+              placeholder={settings.provider === 'gwn-local' ? 'not needed: this provider requires no key' : SAMPLE_KEY_HINT}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              autoComplete="off"
+              disabled={settings.provider === 'gwn-local'}
+            />
+            {settings.hasOwnKey && settings.provider !== 'gwn-local' && (
+              <button type="button" className="settings-modal__clear" onClick={clearKey} title="Delete the saved key for this provider">Clear key</button>
+            )}
+          </div>
+        </label>
+
+        <div className="settings-modal__form-row">
+          <button type="submit" className="settings-modal__save" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+          {status && <span className="settings-modal__status">{status}</span>}
+          {error && <span className="settings-modal__error">{error}</span>}
+        </div>
+      </form>
+
+      <button type="button" className="settings-modal__disclose" aria-expanded={chart} onClick={() => setChart((c) => !c)}>
+        {chart ? '▾' : '▸'} Provider chart
+      </button>
+      {chart && (
+        <div className="cap-table-wrap">
+          <table className="cap-table">
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Default model</th>
+                <th className="num">Output cap</th>
+                <th className="num">Context</th>
+                <th className="num">Tools</th>
+                <th>Key</th>
+              </tr>
+            </thead>
+            <tbody>
+              {providers.map((p) => (
+                <tr key={p.id} className={p.id === settings.provider ? 'is-active' : ''}>
+                  <td>{p.label}{p.id === settings.provider ? ' · selected' : ''}</td>
+                  <td className="muted">{p.defaultModel || 'auto'}</td>
+                  <td className="num">{fmtTok(p.defaultMaxTokens)}</td>
+                  <td className="num">{fmtTok(p.maxContextTokens)}</td>
+                  <td className="num">{p.maxToolCalls == null ? '—' : Number(p.maxToolCalls).toLocaleString()}</td>
+                  <td>{p.id === 'gwn-local' ? '—' : <span className="muted">{p.hasOwnKey ? 'saved' : 'none'}</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
+
+// --- Access ---------------------------------------------------------------------------
+
+function WorkspaceSetting() {
+  const [ws, setWs] = useState({ root: '', isDefault: true });
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState('');
+  const [msg, setMsg] = useState({ text: '', error: false });
+
+  useEffect(() => {
+    fetch('/api/workspace').then((r) => r.json()).then((j) => { setWs(j); setTyped(j.root || ''); }).catch(() => {});
+  }, []);
+
+  const act = async (label, url, body, done) => {
+    setBusy(label);
+    setMsg({ text: '', error: false });
+    try {
+      const j = await post(url, body);
+      await done(j);
+    } catch (e) {
+      setMsg({ text: e.message || 'Something went wrong.', error: true });
+    } finally {
+      setBusy('');
+    }
+  };
+  const use = (root) => act('save', '/api/workspace', { root }, (j) => { setWs(j); setTyped(j.root); setMsg({ text: 'Omi-One now works in this folder.', error: false }); });
+  const browse = () => act('browse', '/api/workspace/browse', {}, async (j) => { if (j?.root) await use(j.root); });
+  const reset = () => act('reset', '/api/workspace', { reset: true }, (j) => { setWs(j); setTyped(j.root); setMsg({ text: 'Back to the default folder.', error: false }); });
+  const isDriveRoot = /^[A-Za-z]:[\\/]?$/.test(ws.root || '');
+
+  return (
+    <section className="settings-modal__section">
+      <h4>Omi-One’s folder</h4>
+      <p className="settings-modal__lead">
+        Where Omi-One works directly: it creates and edits files here (following your permission mode) without preparing a fix.
+      </p>
+      <div className="settings-modal__ws-current">
+        <code>{ws.root || '…'}</code>
+        {ws.isDefault && <span className="settings-modal__ws-tag">default</span>}
+      </div>
+      {isDriveRoot && (
+        <p className="settings-modal__warn">This is a whole drive: Omi-One could edit any of your files on it without asking, and searches will be slow.</p>
+      )}
+      <div className="settings-modal__form-row">
+        <button type="button" className="settings-modal__save" onClick={browse} disabled={!!busy}>
+          {busy === 'browse' ? 'Waiting for the dialog…' : 'Choose folder…'}
+        </button>
+        {!ws.isDefault && <button type="button" className="settings-modal__ghost" onClick={reset} disabled={!!busy}>Use default</button>}
+      </div>
+      <form className="settings-modal__ws-type" onSubmit={(e) => { e.preventDefault(); if (typed.trim()) use(typed.trim()); }}>
+        <label>
+          <span>Or type a path</span>
+          <div className="settings-modal__key-row">
+            <input type="text" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="C:\Users\you\Projects" spellCheck={false} />
+            <button type="submit" className="settings-modal__ghost" disabled={!!busy || !typed.trim() || typed.trim() === ws.root}>Use</button>
+          </div>
+        </label>
+      </form>
+      {msg.text && <p className={msg.error ? 'settings-modal__error' : 'settings-modal__status'}>{msg.text}</p>}
+    </section>
+  );
+}
+
+function AccessTab({ onOpenDoctor }) {
+  return (
+    <>
+      <WorkspaceSetting />
+
+      <section className="settings-modal__section">
+        <h4>The rest of the PC</h4>
+        <ul className="settings-modal__rules">
+          <li className="is-yes"><b>Reads everywhere</b>, so a doctor scan can follow a problem wherever it is: PATH, installed tools, projects, logs.</li>
+          <li className="is-no"><b>Never reads secrets</b>: passwords, keys, tokens, <code>.env</code> files, browser logins, <code>.ssh</code>, FTP and other credential stores. What it reads goes to the AI provider, so these stay off-limits.</li>
+          <li className="is-hold"><b>Changes outside its folder only through fixes you accept.</b> It prepares the fix; nothing happens until you press Apply in Doctor &amp; fixes. Files and settings are backed up so you can undo.</li>
+          <li className="is-no"><b>Never touches Windows</b>: system folders, Program Files and other users’ files are refused, and OmniOne never runs as administrator, so Windows blocks them too.</li>
+          <li className="is-hold"><b>Commands always ask first</b>, every time, and never run while Omi-One is acting on its own.</li>
+        </ul>
+        {onOpenDoctor && <button type="button" className="settings-modal__ghost" onClick={onOpenDoctor}>Open Doctor &amp; fixes</button>}
+      </section>
+    </>
+  );
+}
+
+// --- App --------------------------------------------------------------------------------
+
+function AppTab() {
+  const [info, setInfo] = useState(null);
+  const [auto, setAuto] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState({ text: '', error: false });
+
+  useEffect(() => {
+    fetch('/api/app').then((r) => r.json()).then(setInfo).catch(() => setInfo({}));
+    fetch('/api/app/autostart').then((r) => r.json()).then(setAuto).catch(() => setAuto({ available: false }));
+  }, []);
+
+  const toggle = async () => {
+    setBusy(true);
+    setMsg({ text: '', error: false });
+    try {
+      const next = await post('/api/app/autostart', { enabled: !auto.enabled });
+      setAuto(next);
+      setMsg({ text: next.enabled ? 'OmniOne will start in the tray when you sign in to Windows.' : 'OmniOne won’t start with Windows.', error: false });
+    } catch (e) {
+      setMsg({ text: e.message, error: true });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <section className="settings-modal__section">
+        <h4>Startup</h4>
+        <div className="settings-modal__switch-row">
+          <div>
+            <b>Start with Windows</b>
+            <span>Opens OmniOne in the tray when you sign in, ready when you need it.</span>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={Boolean(auto?.enabled)}
+            className={`settings-modal__switch${auto?.enabled ? ' is-on' : ''}`}
+            onClick={toggle}
+            disabled={busy || !auto?.available}
+            aria-label="Start with Windows"
+          >
+            <span />
+          </button>
+        </div>
+        {auto && !auto.available && <p className="settings-modal__note">Available in the OmniOne app (not in a browser or in development mode).</p>}
+        {msg.text && <p className={msg.error ? 'settings-modal__error' : 'settings-modal__status'}>{msg.text}</p>}
+      </section>
+
+      <section className="settings-modal__section">
+        <h4>About</h4>
+        <dl className="settings-modal__about">
+          <dt>Version</dt><dd>{info?.version ? `v${info.version}` : '…'}</dd>
+          <dt>Running as</dt><dd>{info ? (info.desktop ? 'the OmniOne app' : 'a web page (development)') : '…'}</dd>
+          <dt>Updates</dt><dd>Checked each time OmniOne starts, or from the tray: Check for updates.</dd>
+        </dl>
+      </section>
+    </>
+  );
+}
+
+export default function SettingsModal({ onClose, initialTab = 'ai', onOpenDoctor }) {
+  const [tab, setTab] = useState(TABS.some((t) => t.id === initialTab) ? initialTab : 'ai');
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
       <div className="settings-modal__backdrop" onClick={onClose} />
       <div className="settings-modal__panel">
         <header className="settings-modal__head">
-          <h3>AI SETTINGS</h3>
+          <h3>SETTINGS</h3>
           <button type="button" className="settings-modal__close" onClick={onClose} aria-label="Close">×</button>
         </header>
-
-        <div className="settings-modal__body">
-          <p className="hint">
-            Pick a provider and save your API key. The key never leaves this
-            machine — the local server stores it in <code>.gwn-secrets.json</code>
-            and only returns a 4-character hint to the UI. The built-in
-            <strong> OmniOne Local</strong> stub demonstrates the full pipeline
-            with no key.
-          </p>
-
-          <form onSubmit={save}>
-            <label>
-              <span>Provider</span>
-              <select
-                value={settings.provider}
-                onChange={(e) => setSettings((s) => ({ ...s, provider: e.target.value, model: '' }))}
-              >
-                {providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}{p.builtIn ? ' (built-in)' : ''}{p.free ? ' · free' : ''}
-                    {p.hasOwnKey ? ' · key saved' : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>Model <em>(default: {current ? current.defaultModel : 'auto'})</em></span>
-              <input
-                type="text"
-                placeholder={current ? current.defaultModel : 'model id'}
-                value={settings.model || ''}
-                onChange={(e) => setSettings((s) => ({ ...s, model: e.target.value }))}
-              />
-            </label>
-
-            <label>
-              <span>
-                Your API key{' '}
-                {settings.hasOwnKey && settings.keyHint && <em>(saved: {settings.keyHint})</em>}
-              </span>
-              <div className="settings-modal__key-row">
-                <input
-                  type="password"
-                  placeholder={settings.provider === 'gwn-local'
-                    ? 'not needed — this provider requires no key'
-                    : SAMPLE_KEY_HINT}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  autoComplete="off"
-                  disabled={settings.provider === 'gwn-local'}
-                />
-                {settings.hasOwnKey && settings.provider !== 'gwn-local' && (
-                  <button
-                    type="button"
-                    className="settings-modal__clear"
-                    onClick={clearKey}
-                    title="Delete the saved key for this provider"
-                  >Clear key</button>
-                )}
-              </div>
-            </label>
-
-            <div className="settings-modal__form-row">
-              <button type="submit" className="settings-modal__save" disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-              {status && <span className="settings-modal__status">{status}</span>}
-              {error && <span className="settings-modal__error">{error}</span>}
-            </div>
-          </form>
-
-          <h4>Provider chart</h4>
-          <div className="cap-table-wrap">
-            <table className="cap-table">
-              <thead>
-                <tr>
-                  <th>Provider</th>
-                  <th>Default model</th>
-                  <th className="num">Output cap</th>
-                  <th className="num">Context</th>
-                  <th className="num">Tools</th>
-                  <th>Key</th>
-                </tr>
-              </thead>
-              <tbody>
-                {providers.map((p) => (
-                  <tr key={p.id} className={p.id === settings.provider ? 'is-active' : ''}>
-                    <td>{p.label}{p.id === settings.provider ? ' · selected' : ''}</td>
-                    <td className="muted">{p.defaultModel || 'auto'}</td>
-                    <td className="num">{fmtTok(p.defaultMaxTokens)}</td>
-                    <td className="num">{fmtTok(p.maxContextTokens)}</td>
-                    <td className="num">{p.maxToolCalls == null ? '—' : Number(p.maxToolCalls).toLocaleString()}</td>
-                    <td>{p.id === 'gwn-local' ? '—' : (p.hasOwnKey ? <span className="muted">saved</span> : <span className="muted">none</span>)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <nav className="settings-modal__tabs" role="tablist">
+          {TABS.map((t) => (
+            <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'is-on' : ''} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+        <div className="settings-modal__body" role="tabpanel">
+          {tab === 'ai' && <AiTab />}
+          {tab === 'access' && <AccessTab onOpenDoctor={onOpenDoctor} />}
+          {tab === 'app' && <AppTab />}
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import DraftsModal from './DraftsModal.jsx';
 import PresenceView, { PresenceOrb } from './PresenceView.jsx';
 import AccountBar from './account/AccountBar.jsx';
 import StatsView from './stats/StatsView.jsx';
+import DoctorView from './doctor/DoctorView.jsx';
 import {
   parseFiles,
   combineForPreview,
@@ -59,6 +60,39 @@ export default function AppShell() {
   const [draftsOpen, setDraftsOpen] = useState(false);
   const [presenceOpen, setPresenceOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('ai');
+  const [doctorOpen, setDoctorOpen] = useState(false);
+  const [fixesPending, setFixesPending] = useState(0);
+  const openSettings = useCallback((tab = 'ai') => { setSettingsTab(tab); setSettingsOpen(true); }, []);
+
+  // The tray icon opens the window at #settings, #settings-access,
+  // #settings-app or #doctor; so can a link. The hash is cleared after use.
+  useEffect(() => {
+    const route = () => {
+      const h = window.location.hash.replace(/^#/, '');
+      if (!h) return;
+      if (h === 'doctor') { setSettingsOpen(false); setDoctorOpen(true); }
+      else if (h.startsWith('settings')) { setDoctorOpen(false); openSettings(h.split('-')[1] || 'ai'); }
+      else return;
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    };
+    route();
+    window.addEventListener('hashchange', route);
+    return () => window.removeEventListener('hashchange', route);
+  }, [openSettings]);
+
+  // Fixes Omi-One prepared and nobody has looked at: a badge in the account menu.
+  useEffect(() => {
+    let alive = true;
+    const check = () => fetch('/api/fixes').then((r) => r.json())
+      .then((j) => { if (alive) setFixesPending((j.fixes || []).filter((f) => f.status === 'pending').length); })
+      .catch(() => {});
+    check();
+    const t = setInterval(check, 20_000);
+    window.addEventListener('gwn:fixes-changed', check);
+    window.addEventListener('gwn:generation-result', check);
+    return () => { alive = false; clearInterval(t); window.removeEventListener('gwn:fixes-changed', check); window.removeEventListener('gwn:generation-result', check); };
+  }, []);
   const [account, setAccount] = useState(null);
   useEffect(() => {
     const onAccount = (e) => setAccount(e.detail || null);
@@ -323,8 +357,10 @@ export default function AppShell() {
           />
           </div>
           <AccountBar
-            onOpenSettings={() => setSettingsOpen(true)}
+            onOpenSettings={() => openSettings('ai')}
             onOpenStats={() => setStatsOpen(true)}
+            onOpenDoctor={() => setDoctorOpen(true)}
+            fixesPending={fixesPending}
             onOpenHelp={() => setHelpOpen(true)}
             toast={showToast}
           />
@@ -352,7 +388,13 @@ export default function AppShell() {
         </section>
       </main>
 
-      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <SettingsModal
+          initialTab={settingsTab}
+          onClose={() => setSettingsOpen(false)}
+          onOpenDoctor={() => { setSettingsOpen(false); setDoctorOpen(true); }}
+        />
+      )}
       {skillsOpen && (
         <SkillsModal
           onClose={() => setSkillsOpen(false)}
@@ -374,6 +416,7 @@ export default function AppShell() {
       {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
       {presenceOpen && <PresenceView onClose={() => setPresenceOpen(false)} toast={showToast} />}
       {statsOpen && <StatsView onClose={() => setStatsOpen(false)} account={account} />}
+      {doctorOpen && <DoctorView onClose={() => setDoctorOpen(false)} />}
 
       {toast.msg && (
         <div className={`shell__toast shell__toast-${toast.kind}`} onAnimationEnd={() => setToast({ msg: '', kind: 'info' })}>

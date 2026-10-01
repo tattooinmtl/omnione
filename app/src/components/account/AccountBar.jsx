@@ -44,13 +44,14 @@ const Icon = {
   help: <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-2.5-11.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14m0 3h.01" />,
   settings: <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.5 3h-5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h5l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z" />,
   out: <path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11" />,
+  doctor: <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3Z" />,
   connect: <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />,
 };
 const Svg = ({ d }) => <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">{d}</svg>;
 
 const open = (url) => window.open(url, '_blank', 'noopener');
 
-export default function AccountBar({ onOpenSettings, onOpenStats, onOpenHelp, toast }) {
+export default function AccountBar({ onOpenSettings, onOpenStats, onOpenDoctor, fixesPending = 0, onOpenHelp, toast }) {
   const [account, setAccount] = useState(null);
   const [menu, setMenu] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -102,6 +103,7 @@ export default function AccountBar({ onOpenSettings, onOpenStats, onOpenHelp, to
   const item = (key, label, onClick, extra) => (
     <button type="button" role="menuitem" className={`acct-menu__item${extra ? ` ${extra}` : ''}`} onClick={() => { setMenu(false); onClick(); }}>
       <Svg d={Icon[key]} />{label}{['profile', 'forum', 'series'].includes(key) && <span className="acct-menu__ext" aria-hidden="true">↗</span>}
+      {key === 'doctor' && fixesPending > 0 && <span className="acct-menu__badge" title={`${fixesPending} fix${fixesPending === 1 ? '' : 'es'} waiting for you`}>{fixesPending}</span>}
     </button>
   );
 
@@ -127,6 +129,7 @@ export default function AccountBar({ onOpenSettings, onOpenStats, onOpenHelp, to
             {!connected && item('connect', 'Connect account…', () => setConnecting(true), 'is-primary')}
             {connected && item('profile', 'Your profile', () => open(`${site}/profile.php`))}
             {item('stats', 'Usage & stats', () => onOpenStats?.())}
+            {item('doctor', 'Doctor & fixes', () => onOpenDoctor?.())}
             {item('forum', 'Forum', () => open(`${site}/forum/`))}
             {item('series', 'Omni series', () => open(`${site}/downloads.php`))}
           </div>

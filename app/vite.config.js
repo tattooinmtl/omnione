@@ -15,16 +15,14 @@ const token = ensureToken();
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5174,
+    port: Number(process.env.OMNIONE_PORT) || 5174,
     strictPort: true,
-    // NOTE: `host: true` also exposes the UI on the LAN. The API itself stays
-    // bound to loopback, but anyone who can reach :5174 reaches the API
-    // through this proxy, token and all. Set host: 'localhost' if you want
-    // this machine only.
-    host: true,
+    // This PC only. Anyone who can reach :5174 reaches the API through the
+    // proxy below, token and all, so the LAN is opt-in: OMNIONE_LAN=1.
+    host: process.env.OMNIONE_LAN === '1' ? true : 'localhost',
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:5180',
+        target: `http://127.0.0.1:${Number(process.env.PORT) || 5180}`,
         changeOrigin: false,
         ws: false,
         configure: (proxy) => {
@@ -39,5 +37,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    // Three.js and the editor make one big bundle; it's loaded from this PC,
+    // not over the network, so the size warning is just noise.
+    chunkSizeWarningLimit: 4000,
   },
 });

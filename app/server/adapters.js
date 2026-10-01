@@ -78,11 +78,54 @@ function backoff(attempt, retryAfterHeader, signal) {
   return sleep(ms, signal);
 }
 
+// --- tool calls and results, always in pairs ----------------------------------
+
+/* Every provider requires each assistant tool call to be answered by its
+ * result in the very next message (MiniMax: error 2013, "tool call result
+ * does not follow tool call"). A saved conversation can break that: a run
+ * stopped mid-tool, a server restart during an approval, a tool that threw.
+ * One broken spot would then fail every later message in that chat, so the
+ * history is repaired on the way out:
+ *   - results scattered over several tool messages are gathered into one,
+ *     right after their call;
+ *   - a call with no result gets one saying it never ran;
+ *   - results with no call right before them are dropped.
+ * The saved session is left as it was. */
+export function repairToolPairs(messages) {
+  const out = [];
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i];
+    if (m.role === 'tool') continue; // reached only when orphaned
+    out.push(m);
+    if (m.role !== 'assistant') continue;
+    const calls = blocks(m).filter((b) => b.type === 'tool_use');
+    if (!calls.length) continue;
+    const found = new Map();
+    let j = i + 1;
+    while (j < messages.length && messages[j].role === 'tool') {
+      for (const b of blocks(messages[j])) if (b.toolUseId) found.set(b.toolUseId, b);
+      j++;
+    }
+    out.push({
+      role: 'tool',
+      content: calls.map((c) => found.get(c.id) || {
+        type: 'tool_result',
+        toolUseId: c.id,
+        name: c.name,
+        text: 'ERROR: Not run: the earlier run stopped before this tool finished.',
+        isError: true,
+      }),
+    });
+    i = j - 1;
+  }
+  return out;
+}
+
 // --- neutral -> OpenAI -----------------------------------------------------
 
 export function toOpenAIMessages(system, messages) {
   const out = [{ role: 'system', content: system }];
-  for (const m of messages) {
+  for (const m of repairToolPairs(messages)) {
     if (m.role === 'user') {
       out.push({ role: 'user', content: textFrom(m) });
     } else if (m.role === 'assistant') {
@@ -111,7 +154,7 @@ export function toOpenAIMessages(system, messages) {
 
 export function toAnthropicMessages(messages) {
   const out = [];
-  for (const m of messages) {
+  for (const m of repairToolPairs(messages)) {
     if (m.role === 'user') {
       out.push({ role: 'user', content: [{ type: 'text', text: textFrom(m) }] });
     } else if (m.role === 'assistant') {
