@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.1",
- "build": "d415765267e6",
- "commit": "eccf6f9287a3",
- "date": "2026-10-01T13:20:29-04:00",
+ "build": "91848ddc865a",
+ "commit": "09932aa30628",
+ "date": "2026-10-01T16:34:54-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -37,7 +37,7 @@
   },
   {
    "p": "build.json",
-   "h": "d43f0c6ab4ee2732785690a2268c6cdb34ad628bcb9622ccbe94fc7221625512",
+   "h": "a404072bb9b2568efec12911e7f74c03f52b9d09610e948cd2914f4188024ee4",
    "s": 120
   },
   {
@@ -822,8 +822,8 @@
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "523fb0a89b6de0c2cd341168aec8e5f2a1af23644a929cb89bf6b3f5cb5a3310",
-   "s": 27504
+   "h": "7b34886b710ee4dade1665cb826ee3524bcb95bdd3f7b2a76a1228750da9a85c",
+   "s": 28635
   },
   {
    "p": "src/components/AppShell.css",

@@ -147,12 +147,19 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
         window.dispatchEvent(new CustomEvent('gwn:generation-progress', { detail: patch }));
       };
       try {
-        const resp = await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: p, currentCode, sessionId: sessionIdRef.current }),
-          signal: ac.signal,
-        });
+        let resp;
+        for (let attempt = 0; ; attempt++) {
+          resp = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: p, currentCode, sessionId: sessionIdRef.current }),
+            signal: ac.signal,
+          });
+          // 409: the run just interrupted is still winding down on the
+          // server. Give it a moment rather than refusing the new message.
+          if (resp.status !== 409 || attempt >= 20) break;
+          await new Promise((r) => setTimeout(r, 300));
+        }
         if (!resp.ok) {
           const t = await resp.text().catch(() => '');
           let msg = `API ${resp.status}`;
@@ -307,6 +314,16 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   /* Cancel the run in flight. Aborting the fetch closes the response, the
    * server sees res 'close', and that becomes the run's AbortSignal — which
    * kills an in-flight command and releases the session's run lock. */
+  // A message sent while Omi-One was working: it goes out as soon as the
+  // interrupted task has stopped.
+  const interruptRef = useRef(null);
+  useEffect(() => {
+    if (generating || !interruptRef.current) return;
+    const text = interruptRef.current;
+    interruptRef.current = null;
+    onGenerate(text);
+  }, [generating, onGenerate]);
+
   const stopRun = useCallback(() => {
     if (!abortRef.current) return;
     abortRef.current.abort();
@@ -394,7 +411,15 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     }
     if (!text) return;
     if (generating) {
-      api.toast && api.toast('Omi-One is working. Use /btw to ask something on the side, or press Stop.', 'info');
+      // Interrupt: stop the current task, then send this the moment it has
+      // stopped (the effect below). /btw asks without interrupting.
+      setHistory((h) => [...h, { role: 'user', text }]);
+      setPrompt('');
+      setActiveSkill(null);
+      if (taRef.current) taRef.current.style.height = 'auto';
+      interruptRef.current = text;
+      if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
+      api.toast && api.toast('Stopping the current task to start yours…', 'info');
       return;
     }
     setHistory((h) => [...h, { role: 'user', text }]);
@@ -574,7 +599,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
               onInput={onInput}
               placeholder={
                 generating
-                  ? 'Omi-One is working… type /btw to ask something on the side'
+                  ? 'Omi-One is working… send a message to interrupt, or /btw to ask on the side'
                   : settings.hasOwnKey
                   ? 'Describe a project, type "/" for commands, or pick a skill…'
                   : settings.provider === 'gwn-local'
