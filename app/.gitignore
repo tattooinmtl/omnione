@@ -1,0 +1,37 @@
+node_modules
+dist
+.vite
+*.log
+.DS_Store
+.env*
+.gwn-secrets.json
+.gwn-token
+.gwn-searches.db
+.gwn-searches.db-journal
+.gwn-searches.db-wal
+.gwn-searches.db-shm
+.gwn-workspace.json
+.gwn-cloud.json
+.gwn-stats.json
+workspace/
+.dev-stdout.log
+.dev-stderr.log
+
+# Agent runtime state (Phase 1+)
+.sessions/
+.checkpoints/
+.proposals/
+.workspaces/
+logs/
+skills/_drafts/
+
+# The mind: memory, journal, mood, goals (personal, changes constantly)
+.gwn-mind/
+
+# Marketing website and its server files (kept out of the repo)
+website/
+
+# Local secrets — never commit
+resend_apikey.txt
+*apikey*.txt
+*.key

@@ -1,0 +1,157 @@
+/* Approval prompt. Matches the SkillsModal shell, but with a warmer border:
+ * this one is asking permission, not showing a list. */
+
+.approval {
+  position: fixed;
+  inset: 0;
+  /* Above every other modal — the run is paused until this is answered. */
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.approval__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
+.approval__panel {
+  position: relative;
+  width: min(760px, 94vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: #070509;
+  border: 1px solid var(--amber, #f0a400);
+  box-shadow: 0 0 40px rgba(240, 164, 0, 0.22);
+  color: var(--fg);
+  border-radius: 2px;
+  font-family: var(--font-body);
+}
+
+.approval__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.approval__head h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.approval__head code {
+  font-family: var(--font-mono, monospace);
+  color: var(--amber, #f0a400);
+}
+
+.approval__badge {
+  font-family: var(--font-display, monospace);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  flex: none;
+}
+.approval__badge--write { color: #f0a400; }
+.approval__badge--execute { color: #ff5f56; }
+.approval__badge--read { color: #2f7bff; }
+
+.approval__body {
+  padding: 16px 18px;
+  overflow: auto;
+  flex: 1 1 auto;
+}
+.approval__label {
+  font-size: 12px;
+  opacity: 0.72;
+  margin-bottom: 8px;
+}
+.approval__label code {
+  font-family: var(--font-mono, monospace);
+  opacity: 1;
+}
+
+.approval__code {
+  margin: 0;
+  padding: 12px 14px;
+  background: #0b0d12;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.55;
+  /* Long commands and minified lines must not blow out the dialog. */
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow: auto;
+}
+.approval__code--command {
+  border-left-color: #ff5f56;
+  color: #ffd9d6;
+}
+.approval__code--old {
+  border-left-color: #ff5f56;
+  background: rgba(255, 95, 86, 0.07);
+}
+.approval__code--new {
+  border-left-color: #27c93f;
+  background: rgba(39, 201, 63, 0.07);
+}
+.approval__arrow {
+  text-align: center;
+  opacity: 0.5;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.approval__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.approval__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.approval__btn:hover { border-color: var(--fg); }
+.approval__btn--primary {
+  border-color: var(--amber, #f0a400);
+  color: var(--amber, #f0a400);
+}
+.approval__btn--primary:hover { background: rgba(240, 164, 0, 0.12); }
+.approval__btn--deny { opacity: 0.75; }
+.approval__btn--deny:hover { border-color: #ff5f56; color: #ff5f56; opacity: 1; }
+.approval__btn kbd {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  opacity: 0.6;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+
+@media (max-width: 520px) {
+  .approval__actions { justify-content: stretch; }
+  .approval__btn { flex: 1 1 auto; justify-content: center; }
+}

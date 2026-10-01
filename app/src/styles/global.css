@@ -1,0 +1,86 @@
+/* === OmniOne — global styles ===
+   Dark cyber-grunge palette: black, electric blue, blood red, off-white.
+   System fonts first, Google fonts loaded in index.html for hero display.
+*/
+
+:root {
+  --bg: #000000;
+  --bg-1: #050608;
+  --fg: #e6edf3;
+  --fg-dim: #8a96a8;
+  --blue: #2f7bff;
+  --blue-2: #5fa8ff;
+  --blue-deep: #0b1a3a;
+  --red: #ff2d2d;
+  --red-deep: #8a0c0c;
+  --border: rgba(95, 168, 255, 0.25);
+  --grid: rgba(95, 168, 255, 0.07);
+  --font-display: 'Major Mono Display', 'Space Grotesk', monospace;
+  --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--blue-2);
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+::selection {
+  background: var(--blue);
+  color: white;
+}
+
+/* shared film-grain / scan-line overlay used by both splash and app */
+.grain-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  mix-blend-mode: overlay;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.95  0 0 0 0 0.95  0 0 0 0 0.95  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.scanlines-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9001;
+  opacity: 0.06;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.6) 0px,
+    rgba(255, 255, 255, 0.6) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}

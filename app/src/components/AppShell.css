@@ -1,0 +1,212 @@
+/* === OmniOne Agent Harness — AppShell === */
+
+.shell {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.shell__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.shell__topbar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  flex: 0 0 auto;
+}
+
+.shell__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+}
+
+.shell__brand-name {
+  color: var(--blue-2);
+  font-weight: 700;
+  letter-spacing: 0.32em;
+}
+.shell__brand-sep {
+  color: var(--fg-dim);
+  opacity: 0.5;
+}
+.shell__brand-sub {
+  color: var(--red);
+  letter-spacing: 0.28em;
+}
+
+.shell__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shell__btn {
+  padding: 8px 14px;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  font-family: var(--font-display);
+  color: var(--fg-dim);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.4);
+  transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.shell__btn:hover {
+  color: white;
+  border-color: var(--blue-2);
+  background: rgba(95, 168, 255, 0.08);
+}
+.shell__btn--primary {
+  color: white;
+  background: linear-gradient(180deg, #2f7bff 0%, #1a4fc7 100%);
+  border-color: transparent;
+  box-shadow: 0 0 18px rgba(47, 123, 255, 0.3);
+}
+.shell__btn--primary:hover {
+  box-shadow: 0 0 28px rgba(47, 123, 255, 0.5);
+  color: white;
+  background: linear-gradient(180deg, #4a8aff 0%, #1a4fc7 100%);
+}
+.shell__btn--icon {
+  width: 34px;
+  padding: 0;
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+/* === 3-pane horizontal row (left to right) === */
+
+.shell__panes {
+  position: relative;
+  z-index: 10;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-rows: 1fr;
+  gap: 0;
+  min-height: 0;
+}
+
+.shell__pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: rgba(5, 8, 16, 0.78);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell__handle {
+  background: rgba(95, 168, 255, 0.06);
+  cursor: col-resize;
+  position: relative;
+  z-index: 30;
+  transition: background 0.15s;
+}
+.shell__handle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 36px;
+  background: var(--border);
+  border-radius: 1px;
+}
+.shell__handle:hover,
+.shell__handle:active {
+  background: rgba(95, 168, 255, 0.18);
+}
+.shell__handle:hover::before {
+  background: var(--blue-2);
+}
+
+/* Toast */
+.shell__toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  padding: 10px 20px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.92);
+  border: 1px solid var(--blue);
+  color: var(--fg);
+  animation: toast-fade 3.5s ease forwards;
+  box-shadow: 0 0 24px rgba(47, 123, 255, 0.4);
+}
+.shell__toast-error {
+  border-color: var(--red);
+  box-shadow: 0 0 24px rgba(255, 45, 45, 0.4);
+}
+@keyframes toast-fade {
+  0% { opacity: 0; transform: translate(-50%, 8px); }
+  10% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -8px); }
+}
+
+@media (max-width: 900px) {
+  .shell__topbar { padding: 10px 12px; font-size: 10px; }
+  .shell__brand-sub { display: none; }
+}
+
+/* Narrow viewports: stack panes vertically so the editor and preview stay usable. */
+@media (max-width: 720px) {
+  .shell__panes {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 6px auto 6px auto;
+  }
+  .shell__handle { cursor: row-resize; }
+  .shell__handle::before { width: 36px; height: 2px; }
+}
+
+/* Proposed-skills button. Only rendered when the agent has actually proposed
+   something, so it reads as a notification rather than permanent chrome. */
+.shell__btn--drafts {
+  border-color: #27c93f;
+  color: #27c93f;
+}
+.shell__btn--drafts:hover { background: rgba(39, 201, 63, 0.12); }
+.shell__badge {
+  display: inline-block;
+  min-width: 16px;
+  margin-left: 6px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #27c93f;
+  color: #041008;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* The left pane: the AI panel above, the account section pinned below. */
+.shell__pane--ai { display: flex; flex-direction: column; }
+.shell__ai-main { flex: 1; min-height: 0; }

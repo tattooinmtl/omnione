@@ -1,0 +1,112 @@
+.cmd-palette {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  margin-bottom: 6px;
+  z-index: 200;
+  background: #050810;
+  border: 1px solid var(--blue);
+  border-radius: 2px;
+  box-shadow: 0 -8px 30px rgba(47, 123, 255, 0.3);
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  font-family: var(--font-body);
+}
+
+.cmd-palette__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--fg);
+}
+.cmd-palette__head-prefix { color: var(--blue-2); font-weight: 700; }
+.cmd-palette__head-query { flex: 1 1 auto; }
+.cmd-palette__head-count {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+}
+
+.cmd-palette__list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.cmd-palette__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--fg);
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+.cmd-palette__item.is-active {
+  background: rgba(95, 168, 255, 0.1);
+  border-left-color: var(--blue-2);
+}
+.cmd-palette__trigger {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--blue-2);
+  flex: 0 0 auto;
+  min-width: 140px;
+  font-size: 12px;
+}
+.cmd-palette__desc {
+  flex: 1 1 auto;
+  color: var(--fg-dim);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmd-palette__item.is-active .cmd-palette__desc { color: var(--fg); }
+.cmd-palette__tag {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--red);
+  border: 1px solid var(--red);
+  padding: 1px 5px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.cmd-palette__empty {
+  padding: 14px;
+  font-size: 12px;
+  color: var(--fg-dim);
+  text-align: center;
+}
+
+.cmd-palette__foot {
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--fg-dim);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.cmd-palette__foot kbd {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: rgba(95, 168, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1px 4px;
+  color: var(--blue-2);
+}

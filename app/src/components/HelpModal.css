@@ -1,0 +1,100 @@
+.help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.help-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+.help-modal__panel {
+  position: relative;
+  width: min(680px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: #050810;
+  border: 1px solid var(--blue);
+  box-shadow: 0 0 40px rgba(47, 123, 255, 0.3);
+  color: var(--fg);
+  border-radius: 2px;
+  font-family: var(--font-body);
+}
+.help-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.help-modal__head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  color: var(--blue-2);
+}
+.help-modal__close {
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  color: var(--fg-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.help-modal__close:hover { color: var(--red); border-color: var(--red); }
+
+.help-modal__body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg);
+}
+.help-modal__body h4 {
+  margin: 18px 0 6px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--blue-2);
+  text-transform: uppercase;
+}
+.help-modal__body h4:first-child { margin-top: 0; }
+.help-modal__body p { margin: 0 0 10px; color: var(--fg-dim); }
+.help-modal__body code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: rgba(95, 168, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1px 4px;
+  color: var(--blue-2);
+}
+.help-modal__body kbd {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: rgba(95, 168, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1px 4px;
+  color: var(--blue-2);
+}
+.help-modal__body strong { color: var(--blue-2); }
+
+.help-modal__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+.help-modal__table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.help-modal__table td:first-child { width: 160px; }

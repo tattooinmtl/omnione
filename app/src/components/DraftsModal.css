@@ -1,0 +1,239 @@
+/* Skill drafts review. Green accent: this is the screen where you grant the
+   agent a new capability, so it should read as distinct from the amber
+   approval prompt (which interrupts) and the blue skills browser. */
+
+.drafts {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.drafts__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+}
+.drafts__panel {
+  position: relative;
+  width: min(1000px, 96vw);
+  height: min(660px, 90vh);
+  display: flex;
+  flex-direction: column;
+  background: #050810;
+  border: 1px solid #27c93f;
+  box-shadow: 0 0 40px rgba(39, 201, 63, 0.22);
+  color: var(--fg);
+  border-radius: 2px;
+  font-family: var(--font-body);
+}
+
+.drafts__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.drafts__head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  color: #27c93f;
+}
+.drafts__count {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: auto;
+}
+.drafts__close {
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0 4px;
+}
+.drafts__close:hover { opacity: 1; }
+
+.drafts__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  gap: 10px;
+}
+.drafts__empty p { margin: 0; }
+.drafts__empty-sub {
+  max-width: 54ch;
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: 0.6;
+}
+
+.drafts__body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) 1fr;
+  min-height: 0;
+}
+
+.drafts__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+.drafts__item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 2px solid transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font-family: inherit;
+}
+.drafts__item:hover { background: rgba(255, 255, 255, 0.03); }
+.drafts__item.is-selected {
+  background: rgba(39, 201, 63, 0.09);
+  border-left-color: #27c93f;
+}
+.drafts__item-name {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+}
+.drafts__item-desc {
+  font-size: 11px;
+  opacity: 0.55;
+  line-height: 1.4;
+}
+
+.drafts__detail {
+  padding: 18px 20px;
+  overflow-y: auto;
+  min-width: 0;
+}
+.drafts__detail h4 {
+  margin: 0 0 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  color: #27c93f;
+}
+.drafts__desc {
+  margin: 0 0 16px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.drafts__label {
+  font-family: var(--font-display, monospace);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-bottom: 6px;
+}
+.drafts__evidence {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-left: 2px solid rgba(39, 201, 63, 0.4);
+  background: rgba(39, 201, 63, 0.05);
+}
+.drafts__evidence p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.drafts__code {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: #0b0d12;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.drafts__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 10px;
+  opacity: 0.45;
+  margin-bottom: 18px;
+}
+
+.drafts__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.drafts__btn {
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.drafts__btn:hover:not(:disabled) { border-color: var(--fg); }
+.drafts__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.drafts__btn--primary {
+  border-color: #27c93f;
+  color: #27c93f;
+}
+.drafts__btn--primary:hover:not(:disabled) { background: rgba(39, 201, 63, 0.12); }
+.drafts__btn--danger:hover:not(:disabled) { border-color: #ff5f56; color: #ff5f56; }
+
+.drafts__reject-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.drafts__reject-form label {
+  font-size: 11px;
+  opacity: 0.65;
+}
+.drafts__reason {
+  padding: 8px 10px;
+  background: #0b0d12;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+}
+.drafts__reason:focus {
+  outline: none;
+  border-color: #ff5f56;
+}
+
+@media (max-width: 720px) {
+  .drafts__body { grid-template-columns: 1fr; }
+  .drafts__list { max-height: 180px; border-right: none; border-bottom: 1px solid var(--border); }
+}

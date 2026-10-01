@@ -1,0 +1,242 @@
+.ai-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 12px 14px 14px;
+  gap: 10px;
+}
+
+.ai-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+}
+.ai-panel__head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--blue-2);
+  text-transform: uppercase;
+}
+
+.ai-panel__head-actions { display: flex; gap: 8px; }
+.ai-panel__toggle {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--fg-dim);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: transparent;
+}
+.ai-panel__toggle:hover { color: var(--blue-2); border-color: var(--blue-2); }
+
+/* Middle zone — examples, history, or trace steps. Fills the available
+ * space between the head and the pinned footer. */
+.ai-panel__middle {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.ai-panel__history {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+.ai-panel__row {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+.ai-panel__row-role {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+}
+.ai-panel__row-user .ai-panel__row-text { color: var(--fg); }
+.ai-panel__row-assistant .ai-panel__row-text { color: var(--blue-2); }
+
+.ai-panel__suggestions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ai-panel__suggestion {
+  font-size: 11px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: rgba(95, 168, 255, 0.04);
+  color: var(--fg);
+  border-radius: 2px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.ai-panel__suggestion:hover {
+  color: white;
+  border-color: var(--blue-2);
+  background: rgba(95, 168, 255, 0.12);
+}
+
+.ai-panel__steps {
+  list-style: none;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  flex: 0 0 auto;
+  max-height: 110px;
+  overflow-y: auto;
+}
+.ai-panel__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-dim);
+}
+.ai-panel__step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fg-dim);
+  flex: 0 0 auto;
+}
+.ai-panel__step-run .ai-panel__step-dot {
+  background: var(--blue-2);
+  box-shadow: 0 0 8px var(--blue-2);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.ai-panel__step-done { color: var(--fg); }
+.ai-panel__step-done .ai-panel__step-dot { background: #2f7bff; }
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Footer — context meter + prompt input + send + hint, pinned to the bottom. */
+.ai-panel__footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.ai-panel__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.ai-panel__input {
+  flex: 1 1 auto;
+  min-height: 40px;
+  max-height: 140px;
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  resize: none;
+  line-height: 1.4;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ai-panel__input:focus { border-color: var(--blue-2); }
+.ai-panel__input:disabled { opacity: 0.6; }
+.ai-panel__input::placeholder {
+  color: rgba(138, 150, 168, 0.55);
+  font-style: italic;
+}
+.ai-panel__input::placeholder-shown {
+  color: rgba(138, 150, 168, 0.55);
+}
+
+.ai-panel__send {
+  width: 42px;
+  height: 40px;
+  font-size: 16px;
+  color: white;
+  background: linear-gradient(180deg, #2f7bff 0%, #1a4fc7 100%);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: 0 0 16px rgba(47, 123, 255, 0.3);
+  flex: 0 0 auto;
+}
+.ai-panel__send:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }
+.ai-panel__send:hover:not(:disabled) { box-shadow: 0 0 22px rgba(47, 123, 255, 0.5); }
+
+/* Stop replaces Send while a run is in flight. Red, because it interrupts
+   work in progress — and it really does kill the command on the server. */
+.ai-panel__send--stop {
+  background: #2a0f0e;
+  border-color: #ff5f56;
+  color: #ff5f56;
+}
+.ai-panel__send--stop:hover { box-shadow: 0 0 22px rgba(255, 95, 86, 0.5); }
+
+.ai-panel__hint {
+  font-size: 11px;
+  color: var(--fg-dim);
+  padding: 6px 8px;
+  border-left: 2px solid var(--blue-2);
+  background: rgba(95, 168, 255, 0.05);
+}
+.ai-panel__hint strong { color: var(--blue-2); }
+
+.ai-panel__skill-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: rgba(95, 168, 255, 0.08);
+  border: 1px solid var(--blue-2);
+  border-radius: 2px;
+  color: var(--fg);
+}
+.ai-panel__skill-tag-icon { color: var(--blue-2); }
+.ai-panel__skill-tag strong { color: var(--blue-2); font-family: 'JetBrains Mono', monospace; }
+.ai-panel__skill-tag-x {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  color: var(--fg-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-panel__skill-tag-x:hover { color: var(--red); border-color: var(--red); }
+
+.ai-panel__prompt-wrap {
+  position: relative;
+}
