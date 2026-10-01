@@ -28,7 +28,7 @@ import './HelpModal.css';
  *   2. Live HTML / Three.js preview iframe
  *   3. Monaco code editor with file tabs
  *
- * Top bar exposes Save (project.json) and Download ZIP.
+ * Top bar exposes Save (project.json) and Export project (the files as a ZIP).
  * Settings modal (⚙) holds the AI provider config and a token chart.
  *
  * Layout: CSS grid with three `auto` rows whose fr values are driven by
@@ -323,8 +323,8 @@ export default function AppShell() {
               PROPOSED <span className="shell__badge">{draftCount}</span>
             </button>
           )}
-          <button type="button" className="shell__btn" onClick={onSave} title="Save project as JSON">SAVE</button>
-          <button type="button" className="shell__btn shell__btn--primary" onClick={onDownloadZip} title="Download project as ZIP">DOWNLOAD ZIP</button>
+          <button type="button" className="shell__btn" onClick={onSave} title="Save the project as a .json file you can open again later">SAVE</button>
+          <button type="button" className="shell__btn shell__btn--primary" onClick={onDownloadZip} title="Download the project you are building with Omi-One (its files, as a ZIP)">EXPORT PROJECT</button>
           <button type="button" className="shell__btn shell__btn--icon" onClick={() => setSettingsOpen(true)} title="AI settings">⚙</button>
           <button type="button" className="shell__btn shell__btn--icon" onClick={() => navigate('/')} title="Back to splash">↩</button>
         </div>

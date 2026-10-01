@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.1",
- "build": "3e81402a01a0",
- "commit": "e1b1f54ed42a",
- "date": "2026-10-01T11:02:04-04:00",
+ "build": "00dd796c5714",
+ "commit": "eb8b212516e0",
+ "date": "2026-10-01T11:28:46-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -37,7 +37,7 @@
   },
   {
    "p": "build.json",
-   "h": "b077f8326715d83c3f55ab82866cb98e6c33ba6f8c45ad748b0be3583a901f7d",
+   "h": "dcd6b33337c44137cd22530ebd68e6f9c3541b1aec8ccafc64be080766421d51",
    "s": 120
   },
   {
@@ -827,8 +827,8 @@
   },
   {
    "p": "src/components/AppShell.jsx",
-   "h": "a9127779044a631217e67e2354ca7c6c769310d7d1b54dab04b745d25610d173",
-   "s": 21582
+   "h": "b477181580134fc73998f80efe3c659e358917378cbc51a5ae6afa8ade17ff54",
+   "s": 21693
   },
   {
    "p": "src/components/ApprovalModal.css",
