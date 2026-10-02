@@ -15,6 +15,8 @@
 // whatever happens to share the most keywords.
 
 import { readJson, writeJson, appendJsonl, readJsonl, writeJsonl, newId } from './store.js';
+import { activeProject, getProjectNotes, setProjectNotes, migrateFromSingleProject } from '../projects.js';
+import { fileGoalsUnder } from './state.js';
 
 const CORE_FILE = 'core.json';
 const STREAM_FILE = 'stream.jsonl';
@@ -38,8 +40,14 @@ const MAX_STREAM = 5000;
 
 // --- core -------------------------------------------------------------------
 
+/* The core blocks. "project" is the open project's notes (projects.js);
+ * with no project open it is empty and the chat is general. */
 export function getCore() {
-  return { ...DEFAULT_CORE, ...readJson(CORE_FILE, DEFAULT_CORE) };
+  const stored = { ...DEFAULT_CORE, ...readJson(CORE_FILE, DEFAULT_CORE) };
+  // Once: the old single project block becomes a project of its own.
+  migrateFromSingleProject({ oldNotes: stored.project, fileGoals: fileGoalsUnder });
+  const p = activeProject();
+  return { ...stored, project: p ? getProjectNotes() : '', projectName: p ? p.name : null };
 }
 
 function checkBlock(block) {
@@ -53,8 +61,14 @@ function saveBlock(core, block, value) {
   if (value.length > limit) {
     throw new Error(`Block "${block}" would be ${value.length} characters; the limit is ${limit}. Condense it with core_memory_replace — decide what matters.`);
   }
-  core[block] = value;
-  writeJson(CORE_FILE, core);
+  if (block === 'project') {
+    // Project notes live with the open project.
+    const p = setProjectNotes(value);
+    return { block, project: p.name, chars: value.length, limit };
+  }
+  const stored = { ...DEFAULT_CORE, ...readJson(CORE_FILE, DEFAULT_CORE) };
+  stored[block] = value;
+  writeJson(CORE_FILE, stored);
   return { block, chars: value.length, limit };
 }
 

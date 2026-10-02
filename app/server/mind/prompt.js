@@ -53,10 +53,13 @@ export function buildMindContext({ prompt = '', now = Date.now() } = {}) {
   if (soul) parts.push(`IDENTITY (SOUL.md — written by the user; this is who you are):\n${soul}`);
 
   const core = getCore();
+  const projectBlock = core.projectName
+    ? `<project name="${core.projectName}">\n${core.project || 'No notes for this project yet.'}\n</project>`
+    : '<project>\nNo project is open: this is a general conversation. Don\'t bring up earlier project work unless the user does. If the user starts a distinct piece of work, offer to make it a project (project_create).\n</project>';
   parts.push(`CORE MEMORY (yours; keep it current with core_memory_append / core_memory_replace):
 <persona>\n${core.persona}\n</persona>
 <human>\n${core.human}\n</human>
-<project>\n${core.project}\n</project>${core.scratch ? `\n<scratch>\n${core.scratch}\n</scratch>` : ''}`);
+${projectBlock}${core.scratch ? `\n<scratch>\n${core.scratch}\n</scratch>` : ''}`);
 
   const mood = currentMood(now);
   const st = getState();

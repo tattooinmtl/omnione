@@ -14,6 +14,7 @@
 //   { role: 'assistant', content: [{ type:'text', text } | { type:'tool_use', id, name, input }] }
 //   { role: 'tool',      content: [{ type:'tool_result', toolUseId, name, text, isError }] }
 
+import { activeProject, projectOfSession } from './projects.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -55,6 +56,8 @@ export function sessionExists(id) {
  * have no `workspaceRoot` and are never picked up by the resume lookup. */
 export function createSession({
   title = '', provider = '', model = '', workspaceRoot = '',
+  // The project the chat belongs to; defaults to the open one (null = general).
+  projectId = activeProject()?.id || null,
   // 'subagent' marks a delegated run. Its transcript is kept for audit and
   // for the reflection pass, but it is not a conversation the user had: it
   // must not show in the session list, and it must never be the session a
@@ -71,6 +74,7 @@ export function createSession({
     provider,
     model,
     workspaceRoot,
+    projectId,
     sessionKind,
     ...(parentSessionId ? { parentSessionId } : {}),
     createdAt: new Date().toISOString(),
@@ -160,6 +164,7 @@ export function listSessions({ limit = 50, includeSubagents = false } = {}) {
       provider: meta?.provider || '',
       model: meta?.model || '',
       workspaceRoot: meta?.workspaceRoot || '',
+      projectId: projectOfSession(meta),
       createdAt: meta?.createdAt || stat.birthtime.toISOString(),
       updatedAt: stat.mtime.toISOString(),
       messageCount,
@@ -167,6 +172,26 @@ export function listSessions({ limit = 50, includeSubagents = false } = {}) {
   }
   rows.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   return rows.slice(0, limit);
+}
+
+/* The chat to reopen for a project (null = general chat): its most recently
+ * touched one, never a subagent's. */
+export function findLatestSessionForProject(projectId) {
+  ensureSessionsDir();
+  let bestId = null;
+  let bestMtime = -Infinity;
+  for (const f of fs.readdirSync(SESSIONS_DIR).filter((x) => x.endsWith('.jsonl'))) {
+    const id = f.replace(/\.jsonl$/, '');
+    if (!isValidSessionId(id)) continue;
+    try {
+      const meta = getMeta(id);
+      if (!meta || meta.sessionKind === 'subagent') continue;
+      if (projectOfSession(meta) !== (projectId || null)) continue;
+      const stat = fs.statSync(path.join(SESSIONS_DIR, f));
+      if (stat.mtimeMs > bestMtime) { bestMtime = stat.mtimeMs; bestId = id; }
+    } catch { continue; }
+  }
+  return bestId ? getSession(bestId) : null;
 }
 
 /* The session to resume when a project is reopened: the most recently

@@ -17,6 +17,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { PROVIDERS, providerById } from './providers.js';
 import { runAgent } from './agent.js';
+import { listProjects, activeProject, createProject, switchProject, renameProject, deleteProject } from './projects.js';
 import { publicTools, executeTool, syncMcpTools } from './toolRegistry.js';
 import './tools/register.js';
 import { killAllJobs } from './tools/shell.js';
@@ -47,6 +48,7 @@ import {
   forkSession,
   sessionExists,
   findLatestSessionForWorkspace,
+  findLatestSessionForProject,
   acquireSessionRun,
   releaseSessionRun,
 } from './sessions.js';
@@ -437,7 +439,13 @@ app.delete('/api/checkpoints/:id', (req, res) => {
 // --- sessions --------------------------------------------------------------
 app.get('/api/sessions', (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 50, 200);
-  res.json({ sessions: listSessions({ limit }) });
+  let sessions = listSessions({ limit: req.query.project ? 500 : limit });
+  // ?project=current: only the open project's chats (or the general ones).
+  if (req.query.project === 'current') {
+    const pid = activeProject()?.id || null;
+    sessions = sessions.filter((x) => x.projectId === pid).slice(0, limit);
+  }
+  res.json({ sessions });
 });
 
 /* The session to reopen for the current workspace, if any — the client calls
@@ -446,7 +454,41 @@ app.get('/api/sessions', (req, res) => {
  * stops sending the old session id); this endpoint never forces a session on
  * the client, it only offers the most recent one for this project. */
 app.get('/api/sessions/resume', (_req, res) => {
-  res.json({ session: findLatestSessionForWorkspace(getWorkspaceRoot()) });
+  res.json({ session: findLatestSessionForProject(activeProject()?.id || null) });
+});
+
+// --- projects ---------------------------------------------------------------------
+// Separate threads of work, each with its own notes, goals and chats.
+app.get('/api/projects', (_req, res) => {
+  res.json({ projects: listProjects(), active: activeProject()?.id || null });
+});
+
+app.post('/api/projects', (req, res) => {
+  try {
+    const p = createProject({ name: req.body?.name, notes: req.body?.notes || '', open: req.body?.open !== false });
+    res.json({ project: { id: p.id, name: p.name }, projects: listProjects(), active: activeProject()?.id || null });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post('/api/projects/switch', (req, res) => {
+  try {
+    switchProject(req.body?.id ?? null);
+    res.json({ projects: listProjects(), active: activeProject()?.id || null });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post('/api/projects/:id/rename', (req, res) => {
+  try {
+    renameProject(req.params.id, req.body?.name);
+    res.json({ projects: listProjects(), active: activeProject()?.id || null });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.delete('/api/projects/:id', (req, res) => {
+  try {
+    deleteProject(req.params.id);
+    res.json({ projects: listProjects(), active: activeProject()?.id || null });
+  } catch (e) { res.status(400).json({ error: e.message }); }
 });
 
 app.post('/api/sessions', (req, res) => {

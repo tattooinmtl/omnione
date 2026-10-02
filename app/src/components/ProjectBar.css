@@ -1,0 +1,101 @@
+/* The project bar at the top of the chat. */
+.pbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 4px;
+  flex: 0 0 auto;
+}
+.pbar button { font-family: var(--font-body); cursor: pointer; }
+.pbar button:disabled { opacity: 0.5; cursor: default; }
+.pbar__project {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: 60%;
+  padding: 5px 9px;
+  font-size: 12.5px;
+  color: var(--fg);
+  background: rgba(47, 123, 255, 0.08);
+  border: 1px solid rgba(47, 123, 255, 0.45);
+  border-radius: 3px;
+}
+.pbar__project.is-general { background: transparent; border-color: var(--border); color: var(--fg-dim); }
+.pbar__project:hover:not(:disabled) { border-color: var(--blue-2); }
+.pbar__icon { color: var(--blue-2); }
+.pbar__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left; }
+.pbar__btn {
+  flex: none;
+  font-size: 11.5px;
+  color: var(--fg-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 5px 9px;
+}
+.pbar__btn:hover:not(:disabled) { color: var(--blue-2); border-color: var(--blue-2); }
+.pbar__btn--new { color: var(--blue-2); }
+
+.pbar__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 60;
+  min-width: 230px;
+  max-width: 340px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 4px;
+  background: #050810;
+  border: 1px solid var(--blue);
+  border-radius: 3px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+.pbar__menu--chats { left: auto; right: 0; min-width: 270px; }
+.pbar__menu-head { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); padding: 6px 8px 4px; }
+.pbar__item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  padding: 7px 8px;
+}
+.pbar__item:hover, .pbar__item:focus-visible { background: rgba(95, 168, 255, 0.1); outline: none; }
+.pbar__item.is-on { color: var(--blue-2); }
+.pbar__item em { font-style: normal; color: var(--fg-dim); font-size: 11.5px; margin-left: 4px; }
+.pbar__item--new { color: var(--blue-2); }
+.pbar__check { width: 12px; flex: none; color: var(--blue-2); }
+.pbar__chat-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pbar__when { flex: none; font-size: 11px; color: var(--fg-dim); }
+.pbar__sep { height: 1px; background: var(--border); margin: 4px 2px; }
+.pbar__empty { font-size: 12.5px; color: var(--fg-dim); padding: 8px; }
+.pbar__new { display: flex; gap: 6px; padding: 4px; }
+.pbar__new input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  color: var(--fg);
+  background: #000;
+  border: 1px solid var(--blue-2);
+  border-radius: 2px;
+  outline: none;
+}
+.pbar__new button {
+  font-size: 12px;
+  color: #fff;
+  background: #1a4fc7;
+  border: none;
+  border-radius: 2px;
+  padding: 6px 10px;
+}

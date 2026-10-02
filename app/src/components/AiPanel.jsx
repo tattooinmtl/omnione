@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import ContextMeter from './ContextMeter.jsx';
 import CommandPalette from './CommandPalette.jsx';
 import ApprovalModal from './ApprovalModal.jsx';
+import ProjectBar from './ProjectBar.jsx';
 import { useProviderTokenBudget, fetchSettings } from '../hooks/useProviderTokenBudget';
 import './AiPanel.css';
 
@@ -62,6 +63,17 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
 
   useEffect(() => { fetchSettings().then(setSettings); }, []);
 
+  // Show a saved chat (null = an empty, new one).
+  const showSession = (session) => {
+    sessionIdRef.current = session?.id || null;
+    setSessionId(session?.id || null);
+    setHistory(
+      (session?.messages || [])
+        .filter((m) => m.role === 'user')
+        .map((m) => ({ role: 'user', text: textFromMessage(m) })),
+    );
+  };
+
   // Resume the last conversation for this project on load, so leaving and
   // coming back picks up where it left off. Runs once, on mount, before any
   // prompt is sent — an explicit "new chat" (paletteApi.newSession) only
@@ -73,13 +85,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
         if (!r.ok) return;
         const { session } = await r.json();
         if (!session || !session.id) return;
-        sessionIdRef.current = session.id;
-        setSessionId(session.id);
-        setHistory(
-          (session.messages || [])
-            .filter((m) => m.role === 'user')
-            .map((m) => ({ role: 'user', text: textFromMessage(m) })),
-        );
+        showSession(session);
       } catch { /* no session to resume, or the server isn't up yet */ }
     })();
   }, []);
@@ -363,7 +369,14 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     openTools: () => { setPaletteOpen(false); api.openTools && api.openTools(); },
     openHooks: () => { setPaletteOpen(false); api.openHooks && api.openHooks(); },
     clearPrompt: () => { setPaletteOpen(false); setPrompt(''); setActiveSkill(null); setTimeout(() => taRef.current?.focus(), 30); },
-    newSession: () => {
+    newSession: ({ quiet = false, keepView = false } = {}) => {
+      if (keepView) {
+        // Omi-One switched project: the answer stays on screen, the next
+        // message starts a chat in the new project.
+        sessionIdRef.current = null;
+        setSessionId(null);
+        return;
+      }
       setPaletteOpen(false);
       setPrompt('');
       setActiveSkill(null);
@@ -372,10 +385,8 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       stopRun();
       // Dropping the id is enough: the next request arrives without one and
       // the server opens a fresh session. The old transcript stays on disk.
-      sessionIdRef.current = null;
-      setSessionId(null);
-      setHistory([]);
-      api.toast && api.toast('Started a new conversation', 'info');
+      showSession(null);
+      if (!quiet) api.toast && api.toast('Started a new conversation', 'info');
       setTimeout(() => taRef.current?.focus(), 30);
     },
     runSkill: (name) => runSkill(name),
@@ -515,6 +526,14 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
           )}
         </div>
       </div>
+
+      <ProjectBar
+        sessionId={sessionId}
+        busy={generating}
+        toast={api.toast}
+        onNewChat={(opts) => paletteApi.newSession(opts)}
+        onOpenSession={(s) => { stopRun(); showSession(s); setShowHistory(true); }}
+      />
 
       <div className="ai-panel__middle">
         {showHistory && history.length > 0 && (

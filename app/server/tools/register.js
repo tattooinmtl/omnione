@@ -19,3 +19,4 @@ import './forum.js';
 import './pc.js';
 import './fixes.js';
 import './computer.js';
+import './projects.js';

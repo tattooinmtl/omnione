@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.3",
- "build": "5a6783f08795",
- "commit": "fa69acd2071b",
- "date": "2026-10-02T01:08:47-04:00",
+ "build": "d41e982c62b8",
+ "commit": "44668a7836e6",
+ "date": "2026-10-02T01:19:50-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -37,7 +37,7 @@
   },
   {
    "p": "build.json",
-   "h": "0cc32f7bccd1a282c5f2710a14d6e6ae3820c0808e0f879943662e0d6a955679",
+   "h": "2fd6b07e35c996138c214e08169293a3273fca85362401d3be1732262d70860c",
    "s": 120
   },
   {
@@ -157,8 +157,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "685925c00a2a75ab775a372e2d1bea4fdeaa76194969ec4b34fa46f8b31fcaf2",
-   "s": 42611
+   "h": "1e09ff2a868e68956046a01c60b647cec4d3230c848d88e960d870d1907f7763",
+   "s": 44482
   },
   {
    "p": "server/mcp.js",
@@ -177,18 +177,18 @@
   },
   {
    "p": "server/mind/memory.js",
-   "h": "dab7dbbb71a70ede38f45ba58ad784c1ab23dcfb6c628e84588abaf77dba1264",
-   "s": 8143
+   "h": "43b3c227ee4dd826138b83424f4a92a12b3c0cab0dda10886789be84eb427341",
+   "s": 8999
   },
   {
    "p": "server/mind/prompt.js",
-   "h": "30cba8044d877a64040aeaea67022f8546a61ad3078063a2bbe4e302ae77b920",
-   "s": 4922
+   "h": "3c26782ee6262f904cb76276497427133985dfb7b2138e314b4a95c0cb0cf114",
+   "s": 5285
   },
   {
    "p": "server/mind/state.js",
-   "h": "17f86f60cb35a10dd67a16650f5d586658367a10549637e483ab9183dc78c4d3",
-   "s": 8518
+   "h": "4a0a0a6f16027c37edc08c93ba6da702161dd22d6c60efe5a9fff0c8a46db6f2",
+   "s": 9133
   },
   {
    "p": "server/mind/store.js",
@@ -204,6 +204,11 @@
    "p": "server/permissions.js",
    "h": "a5f42898502006cd449bccd7e1f2aa2cb4deffe45a8ebe90152ab9a68860556b",
    "s": 5983
+  },
+  {
+   "p": "server/projects.js",
+   "h": "d2cc62b25951d1a7f90a0e2c923c8e022f681208e643f8f6959e00ba4e0cfda0",
+   "s": 6595
   },
   {
    "p": "server/prompts.js",
@@ -232,8 +237,8 @@
   },
   {
    "p": "server/sessions.js",
-   "h": "19d79d37d5f4a28b45c22cbc247bdba3c51b24360f5410e8763603ddf75d5a4d",
-   "s": 10462
+   "h": "e7c919c77c13865e2a1e9456af3a63f9d581aa966551f508348305db6c29a5bb",
+   "s": 11536
   },
   {
    "p": "server/skillDrafts.js",
@@ -321,9 +326,14 @@
    "s": 8180
   },
   {
+   "p": "server/tools/projects.js",
+   "h": "70e70ae4e6f1e3a70e5285ad4c35593090a990dfcc0e1caae7f125178a35c6ab",
+   "s": 2641
+  },
+  {
    "p": "server/tools/register.js",
-   "h": "77b966d2266d6a17e580ed314a430f3fd8f636cea13f85506faa048c697425f2",
-   "s": 656
+   "h": "b29c2cde68e38ebebb1aa5bb07a4ba53b007d6956a4c1701c20984ba88e1539a",
+   "s": 681
   },
   {
    "p": "server/tools/shell.js",
@@ -827,8 +837,8 @@
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "cab7d34f851c4f3acaed3c10297eb9c0850193c9e828e70ef1f22edef24ef302",
-   "s": 29654
+   "h": "fa848264fad6757573c3243642c90378bea2de98a58d657f79eff08a8c309dd2",
+   "s": 30315
   },
   {
    "p": "src/components/AppShell.css",
@@ -929,6 +939,16 @@
    "p": "src/components/PreviewPanel.jsx",
    "h": "0b3679092f2cae7859b65cd6e763c23f1c38cd728c220d78a3ac87ced179aeee",
    "s": 1858
+  },
+  {
+   "p": "src/components/ProjectBar.css",
+   "h": "f37e19810ce6bc97e95ac40a23de7c1f29da0319766ae5f2e59f53170119770f",
+   "s": 3114
+  },
+  {
+   "p": "src/components/ProjectBar.jsx",
+   "h": "51ddc844de3c70b2ef346c33a72b427595a47e7a71f78f4455b9c4724cccd838",
+   "s": 8365
   },
   {
    "p": "src/components/SettingsModal.css",

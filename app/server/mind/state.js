@@ -10,6 +10,7 @@
 // how the agent talks and how cautious it is.
 
 import { readJson, writeJson, newId } from './store.js';
+import { activeProject } from '../projects.js';
 
 const STATE_FILE = 'state.json';
 
@@ -114,22 +115,33 @@ export function setFocus(text) {
 
 export const GOAL_STATUSES = ['active', 'blocked', 'done', 'dropped'];
 
-export function listGoals({ includeClosed = false } = {}) {
-  const goals = getState().goals;
+/* Goals belong to a project (or to none: general). By default the open
+ * project's goals plus the general ones; `all` for every project's. */
+export function listGoals({ includeClosed = false, all = false } = {}) {
+  const pid = activeProject()?.id || null;
+  const goals = getState().goals.filter((g) => all || !g.projectId || g.projectId === pid);
   return includeClosed ? goals : goals.filter((g) => g.status === 'active' || g.status === 'blocked');
+}
+
+/* File the goals that have no project under one (the one-time move to projects). */
+export function fileGoalsUnder(projectId) {
+  const s = getState();
+  for (const g of s.goals) if (!g.projectId) g.projectId = projectId;
+  save(s);
 }
 
 export function addGoal({ text, priority = 3, why = '' }) {
   const t = String(text || '').trim();
   if (!t) throw new Error('Goal text is empty.');
   const s = getState();
-  if (listGoals().length >= 12) throw new Error('There are already 12 open goals. Finish or drop one first.');
+  if (listGoals().length >= 12) throw new Error('There are already 12 open goals in this project. Finish or drop one first.');
   const g = {
     id: newId('g'),
     text: t.slice(0, 300),
     why: String(why || '').slice(0, 500),
     priority: clamp(Math.round(Number(priority) || 3), 1, 5),
     status: 'active',
+    projectId: activeProject()?.id || null,
     notes: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
