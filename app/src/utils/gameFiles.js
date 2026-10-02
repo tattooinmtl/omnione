@@ -238,7 +238,16 @@ export function languageFor(filename) {
   if (/\.glsl$|\.vert$|\.frag$/i.test(filename)) return 'cpp';
   if (/\.md$/i.test(filename)) return 'markdown';
   if (/\.html?$/i.test(filename)) return 'html';
-  return 'plaintext';
+  // Real project folders hold more than a web page (boards, tools, configs).
+  const ext = (/\.([a-z0-9]+)$/i.exec(filename)?.[1] || '').toLowerCase();
+  return {
+    jsx: 'javascript', ts: 'typescript', tsx: 'typescript', mts: 'typescript', cts: 'typescript',
+    c: 'cpp', h: 'cpp', cc: 'cpp', cpp: 'cpp', hpp: 'cpp', ino: 'cpp',
+    yml: 'yaml', yaml: 'yaml', xml: 'xml', svg: 'xml', sh: 'shell', bash: 'shell',
+    ps1: 'powershell', psm1: 'powershell', bat: 'bat', cmd: 'bat', go: 'go', rs: 'rust',
+    java: 'java', php: 'php', sql: 'sql', ini: 'ini', toml: 'ini', cfg: 'ini', lua: 'lua',
+    rb: 'ruby', cs: 'csharp', kt: 'kotlin', swift: 'swift', scss: 'scss', less: 'less',
+  }[ext] || 'plaintext';
 }
 
 // ---- internals ----

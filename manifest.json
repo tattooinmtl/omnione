@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.3.4",
- "build": "971d8d30e489",
- "commit": "374ee82db094",
- "date": "2026-10-02T09:53:33-04:00",
+ "version": "0.4.0",
+ "build": "2ea85335d475",
+ "commit": "9060cbbeec55",
+ "date": "2026-10-02T18:20:28-04:00",
  "setup": {
   "version": "1.0",
   "source": "225dd510c6d8"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "d4014b5e62d4b9769e7206da6cdd84a139031fe41b7ed4f6657812760e0735b7",
+   "h": "24479b953405414064bbf8ac7dfd5311af34ff7dc5cd1d27e8de02503f54b73a",
    "s": 7657472
   },
   {
    "p": "build.json",
-   "h": "99cb0abbae86e644b02c58f13dea04ee6283c13f955a9065ccf62fb93b9a7407",
+   "h": "72fc879300fda954b0449be9b265db58e740a2f66a68f5dc346ce364ed1693fa",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "5d4c756e969d6ebbceb531e7d355d552d9f08b3c928a3d005eb3b8bf12dc2369",
+   "h": "06132dd4cba8967b7edc525a24d8a2f517abf4dffc8b23f41154f92ca11fdd42",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "037561210c1fdc8ac558161aed76ab745d2fa48f325d58e23c12ca04dbb266a1",
+   "h": "94c1cb0f3e71d893251ff4c03537afaaf50dba4c0dc6be050cf73ab75b6467b5",
    "s": 1191
   },
   {
@@ -126,8 +126,8 @@
   },
   {
    "p": "server/fixes.js",
-   "h": "acb3e86ad000cafcadd7c83956b1d3f615c5a904488f286bdc430a9541c03204",
-   "s": 14958
+   "h": "9b624531ef331da5fe3ee115c8fd939eb20883bb20c8c7071889e119d3db90d9",
+   "s": 15026
   },
   {
    "p": "server/folderPicker.js",
@@ -141,8 +141,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "1e09ff2a868e68956046a01c60b647cec4d3230c848d88e960d870d1907f7763",
-   "s": 44482
+   "h": "4d79915a86dfedeafba5a6a20d40cc15db3dfa0c39a99ac6115ca4eefeb0e643",
+   "s": 46570
   },
   {
    "p": "server/mcp.js",
@@ -186,8 +186,8 @@
   },
   {
    "p": "server/permissions.js",
-   "h": "a5f42898502006cd449bccd7e1f2aa2cb4deffe45a8ebe90152ab9a68860556b",
-   "s": 5983
+   "h": "3205da9c30dcd2bf2057a30133c0295825ee20125c3591b73b86b6f8b6c579cc",
+   "s": 6467
   },
   {
    "p": "server/projects.js",
@@ -196,8 +196,8 @@
   },
   {
    "p": "server/prompts.js",
-   "h": "75705ec1e0b369ea29702aef7e731149f4263866541485f3897e9ea8758433a2",
-   "s": 4830
+   "h": "e10f839708d56fbc912b54e5a2b42def7f34ec71d193734c5a8b57778fdcf03c",
+   "s": 5509
   },
   {
    "p": "server/providers.js",
@@ -348,6 +348,11 @@
    "p": "server/workspace.js",
    "h": "cd04ace2eff2e7a09f09ea83e46197d162d71c1418ea8fe4d1877be2d811f7c3",
    "s": 8989
+  },
+  {
+   "p": "server/workspaceFiles.js",
+   "h": "c74fb3a4b140668c5e13a091a48cdd6669cc375d4e15aeed9bda0e6d46f22000",
+   "s": 7575
   },
   {
    "p": "skills/ascii-art/SKILL.md",
@@ -826,8 +831,8 @@
   },
   {
    "p": "src/components/AppShell.jsx",
-   "h": "b477181580134fc73998f80efe3c659e358917378cbc51a5ae6afa8ade17ff54",
-   "s": 21693
+   "h": "2d69eb8df259a4b85e5fb5d2007bcc08b473e2d9e8d4b6db75dbf4d27ab933e7",
+   "s": 24554
   },
   {
    "p": "src/components/ApprovalModal.css",
@@ -841,13 +846,13 @@
   },
   {
    "p": "src/components/CodeEditor.css",
-   "h": "9f8d3130f78e7cef4e8e83c127edf2e6488eefc26743f05e9aeeb41b15c2e367",
-   "s": 3165
+   "h": "193e04f84b8ff5333d58b057190d3e48a9803129e1289ca9dde24efecba6a9cf",
+   "s": 5855
   },
   {
    "p": "src/components/CodeEditor.jsx",
-   "h": "9f946b2a1833623a1dce57e1275e8d1a83ffb1c76209d0d540215072439243a1",
-   "s": 6251
+   "h": "ef5d3f33f298368baf3e937d20cf328eefabb78ed4922bfc50263a25179745b9",
+   "s": 18220
   },
   {
    "p": "src/components/CommandPalette.css",
@@ -858,6 +863,16 @@
    "p": "src/components/CommandPalette.jsx",
    "h": "e90b2948c8b263ac2df7911042fec78378fa08809a1d4cb34b6ce8c125da8134",
    "s": 5187
+  },
+  {
+   "p": "src/components/ContextMenu.css",
+   "h": "ed85df4fdebf47c5a3566c2d45dabfd33db771a8c54b88a1b098acb899432527",
+   "s": 2617
+  },
+  {
+   "p": "src/components/ContextMenu.jsx",
+   "h": "4985ca47fc319acec4dd8de5dfb7c778f052bcfef56bad96817904826064326d",
+   "s": 5234
   },
   {
    "p": "src/components/ContextMeter.css",
@@ -878,6 +893,16 @@
    "p": "src/components/DraftsModal.jsx",
    "h": "24b30003f44dc41d79be58e495756302bfbd774e9145ad9707cb98d54df45c5f",
    "s": 8288
+  },
+  {
+   "p": "src/components/FileExplorer.css",
+   "h": "194d557f39041b802e13954abb4d2ae195268511d568ab54d02679d9536b1451",
+   "s": 2716
+  },
+  {
+   "p": "src/components/FileExplorer.jsx",
+   "h": "f6f6fb996d61428edaf078b1e4422e9019b87ce104e9f1f7872587f7dea2bae1",
+   "s": 5103
   },
   {
    "p": "src/components/HelpModal.css",
@@ -990,6 +1015,11 @@
    "s": 4594
   },
   {
+   "p": "src/hooks/useWorkspace.js",
+   "h": "8d46e34ffba78fa7612fb70c1e1c3ffd626ec01f22cff6e37e39fd560053fa26",
+   "s": 11505
+  },
+  {
    "p": "src/main.jsx",
    "h": "27c4eedd0c43d7598d320ebbf0fe5ca21868836361f7748c09da1e354102aea4",
    "s": 353
@@ -1046,18 +1076,28 @@
   },
   {
    "p": "src/utils/gameFiles.js",
-   "h": "ae6a1a8d6107f136b961aa30a7bc9f740ad547bd2c5868d0f4a3ac6f10c390bc",
-   "s": 10576
+   "h": "d33e7a1382d66887eb5ef192ea8def4168e71cf9a961cf290ece41d7631fe282",
+   "s": 11272
+  },
+  {
+   "p": "src/utils/previewFiles.js",
+   "h": "741956fa65d4bb428d37f5aed6a84cd95be702e25477cd0f9a40ee416e642ad7",
+   "s": 2192
   },
   {
    "p": "src/utils/projectIO.js",
-   "h": "a714b611e85236e7c82058139b825d2759cf3fb9bda7c35616178aff4fd1d939",
-   "s": 2401
+   "h": "8beb0f49bd880492d2e976675862b8c7bf085008531a91f55e359e62f5d561fc",
+   "s": 2509
   },
   {
    "p": "src/utils/projectStore.js",
    "h": "1f3fe69752a902baf07847208f8a2e903bbc899c10533f6df9b32db76cbb71e5",
    "s": 2942
+  },
+  {
+   "p": "src/utils/workspaceApi.js",
+   "h": "efce949171ce74c55c5423918e701bc04ed07bd21161adff1af1ffdd5deace70",
+   "s": 2368
   },
   {
    "p": "vite.config.js",

@@ -52,6 +52,13 @@ export function allowKey(toolName, args) {
   return `${toolName}:${String(significant).slice(0, 200)}`;
 }
 
+/* write_file / edit_file on plan.md at the workspace root, and nothing else. */
+export function isPlanFileWrite(tool, args) {
+  if (tool?.name !== 'write_file' && tool?.name !== 'edit_file') return false;
+  const p = String(args?.path ?? '').replace(/\\/g, '/').replace(/^(\.\/)+/, '');
+  return p.toLowerCase() === 'plan.md';
+}
+
 /**
  * Decide what to do with a tool call.
  * @returns {{ decision: 'allow'|'deny'|'ask', reason?: string }}
@@ -65,6 +72,8 @@ export function checkPermission({ sessionId, tool, args }) {
   if (permission === 'read') return { decision: 'allow' };
 
   if (mode === 'plan') {
+    // The plan itself is what plan mode is for: writing plan.md is allowed.
+    if (isPlanFileWrite(tool, args)) return { decision: 'allow' };
     return {
       decision: 'deny',
       reason: `Plan mode: "${tool.name}" would ${permission === 'execute' ? 'run a command' : 'modify files'}, which is not allowed. Describe what you would do instead, or ask the user to leave plan mode.`,

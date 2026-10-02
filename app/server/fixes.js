@@ -78,6 +78,7 @@ let recycleImpl = async (abs) => {
   if (!r.ok || fs.existsSync(abs)) throw new Error(`Could not move ${abs} to the Recycle Bin.`);
 };
 export function _setRecycleForTest(fn) { recycleImpl = fn; }
+export function sendToRecycleBin(abs) { return recycleImpl(abs); }
 
 function runCommand(command, cwd) {
   return new Promise((resolve) => {

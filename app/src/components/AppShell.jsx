@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NeuralBackdrop from '../three/NeuralBackdrop.jsx';
 import AiPanel from './AiPanel.jsx';
@@ -11,13 +11,12 @@ import PresenceView, { PresenceOrb } from './PresenceView.jsx';
 import AccountBar from './account/AccountBar.jsx';
 import StatsView from './stats/StatsView.jsx';
 import DoctorView from './doctor/DoctorView.jsx';
-import {
-  parseFiles,
-  combineForPreview,
-  serializeFiles,
-} from '../utils/gameFiles.js';
-import { saveProject, downloadZip } from '../utils/projectIO.js';
-import { loadProject, defaultProject } from '../utils/projectStore.js';
+import { parseFiles, combineForPreview, FILE_MARKER_RE } from '../utils/gameFiles.js';
+import { downloadZip } from '../utils/projectIO.js';
+import { loadProject } from '../utils/projectStore.js';
+import useWorkspace from '../hooks/useWorkspace.js';
+import { ws, baseName } from '../utils/workspaceApi.js';
+import { pickPreviewPage, pageRefs } from '../utils/previewFiles.js';
 import './AppShell.css';
 import './HelpModal.css';
 
@@ -26,9 +25,11 @@ import './HelpModal.css';
  * Three vertically stacked, user-resizable panels:
  *   1. AI prompt + chat + context meter
  *   2. Live HTML / Three.js preview iframe
- *   3. Monaco code editor with file tabs
+ *   3. The project's real files: tabs (plan.md first) + Monaco, or the file
+ *      explorer, switched with one button (CodeEditor.jsx)
  *
- * Top bar exposes Save (project.json) and Export project (the files as a ZIP).
+ * The project is the workspace folder on disk (useWorkspace). The preview is
+ * built from its real files. Top bar: Save all, and Export project (a ZIP).
  * Settings modal (⚙) holds the AI provider config and a token chart.
  *
  * Layout: CSS grid with three `auto` rows whose fr values are driven by
@@ -51,8 +52,6 @@ export default function AppShell() {
     } catch { /* ignore */ }
     return DEFAULT_SIZES;
   });
-  const [project, setProject] = useState(() => defaultProject());
-  const [activeFile, setActiveFile] = useState('index.html');
   const [previewEpoch, setPreviewEpoch] = useState(0);
   const [toast, setToast] = useState({ msg: '', kind: 'info' });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -106,15 +105,6 @@ export default function AppShell() {
   const [generating, setGenerating] = useState(false);
   const [trace, setTrace] = useState({ steps: [], status: 'idle', narration: '' });
 
-  // Restore last project from localStorage on mount
-  useEffect(() => {
-    const stored = loadProject();
-    if (stored && stored.files && Object.keys(stored.files).length) {
-      setProject(stored);
-      const first = Object.keys(stored.files)[0];
-      if (first) setActiveFile(first);
-    }
-  }, []);
 
   // Persist layout sizes
   useEffect(() => {
@@ -146,6 +136,29 @@ export default function AppShell() {
 
   const showToast = useCallback((msg, kind = 'info') => {
     setToast({ msg, kind });
+  }, []);
+
+  // The project = the real files in the workspace folder.
+  const wsp = useWorkspace({ toast: showToast });
+
+  // Before 0.4 the project lived in the browser. Once, if the project folder
+  // is empty, write that project into it so nothing is lost.
+  useEffect(() => {
+    const MOVED = 'gwn:project-moved-to-disk';
+    try { if (localStorage.getItem(MOVED)) return; } catch { return; }
+    const stored = loadProject();
+    ws.tree().then(async (t) => {
+      if ((t.entries || []).length || !stored?.files || !Object.keys(stored.files).length) {
+        try { localStorage.setItem(MOVED, '1'); } catch { /* ignore */ }
+        return;
+      }
+      const written = await wsp.writeFiles(stored.files);
+      if (written.length === Object.keys(stored.files).length) {
+        try { localStorage.setItem(MOVED, '1'); } catch { /* ignore */ }
+        showToast(`Your project is now saved as real files (${written.length}) in the project folder`, 'info');
+      }
+    }).catch(() => { /* server not up yet: try again next time */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Resize handling: dragging changes sizes[0] and sizes[1] (sizes[2] absorbs the rest).
@@ -181,28 +194,33 @@ export default function AppShell() {
     document.body.style.userSelect = 'none';
   };
 
-  // File ops
-  const setFileContent = useCallback((name, content) => {
-    setProject((p) => ({ ...p, files: { ...p.files, [name]: content } }));
-  }, []);
-
-  const addFile = useCallback((name) => {
-    setProject((p) => {
-      if (p.files[name]) return p;
-      return { ...p, files: { ...p.files, [name]: '' } };
-    });
-    setActiveFile(name);
-  }, []);
-
-  const deleteFile = useCallback((name) => {
-    setProject((p) => {
-      const next = { ...p.files };
-      delete next[name];
-      if (Object.keys(next).length === 0) next['index.html'] = '';
-      return { ...p, files: next };
-    });
-    setActiveFile((cur) => (cur === name ? Object.keys(project.files).filter((n) => n !== name)[0] || 'index.html' : cur));
-  }, [project.files]);
+  // The preview: the page chosen by pickPreviewPage and the files it links,
+  // read from disk, with unsaved edits in open tabs on top (so the preview
+  // follows typing). Rebuilt when files change on disk or in a tab.
+  const [previewSrcDoc, setPreviewSrcDoc] = useState('');
+  const filePaths = useMemo(() => wsp.entries.filter((e) => e.type === 'file').map((e) => e.path), [wsp.entries]);
+  const tabText = useMemo(() => {
+    const m = new Map();
+    for (const t of wsp.tabs) if (!t.binary && !t.tooLarge) m.set(t.path, t.content);
+    return m;
+  }, [wsp.tabs]);
+  const page = pickPreviewPage(filePaths, wsp.active);
+  useEffect(() => {
+    let alive = true;
+    const timer = setTimeout(async () => {
+      if (!page) { if (alive) setPreviewSrcDoc(''); return; }
+      const text = async (p) => (tabText.has(p) ? tabText.get(p) : (await ws.read(p)).content ?? '');
+      try {
+        const html = await text(page);
+        const files = { 'index.html': html };
+        for (const { ref, path } of pageRefs(page, html)) {
+          if (filePaths.includes(path)) files[ref] = await text(path);
+        }
+        if (alive) setPreviewSrcDoc(combineForPreview(files));
+      } catch { /* a file vanished mid-read; the next change rebuilds */ }
+    }, 250);
+    return () => { alive = false; clearTimeout(timer); };
+  }, [page, filePaths, tabText, previewEpoch]);
 
   // AI flow: parseFiles on the response, then ingest. Listens for progress
   // events from AiPanel during streaming so the trace stays live.
@@ -241,6 +259,7 @@ export default function AppShell() {
       const { result, error, stopped } = ev.detail || {};
       window.removeEventListener('gwn:generation-result', handler);
       setGenerating(false);
+      wsp.setAutoOpen(false);
       if (stopped) {
         // A cancelled run is not a failure and has no output to ingest —
         // partial text would splice half a file into the editor.
@@ -253,49 +272,57 @@ export default function AppShell() {
         return;
       }
       if (typeof result === 'string' && result.trim()) {
-        const files = parseFiles(result);
-        setProject((p) => ({ ...p, files, prompt: promptText, title: p.title || `Project ${new Date().toLocaleString()}` }));
-        const firstFile = Object.keys(files)[0];
-        if (firstFile) setActiveFile(firstFile);
-        setPreviewEpoch((n) => n + 1);
-        setTrace((t) => ({ ...t, status: 'done', steps: [...t.steps, { id: 'write', label: 'Write files', status: 'done' }] }));
-        showToast(`Generated ${Object.keys(files).length} file(s)`, 'info');
+        // Only an answer that IS code becomes files: FILE markers, or a whole
+        // HTML page. A plain answer stays in the chat and touches no file.
+        const isCode = new RegExp(FILE_MARKER_RE.source, 'im').test(result) || /<!doctype html|<html[\s>]/i.test(result);
+        if (isCode) {
+          const files = parseFiles(result);
+          wsp.writeFiles(files).then((written) => {
+            setPreviewEpoch((n) => n + 1);
+            if (written.length) showToast(`Saved ${written.length} file(s) in the project`, 'info');
+          });
+          setTrace((t) => ({ ...t, status: 'done', steps: [...t.steps, { id: 'write', label: 'Write files', status: 'done' }] }));
+        } else {
+          setTrace((t) => ({ ...t, status: 'done' }));
+        }
       } else {
         setTrace((t) => ({ ...t, status: 'error', narration: 'Empty response from AI' }));
         showToast('Empty response from AI', 'error');
       }
     };
     window.addEventListener('gwn:generation-result', handler);
+    // Files Omi-One writes during this run open as tabs.
+    wsp.setAutoOpen(true);
 
+    // Omi-One reads the project's files itself with its tools; the editor
+    // no longer pastes them into every prompt.
     window.dispatchEvent(new CustomEvent('gwn:request-generation', {
-      detail: {
-        prompt: promptText,
-        currentCode: serializeFiles(project.files),
-      },
+      detail: { prompt: promptText },
     }));
-  }, [generating, project.files, showToast]);
+  }, [generating, showToast, wsp]);
 
+  // SAVE: every open file with unsaved changes, to disk.
   const onSave = useCallback(async () => {
-    try {
-      const fileMap = Object.keys(project.files).length ? project.files : { 'index.html': project.code || '' };
-      const filename = saveProject({ ...project, files: fileMap });
-      showToast(`Saved ${filename}`, 'info');
-    } catch (e) {
-      showToast(e.message || 'Save failed', 'error');
-    }
-  }, [project, showToast]);
+    const r = await wsp.saveAll();
+    showToast(r.dirty ? `Saved ${r.saved} of ${r.dirty} file(s)` : 'Everything is saved', r.saved < r.dirty ? 'error' : 'info');
+  }, [wsp, showToast]);
 
+  // EXPORT PROJECT: the project's text files as a ZIP (unsaved edits included).
   const onDownloadZip = useCallback(async () => {
     try {
-      const fileMap = Object.keys(project.files).length ? project.files : { 'index.html': project.code || '' };
-      const filename = await downloadZip(fileMap, project.title || 'gwn-project');
-      showToast(`Downloaded ${filename}`, 'info');
+      const files = {};
+      let skipped = 0;
+      for (const p of filePaths.slice(0, 2000)) {
+        if (tabText.has(p)) { files[p] = tabText.get(p); continue; }
+        const f = await ws.read(p);
+        if (typeof f.content === 'string') files[p] = f.content; else skipped += 1;
+      }
+      const filename = await downloadZip(files, baseName(wsp.root.replace(/\\/g, '/')) || 'omnione-project');
+      showToast(`Downloaded ${filename}${skipped ? ` (${skipped} non-text file(s) left out)` : ''}`, 'info');
     } catch (e) {
       showToast(e.message || 'ZIP failed', 'error');
     }
-  }, [project, showToast]);
-
-  const previewSrcDoc = combineForPreview(project.files);
+  }, [filePaths, tabText, wsp.root, showToast]);
 
   return (
     <div className="shell">
@@ -323,8 +350,8 @@ export default function AppShell() {
               PROPOSED <span className="shell__badge">{draftCount}</span>
             </button>
           )}
-          <button type="button" className="shell__btn" onClick={onSave} title="Save the project as a .json file you can open again later">SAVE</button>
-          <button type="button" className="shell__btn shell__btn--primary" onClick={onDownloadZip} title="Download the project you are building with Omi-One (its files, as a ZIP)">EXPORT PROJECT</button>
+          <button type="button" className="shell__btn" onClick={onSave} title="Save every open file with unsaved changes (Ctrl+S saves the one in front)">SAVE{wsp.dirtyCount > 0 && <span className="shell__badge">{wsp.dirtyCount}</span>}</button>
+          <button type="button" className="shell__btn shell__btn--primary" onClick={onDownloadZip} title="Download the project folder's files as a ZIP">EXPORT PROJECT</button>
           <button type="button" className="shell__btn shell__btn--icon" onClick={() => setSettingsOpen(true)} title="AI settings">⚙</button>
           <button type="button" className="shell__btn shell__btn--icon" onClick={() => navigate('/')} title="Back to splash">↩</button>
         </div>
@@ -342,7 +369,6 @@ export default function AppShell() {
             onGenerate={onGenerate}
             generating={generating}
             trace={trace}
-            files={project.files}
             api={{
               openHelp: () => setHelpOpen(true),
               openSkills: () => setSkillsOpen(true),
@@ -377,14 +403,7 @@ export default function AppShell() {
         <div className="shell__handle" onMouseDown={onHandleDown('preview-editor')} role="separator" aria-orientation="vertical" />
 
         <section className="shell__pane shell__pane--editor">
-          <CodeEditor
-            files={project.files}
-            activeFile={activeFile}
-            onActiveChange={setActiveFile}
-            onFileChange={setFileContent}
-            onAddFile={addFile}
-            onDeleteFile={deleteFile}
-          />
+          <CodeEditor wsp={wsp} toast={showToast} />
         </section>
       </main>
 
@@ -461,6 +480,9 @@ function HelpModal({ onClose }) {
 
           <h4>Three panes</h4>
           <p>Drag the vertical splitters between the AI / Preview / Code panels to resize. Layout is persisted in <code>localStorage</code>.</p>
+
+          <h4>Your project's files</h4>
+          <p>The code pane shows the real files in the project folder (⚙ Settings → workspace). <strong>▤ FILES</strong> switches it to the file list; the same button, now <strong>‹› CODE</strong>, switches back. Click a file to open it in a tab. Right-click a file, folder or tab for Save, Save as, Rename, Move, Duplicate, New file/folder, Copy path, Show in Explorer and Delete (to the Recycle Bin). <kbd>Ctrl</kbd>+<kbd>S</kbd> saves, <kbd>F2</kbd> renames, <kbd>Del</kbd> deletes. When Omi-One builds something, it writes <code>plan.md</code> first; it is always the first tab, and Omi-One ticks the steps off as it goes. The preview shows the project's HTML page (the one in front, or <code>index.html</code>).</p>
 
           <h4>Skills</h4>
           <p>Click the <strong>SKILLS</strong> button (or <code>/skills</code>) to open the navigator. <kbd>U</kbd> uploads a folder from your file system, <kbd>R</kbd> re-scans the <code>skills/</code> folder. Every skill is a <code>SKILL.md</code> with YAML frontmatter (name + description) and a body of instructions the AI follows when the skill is run.</p>

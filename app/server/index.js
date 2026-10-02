@@ -24,6 +24,10 @@ import { killAllJobs } from './tools/shell.js';
 import { webSearch, browserOpen } from './tools.js';
 import { recentSearches } from './searchLog.js';
 import { getWorkspaceRoot, setWorkspaceRoot, resetWorkspaceRoot, isDefaultWorkspace, walkWorkspace } from './workspace.js';
+import {
+  readFile as readWorkspaceFile, writeFile as writeWorkspaceFile, makeFolder, movePath, copyPath, copyName,
+  recyclePath, revealPath, watchWorkspace, workspaceRootChanged,
+} from './workspaceFiles.js';
 import { pickFolder } from './folderPicker.js';
 import { serveBuiltUi } from './ui.js';
 import { desktopExe, getAutostart, setAutostart, isElevated } from './desktop.js';
@@ -320,6 +324,7 @@ app.get('/api/workspace', (_req, res) => {
 app.post('/api/workspace', (req, res) => {
   try {
     const root = req.body?.reset ? resetWorkspaceRoot() : setWorkspaceRoot(req.body?.root);
+    workspaceRootChanged();
     res.json({ root, isDefault: isDefaultWorkspace() });
   } catch (e) {
     res.status(400).json({ error: e.message });
@@ -383,6 +388,38 @@ app.get('/api/workspace/tree', (req, res) => {
     return res.status(400).json({ error: e.message });
   }
   res.json({ root: getWorkspaceRoot(), count: entries.length, entries });
+});
+
+// The editor's file actions (server/workspaceFiles.js). Paths are relative to
+// the workspace and can't leave it.
+const fileRoute = (fn) => async (req, res) => {
+  try {
+    res.json(await fn(req));
+  } catch (e) {
+    res.status(e?.name === 'WorkspaceError' ? 400 : 500).json({ error: e.message });
+  }
+};
+app.get('/api/workspace/file', fileRoute((req) => readWorkspaceFile(String(req.query.path || ''))));
+app.put('/api/workspace/file', fileRoute((req) => writeWorkspaceFile(req.body?.path, req.body?.content, { overwrite: req.body?.overwrite !== false })));
+app.post('/api/workspace/folder', fileRoute((req) => makeFolder(req.body?.path)));
+app.post('/api/workspace/move', fileRoute((req) => movePath(req.body?.from, req.body?.to)));
+app.post('/api/workspace/copy', fileRoute((req) => copyPath(req.body?.from, req.body?.to || copyName(req.body?.from))));
+app.post('/api/workspace/delete', fileRoute((req) => recyclePath(req.body?.path)));
+app.post('/api/workspace/reveal', fileRoute((req) => revealPath(req.body?.path || '.')));
+
+/* Live changes in the workspace (the agent writing, a build, another editor),
+ * so open tabs and the file list stay the real files. */
+app.get('/api/workspace/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+  const send = (ev) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(ev)}\n\n`); };
+  send({ type: 'hello', root: getWorkspaceRoot() });
+  const stop = watchWorkspace(send);
+  const ping = setInterval(() => { if (!res.writableEnded) res.write(': ping\n\n'); }, 25_000);
+  res.on('close', () => { clearInterval(ping); stop(); });
 });
 
 // --- permissions -----------------------------------------------------------

@@ -23,14 +23,28 @@ TWO WAYS TO PRODUCE CODE — pick the right one:
    edit_file over write_file for an existing file: rewriting a whole file to
    change three lines loses work that is not in your context.
 
-2. Emitting a self-contained preview (only when the user wants a quick
-   single-page demo in the preview pane, not files on disk).
-   Emit each file after a marker line on its own:
+2. Emitting a quick single-page demo for the preview pane. The editor saves
+   what you emit as real files in the workspace root, replacing files of the
+   same name. Emit each file after a marker line on its own:
    <!-- FILE: index.html -->
    ...file content...
    <!-- FILE: style.css -->
    ...file content...
    For one self-contained HTML document, skip the markers and emit it directly.
+
+PLAN FIRST:
+Before you build anything (a new project, a feature, or a change to more than
+one file), write plan.md at the workspace root with write_file, then build.
+The user sees it as the first tab in the editor. Keep it short:
+  # <what you are building>
+  ## Steps
+  - [ ] one line per step, in order
+  ## Files
+  - each file you will create or change, and why
+As you finish each step, tick it with edit_file ("- [ ]" → "- [x]"). A new
+task replaces the plan; a follow-up on the same task updates it. Questions,
+small talk and one-line fixes need no plan. In plan mode, plan.md is the one
+file you may write.
 
 TOOLS:
 Call tools directly through the tool interface. Do not describe a call in
@@ -85,7 +99,7 @@ export function buildSystemPrompt({ currentCode, mode } = {}) {
   if (mode && mode !== 'default') {
     out += `\n\nSESSION MODE: ${mode}`;
     if (mode === 'plan') {
-      out += ' — you may read and search, but every write and every command will be refused. Produce a plan instead.';
+      out += ' — you may read and search, but every other write and every command will be refused. Write the plan to plan.md instead.';
     } else if (mode === 'acceptEdits') {
       out += ' — file edits run without asking; commands still need approval.';
     } else if (mode === 'bypass') {

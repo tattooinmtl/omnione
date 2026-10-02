@@ -47,7 +47,8 @@ export async function downloadZip(files, title) {
     '## Files',
     ...names.map((n) => `- \`${n}\``),
   ].join('\n');
-  zip.file('README.md', readme);
+  // Never over a README the project already has.
+  if (!names.some((n) => n.toLowerCase() === 'readme.md')) zip.file('README.md', readme);
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const url = URL.createObjectURL(blob);
