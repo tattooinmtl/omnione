@@ -37,7 +37,7 @@ import {
   toolResultMessage,
 } from './sessions.js';
 
-export const DEFAULT_MAX_ITERATIONS = 25;
+export const DEFAULT_MAX_ITERATIONS = 100;
 // The same call with the same arguments this many times in one run is a loop,
 // not persistence (the OpenHands stuck detector works on the same idea).
 export const STUCK_REPEAT_THRESHOLD = 3;
@@ -325,16 +325,30 @@ export async function* runAgent({
     yield { type: 'turn_end', iteration, stopReason: 'tool_use' };
   }
 
-  // Ran out of iterations. Say so plainly rather than pretending the run
-  // finished — the model was still mid-task.
-  const msg = `Stopped after ${maxIterations} model turns without a final answer. The task may need to be narrowed, or the iteration cap raised.`;
+  // Ran out of steps. Rather than stopping in silence, Omi-One sums up in
+  // one last reply (no tools): what's done, what's left. The user can press
+  // Continue to give it another round of steps.
   appendEvent(sessionId, { type: 'max_iterations', maxIterations });
+  let summary = '';
+  if (provider.apiStyle !== 'stub' && !signal?.aborted) {
+    const ask = userMessage(`[harness] You have used all ${maxIterations} steps allowed for one task, so stop working now. In a few short lines, tell the user what you finished, what is still left to do, and that they can press Continue to let you carry on. Don't call tools.`);
+    try {
+      for await (const ev of runAdapter({ system, messages: [...messages, ask], tools: [], model, apiKey, baseUrl: provider.baseUrl, signal, maxTokens: 800 })) {
+        if (ev.type === 'delta') { summary += ev.text; yield ev; }
+        else if (ev.type === 'assistant' && ev.usage) recordUsage({ provider: provider.id, model, usage: ev.usage, kind });
+      }
+    } catch { /* the plain message below still explains */ }
+  }
+  summary = summary.trim() || `I've used all ${maxIterations} steps allowed for one task and stopped before finishing. Press Continue and I'll carry on from here.`;
+  // Saved as Omi-One's reply (right after the last tool results, so the
+  // conversation stays valid): "Continue" then picks up from it.
+  appendMessage(sessionId, { role: 'assistant', content: [{ type: 'text', text: summary }] });
   if (withMind) {
-    try { nudgeMood(-0.15, -0.1, 'Ran out of turns before finishing.'); } catch { /* mind optional */ }
+    try { nudgeMood(-0.05, -0.05, 'Ran out of steps before finishing.'); } catch { /* mind optional */ }
     yield { type: 'mood', mood: safeMood() };
   }
-  recordError();
-  yield { type: 'error', message: msg };
+  yield { type: 'turn_end', iteration, stopReason: 'step_limit' };
+  yield { type: 'done', text: summary, iterations: iteration, limitReached: true, maxIterations };
 }
 
 /* Execute one tool call: hooks, then the permission gate, then a checkpoint,

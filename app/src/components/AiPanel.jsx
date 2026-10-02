@@ -237,7 +237,13 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
                 window.dispatchEvent(new CustomEvent('gwn:generation-result', {
                   detail: { result: ev.text ?? acc, iterations: ev.iterations },
                 }));
-                setHistory((h) => [...h, { role: 'assistant', text: (ev.text ?? acc).slice(0, 4000) }]);
+                setHistory((h) => [
+                  ...h,
+                  { role: 'assistant', text: (ev.text ?? acc).slice(0, 4000) },
+                  // Out of steps: Omi-One summed up; offer to carry on.
+                  ...(ev.limitReached ? [{ role: 'limit', id: `limit-${Date.now()}`, steps: ev.maxIterations }] : []),
+                ]);
+                if (ev.limitReached) setShowHistory(true);
                 return;
               } else if (ev.type === 'error') {
                 window.dispatchEvent(new CustomEvent('gwn:generation-result', { detail: { error: ev.message } }));
@@ -513,7 +519,22 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       <div className="ai-panel__middle">
         {showHistory && history.length > 0 && (
           <div className="ai-panel__history">
-            {history.map((m, i) => (m.role === 'btw' ? (
+            {history.map((m, i) => (m.role === 'limit' ? (
+              <div key={m.id} className="ai-panel__limit" role="note">
+                <span>Omi-One used all {m.steps} steps allowed for one task.</span>
+                <button
+                  type="button"
+                  className="ai-panel__limit-go"
+                  disabled={generating}
+                  onClick={() => {
+                    setHistory((h) => h.filter((x) => x.id !== m.id));
+                    window.dispatchEvent(new CustomEvent('gwn:submit-prompt', { detail: { text: 'Continue where you left off.' } }));
+                  }}
+                >
+                  Continue
+                </button>
+              </div>
+            ) : m.role === 'btw' ? (
               <div key={m.id} className="ai-panel__btw" role="note">
                 <div className="ai-panel__btw-head">
                   <span className="ai-panel__btw-tag">BTW</span>

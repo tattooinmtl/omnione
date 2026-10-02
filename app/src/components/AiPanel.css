@@ -273,3 +273,32 @@
 .ai-panel__btw-a { margin-top: 6px; color: var(--blue-2); white-space: pre-wrap; line-height: 1.5; }
 .ai-panel__btw-a.is-failed { color: var(--red); }
 .ai-panel__btw-wait { color: var(--fg-dim); font-style: italic; }
+
+/* Out of steps: Omi-One's summary is above; this offers to carry on */
+.ai-panel__limit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(47, 123, 255, 0.45);
+  border-radius: 4px;
+  background: rgba(47, 123, 255, 0.07);
+  font-size: 13px;
+  color: var(--fg-dim);
+}
+.ai-panel__limit span { flex: 1; }
+.ai-panel__limit-go {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(180deg, #2f7bff 0%, #1a4fc7 100%);
+  border: none;
+  border-radius: 2px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.ai-panel__limit-go:disabled { opacity: 0.5; cursor: default; }

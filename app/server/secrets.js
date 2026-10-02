@@ -51,6 +51,26 @@ export function getActiveSettings() {
   return s.active || { provider: 'minimax', model: '' };
 }
 
+/* How many steps (model turns) one task may take before Omi-One stops,
+ * sums up and offers to continue. Settings → AI. */
+export const STEP_CHOICES = [25, 50, 100, 200, 300, 500];
+export const DEFAULT_MAX_STEPS = 100;
+
+export function getMaxSteps() {
+  const n = Number(getSecrets().run?.maxSteps);
+  return STEP_CHOICES.includes(n) ? n : DEFAULT_MAX_STEPS;
+}
+
+export function setMaxSteps(n) {
+  const v = Number(n);
+  if (!STEP_CHOICES.includes(v)) throw new Error(`Steps per task must be one of ${STEP_CHOICES.join(', ')}.`);
+  const s = getSecrets();
+  s.run = { ...(s.run || {}), maxSteps: v };
+  writeToDisk(s);
+  cache = s;
+  return v;
+}
+
 export function setActiveSettings({ provider, model }) {
   const s = getSecrets();
   s.active = { provider, model: model || '' };

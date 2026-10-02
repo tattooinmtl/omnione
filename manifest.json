@@ -1,9 +1,9 @@
 {
  "app": "omnione",
  "version": "0.3.3",
- "build": "3843e9f2ae9d",
- "commit": "0dbfdff170ac",
- "date": "2026-10-01T22:47:49-04:00",
+ "build": "5a6783f08795",
+ "commit": "fa69acd2071b",
+ "date": "2026-10-02T01:08:47-04:00",
  "files": [
   {
    "p": ".gitattributes",
@@ -37,7 +37,7 @@
   },
   {
    "p": "build.json",
-   "h": "d65ac09e0b8a8965c3f7816b5282d72de2e1b75db6eb56ea3d1218f6e1a21ce8",
+   "h": "0cc32f7bccd1a282c5f2710a14d6e6ae3820c0808e0f879943662e0d6a955679",
    "s": 120
   },
   {
@@ -92,8 +92,8 @@
   },
   {
    "p": "server/agent.js",
-   "h": "ee596d6687372ba7f684cd9b32119bde35467a92df1ad63fd20ae5e1d02ff0b2",
-   "s": 27056
+   "h": "fdf9cea344dd9bce13fdafe92366dfb4cc10689f0ee5429785861c3cc86457c1",
+   "s": 28304
   },
   {
    "p": "server/auth.js",
@@ -157,8 +157,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "25a8bd8af14883acad22860018306aaea0544416c01c19d1194642accfdb8364",
-   "s": 42062
+   "h": "685925c00a2a75ab775a372e2d1bea4fdeaa76194969ec4b34fa46f8b31fcaf2",
+   "s": 42611
   },
   {
    "p": "server/mcp.js",
@@ -227,8 +227,8 @@
   },
   {
    "p": "server/secrets.js",
-   "h": "e58f0c2b7c66f61b65f59006e9ee0f84c72d667019dbb4d4e3ea07ab0a8ffdf3",
-   "s": 4257
+   "h": "1027ff2cc8f2b5fb9145d229ab702176d6cb7821b7a36bb284048ac9746f0f0b",
+   "s": 4927
   },
   {
    "p": "server/sessions.js",
@@ -822,13 +822,13 @@
   },
   {
    "p": "src/components/AiPanel.css",
-   "h": "e1327de503fd7ce68d8782c33d80dd40d8578f8d6f77cc1d1030a7814fb855c6",
-   "s": 6919
+   "h": "6dcfeb5a9fd9862e5d744711b60ca09c657c1af10f2f6b76557c80302da2dc27",
+   "s": 7688
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "7b34886b710ee4dade1665cb826ee3524bcb95bdd3f7b2a76a1228750da9a85c",
-   "s": 28635
+   "h": "cab7d34f851c4f3acaed3c10297eb9c0850193c9e828e70ef1f22edef24ef302",
+   "s": 29654
   },
   {
    "p": "src/components/AppShell.css",
@@ -937,8 +937,8 @@
   },
   {
    "p": "src/components/SettingsModal.jsx",
-   "h": "6b2e915f48c9a12c29fcf0ff241df522932c19dfd50799c3d6aea7e9fbf73a13",
-   "s": 15253
+   "h": "44284bded530aeac8940a6d0f79a54c1ef258e62864e1b16991769e0734968c2",
+   "s": 16836
   },
   {
    "p": "src/components/SkillsModal.css",

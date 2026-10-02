@@ -140,6 +140,8 @@ function AiTab() {
         </div>
       </form>
 
+      <StepsSetting />
+
       <button type="button" className="settings-modal__disclose" aria-expanded={chart} onClick={() => setChart((c) => !c)}>
         {chart ? '▾' : '▸'} Provider chart
       </button>
@@ -172,6 +174,42 @@ function AiTab() {
         </div>
       )}
     </>
+  );
+}
+
+/* How long Omi-One may work on one task before it stops, sums up and offers to continue. */
+function StepsSetting() {
+  const [steps, setSteps] = useState(null);
+  const [msg, setMsg] = useState({ text: '', error: false });
+  useEffect(() => {
+    fetch('/api/settings/steps').then((r) => r.json()).then(setSteps).catch(() => {});
+  }, []);
+  if (!steps) return null;
+  const change = async (e) => {
+    const maxSteps = Number(e.target.value);
+    try {
+      setSteps(await post('/api/settings/steps', { maxSteps }));
+      setMsg({ text: `Omi-One can now take up to ${maxSteps} steps per task.`, error: false });
+    } catch (err) {
+      setMsg({ text: err.message, error: true });
+    }
+  };
+  return (
+    <section className="settings-modal__section">
+      <h4>Steps per task</h4>
+      <label>
+        <span>How long Omi-One may work on one task</span>
+        <select value={steps.maxSteps} onChange={change}>
+          {steps.choices.map((n) => <option key={n} value={n}>{n} steps{n === 100 ? ' (default)' : ''}</option>)}
+        </select>
+      </label>
+      <p className="settings-modal__note">
+        A step is one reply from the AI, with the tools it uses. At the limit Omi-One stops,
+        tells you what's done and what's left, and you can press Continue. A higher limit
+        lets long jobs (boards, big projects) run through, and uses more tokens.
+      </p>
+      {msg.text && <p className={msg.error ? 'settings-modal__error' : 'settings-modal__status'}>{msg.text}</p>}
+    </section>
   );
 }
 

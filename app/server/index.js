@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { PROVIDERS, providerById } from './providers.js';
-import { runAgent, DEFAULT_MAX_ITERATIONS } from './agent.js';
+import { runAgent } from './agent.js';
 import { publicTools, executeTool, syncMcpTools } from './toolRegistry.js';
 import './tools/register.js';
 import { killAllJobs } from './tools/shell.js';
@@ -75,6 +75,9 @@ import {
   getProviderKey,
   getActiveSettings,
   resolveModel,
+  getMaxSteps,
+  setMaxSteps,
+  STEP_CHOICES,
 } from './secrets.js';
 import { authMiddleware, ensureToken, TOKEN_HEADER, TOKEN_PATH } from './auth.js';
 import { getCore, CORE_LIMITS, recentMemories } from './mind/memory.js';
@@ -179,6 +182,13 @@ app.get('/api/providers', (_req, res) => {
 });
 
 // --- settings --------------------------------------------------------------
+// Steps per task (Settings → AI): how long Omi-One may work on one task
+// before it stops, sums up and offers to continue.
+app.get('/api/settings/steps', (_req, res) => res.json({ maxSteps: getMaxSteps(), choices: STEP_CHOICES }));
+app.post('/api/settings/steps', (req, res) => {
+  try { res.json({ maxSteps: setMaxSteps(req.body?.maxSteps), choices: STEP_CHOICES }); } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
 app.get('/api/settings', (_req, res) => {
   res.json(publicSettings());
 });
@@ -602,9 +612,10 @@ app.post('/api/generate', async (req, res) => {
     }
 
     if (!rejected) {
+      // The request may ask for fewer; otherwise the user's setting (Settings → AI).
       const cap = Number(maxIterations) > 0
-        ? Math.min(Number(maxIterations), 100)
-        : DEFAULT_MAX_ITERATIONS;
+        ? Math.min(Number(maxIterations), 500)
+        : getMaxSteps();
       for await (const ev of runAgent({
         sessionId,
         prompt,
