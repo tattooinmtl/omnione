@@ -1,43 +1,27 @@
 {
  "app": "omnione",
- "version": "0.3.3",
- "build": "d41e982c62b8",
- "commit": "44668a7836e6",
- "date": "2026-10-02T01:19:50-04:00",
+ "version": "0.3.4",
+ "build": "971d8d30e489",
+ "commit": "374ee82db094",
+ "date": "2026-10-02T09:53:33-04:00",
+ "setup": {
+  "version": "1.0",
+  "source": "225dd510c6d8"
+ },
  "files": [
-  {
-   "p": ".gitattributes",
-   "h": "266bd0abb360d699abbbc298e127ac1f7b624530ced4f56eef84d1e7e640f63e",
-   "s": 411
-  },
-  {
-   "p": ".gitignore",
-   "h": "6fd595c7d5281d6e645f2b79672d77754ad57d6229dd8e473e9d314b3fd52ba6",
-   "s": 886
-  },
   {
    "p": ".gwn-mcp.json",
    "h": "e5b29621496d551a5b93b06367d793e13ec5c2c2fb4f4acd8579390bdcba2872",
    "s": 26
   },
   {
-   "p": "PROGRESS.md",
-   "h": "2c84ea6013eb74cbe9d4ea48dca15c2748895d8cb9cde6353f14b44997cb52a0",
-   "s": 19739
-  },
-  {
-   "p": "README.md",
-   "h": "c634ceee8660bd5a87b1da27bb660c06af8f0d79bc007d6e86d62de56e120d02",
-   "s": 8010
-  },
-  {
    "p": "bin/OmniOne.exe",
-   "h": "858b3a7081c3dbabc329e8343ae53948971baaab9c8bffb6ac3d33c2f6068ada",
+   "h": "d4014b5e62d4b9769e7206da6cdd84a139031fe41b7ed4f6657812760e0735b7",
    "s": 7657472
   },
   {
    "p": "build.json",
-   "h": "2fd6b07e35c996138c214e08169293a3273fca85362401d3be1732262d70860c",
+   "h": "99cb0abbae86e644b02c58f13dea04ee6283c13f955a9065ccf62fb93b9a7407",
    "s": 120
   },
   {
@@ -67,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "5653892114514be9e1a3a7afec3c8f9e32efa18b3031639448fe0c94fac6995c",
+   "h": "5d4c756e969d6ebbceb531e7d355d552d9f08b3c928a3d005eb3b8bf12dc2369",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "914d6153640697d4a427c4806ffd882b7e0b65cef114a03cdec2cd92b2b9702c",
+   "h": "037561210c1fdc8ac558161aed76ab745d2fa48f325d58e23c12ca04dbb266a1",
    "s": 1191
   },
   {
@@ -369,11 +353,6 @@
    "p": "skills/ascii-art/SKILL.md",
    "h": "2d0b7edcfb32b5152bd7b2e0144bfbc7b961e97166948f465142f4d9f7b65602",
    "s": 10878
-  },
-  {
-   "p": "skills/baoyu-comic/PORT_NOTES.md",
-   "h": "7b972eb085b2bba8cac857a0b376ef3aaa14eb4284c694601f814e5cb492a923",
-   "s": 5798
   },
   {
    "p": "skills/baoyu-comic/SKILL.md",
@@ -869,16 +848,6 @@
    "p": "src/components/CodeEditor.jsx",
    "h": "9f946b2a1833623a1dce57e1275e8d1a83ffb1c76209d0d540215072439243a1",
    "s": 6251
-  },
-  {
-   "p": "src/components/ComingSoon.css.obsolete",
-   "h": "46440f7e10df3b4bba1e9080bbde10c16b8ef22c98dc35ca1199c6a30f8ec607",
-   "s": 2888
-  },
-  {
-   "p": "src/components/ComingSoon.jsx.obsolete",
-   "h": "96a4a43ae859529656e1f65b6e11e3c665e765b762e4809832b0f51fe57b7a2b",
-   "s": 2042
   },
   {
    "p": "src/components/CommandPalette.css",
