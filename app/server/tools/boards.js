@@ -470,7 +470,7 @@ registerTool({
 
     const target = dest || path.basename(abs);
     const r = await sh(
-      `mpremote connect ${quote(port)} fs cp ${quote(abs)} :${quote(target)}`,
+      `${quote(which('mpremote'))} connect ${quote(port)} fs cp ${quote(abs)} :${quote(target)}`,
       ctx,
       { timeoutMs: 60_000 },
     );
@@ -508,7 +508,7 @@ registerTool({
     // Python intact across both shells.
     const b64 = Buffer.from(String(code), 'utf8').toString('base64');
     const runner = `import ubinascii,sys;exec(ubinascii.a2b_base64('${b64}'))`;
-    const r = await sh(`mpremote connect ${quote(port)} exec ${quote(runner)}`, ctx, { timeoutMs: 60_000 });
+    const r = await sh(`${quote(which('mpremote'))} connect ${quote(port)} exec ${quote(runner)}`, ctx, { timeoutMs: 60_000 });
     if (!r.ok) return r;
     return {
       ok: true,

@@ -12,7 +12,8 @@
 // someone's back.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const PROBE_TIMEOUT_MS = 8000;
@@ -23,7 +24,7 @@ const PROBE_TIMEOUT_MS = 8000;
 export function which(command) {
   if (path.isAbsolute(command)) return existsSync(command) ? command : null;
 
-  const dirs = (process.env.PATH || '').split(path.delimiter).filter(Boolean);
+  const dirs = [...(process.env.PATH || '').split(path.delimiter).filter(Boolean), ...userToolDirs()];
   const exts = process.platform === 'win32'
     ? (process.env.PATHEXT || '.COM;.EXE;.BAT;.CMD').split(';').filter(Boolean)
     : [''];
@@ -35,6 +36,27 @@ export function which(command) {
     }
   }
   return null;
+}
+
+/* Where `pip install --user` and PlatformIO's own installer put commands.
+ * pip warns that these are "not on PATH" and most people never add them,
+ * so a tool installed the recommended, no-admin way would otherwise look
+ * missing. Searched after PATH, so PATH still wins. */
+export function userToolDirs() {
+  const out = [];
+  const home = os.homedir();
+  if (process.platform === 'win32') {
+    for (const base of [process.env.APPDATA && path.join(process.env.APPDATA, 'Python'), process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Programs', 'Python')]) {
+      if (!base) continue;
+      let names = [];
+      try { names = readdirSync(base); } catch { continue; }
+      for (const n of names.filter((x) => /^Python3\d+$/i.test(x)).sort().reverse()) out.push(path.join(base, n, 'Scripts'));
+    }
+    out.push(path.join(home, '.platformio', 'penv', 'Scripts'));
+  } else {
+    out.push(path.join(home, '.local', 'bin'), path.join(home, '.platformio', 'penv', 'bin'));
+  }
+  return out;
 }
 
 /* Run `<cmd> <versionArgs>` and capture the first line. */
@@ -85,7 +107,7 @@ const TOOLS = [
     versionArgs: ['--version'],
     purpose: 'Alternative build system with a wider board and framework matrix (ESP-IDF, Zephyr, STM32).',
     install: {
-      win32: 'pip install --upgrade platformio',
+      win32: 'python -m pip install --user --upgrade platformio',
       darwin: 'pip3 install --upgrade platformio',
       linux: 'pip3 install --upgrade platformio',
     },
@@ -96,7 +118,7 @@ const TOOLS = [
     versionArgs: ['version'],
     purpose: 'Push files to a MicroPython board and drive its REPL.',
     install: {
-      win32: 'pip install --upgrade mpremote',
+      win32: 'python -m pip install --user --upgrade mpremote',
       darwin: 'pip3 install --upgrade mpremote',
       linux: 'pip3 install --upgrade mpremote',
     },

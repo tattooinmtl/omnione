@@ -21,6 +21,7 @@ export default function ApprovalModal({ request, onDecide }) {
   // behind it) must never approve a command the user has not seen. While
   // Presence is open it shows its own approval card, so this one stays
   // keyboard-silent altogether.
+  const isAdmin = request?.permission === 'admin';
   useEffect(() => {
     const onKey = (e) => {
       if (document.querySelector('.presence')) return;
@@ -28,14 +29,50 @@ export default function ApprovalModal({ request, onDecide }) {
       const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
       if (typing && !t.closest?.('.approval')) return;
       if (e.key === 'Escape') { e.preventDefault(); onDecide('deny'); }
-      else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onDecide('once'); }
+      else if (e.key === 'Enter' && !e.shiftKey && !isAdmin) { e.preventDefault(); onDecide('once'); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onDecide]);
+  }, [onDecide, isAdmin]);
 
   if (!request) return null;
   const { tool, permission, preview } = request;
+
+  // Administrator rights get their own window: it must not look like (or be
+  // clicked through like) an everyday approval.
+  if (isAdmin) {
+    return (
+      <div className="approval approval--admin" role="alertdialog" aria-modal="true" aria-labelledby="approval-title">
+        <div className="approval__backdrop" />
+        <div className="approval__panel">
+          <header className="approval__head">
+            <span className="approval__shield" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 2.5 4 5.5v6c0 5 3.4 8.9 8 10 4.6-1.1 8-5 8-10v-6l-8-3Z" /><path d="M12 8v5M12 16.2v.3" /></svg>
+            </span>
+            <div>
+              <div className="approval__admin-kicker">Administrator access requested</div>
+              <h3 id="approval-title">Omi-One wants to run a command as administrator</h3>
+            </div>
+          </header>
+          <div className="approval__body">
+            <Preview preview={preview} />
+            <p className="approval__admin-warn">
+              As administrator this command can change anything on this PC: system files, programs, drivers and settings for every user.
+              Allow it only if you understand it and expect it. Windows will then ask you to confirm (UAC).
+            </p>
+          </div>
+          <footer className="approval__actions">
+            <button type="button" className="approval__btn approval__btn--deny" onClick={() => onDecide('deny')} autoFocus>
+              Deny <kbd>Esc</kbd>
+            </button>
+            <button type="button" className="approval__btn approval__btn--admin" onClick={() => onDecide('once')}>
+              Allow as administrator, this once
+            </button>
+          </footer>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="approval" role="dialog" aria-modal="true" aria-labelledby="approval-title">
@@ -73,6 +110,17 @@ export function Preview({ preview }) {
     return (
       <>
         <div className="approval__label">Command, in <code>{preview.cwd || '.'}</code></div>
+        <pre className="approval__code approval__code--command">{preview.command}</pre>
+      </>
+    );
+  }
+
+  if (preview.kind === 'admin') {
+    return (
+      <>
+        <div className="approval__label">Why it needs administrator rights</div>
+        <p className="approval__reason">{preview.reason || '(no reason given)'}</p>
+        <div className="approval__label">Command, in <code>{preview.cwd}</code></div>
         <pre className="approval__code approval__code--command">{preview.command}</pre>
       </>
     );

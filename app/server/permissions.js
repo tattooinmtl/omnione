@@ -14,6 +14,10 @@
 //                (checkpointed) writes run, and commands are refused — the
 //                agent files a proposal for the user instead
 //
+// The 'admin' permission class (run_as_admin) sits above every mode: it
+// always asks, bypass included, is never remembered for the session, and is
+// refused in plan mode and on the heartbeat. Windows' UAC prompt follows.
+//
 // An approval is a promise the agent loop awaits. The SSE stream carries the
 // request to the browser, the browser POSTs a decision, and the promise
 // settles. Nothing resolves itself: an unanswered request times out as a
@@ -66,6 +70,19 @@ export function isPlanFileWrite(tool, args) {
 export function checkPermission({ sessionId, tool, args }) {
   const mode = getMode(sessionId);
   const permission = tool.permission || 'read';
+
+  // Administrator rights: one explicit yes per call, whatever the mode.
+  if (permission === 'admin') {
+    if (mode === 'plan' || mode === 'autonomous') {
+      return {
+        decision: 'deny',
+        reason: mode === 'plan'
+          ? `Plan mode: "${tool.name}" needs administrator rights and is not allowed. Describe what you would run instead.`
+          : `Autonomous mode: "${tool.name}" needs administrator rights, and nobody is here to approve it. Use propose_task to ask the user instead.`,
+      };
+    }
+    return { decision: 'ask' };
+  }
 
   if (mode === 'bypass') return { decision: 'allow' };
 
@@ -141,7 +158,8 @@ export function resolveApproval(id, decision) {
   pending.delete(id);
   clearTimeout(entry.timer);
 
-  if (decision === 'session') {
+  // An administrator request is approved once at a time, never for the session.
+  if (decision === 'session' && entry.request.permission !== 'admin') {
     const { sessionId, tool, args } = entry.request;
     if (!sessionAllows.has(sessionId)) sessionAllows.set(sessionId, new Set());
     sessionAllows.get(sessionId).add(allowKey(tool, args));

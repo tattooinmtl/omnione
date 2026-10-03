@@ -521,6 +521,11 @@
 .pchat__approval-state { margin-top: 6px; font-size: 11px; color: var(--fg-dim, #8a96a8); }
 .pchat__approval-state.is-ok { color: var(--p-cyan); }
 .pchat__approval-state.is-no { color: #ff9db2; }
+.pchat__approval--admin { border: 2px solid #ff3b5c; background: rgba(255, 59, 92, 0.08); box-shadow: 0 0 22px rgba(255, 59, 92, 0.3); }
+.pchat__perm.is-admin { color: #ff6b81; }
+.pchat__admin-warn { margin: 6px 0 0; font-size: 11px; color: #ffb3c0; }
+.pchat__approval-actions .is-admin { border-color: #ff3b5c; color: #fff; background: rgba(255, 59, 92, 0.25); font-weight: 600; }
+.pchat__approval-body .approval__reason { margin: 0 0 6px; padding: 6px 8px; border-left: 3px solid #ffb347; background: rgba(255, 179, 71, 0.08); color: #ffe7c2; white-space: pre-wrap; }
 
 /* Top-bar orb */
 .presence-orb { display: inline-flex; align-items: center; gap: 8px; }

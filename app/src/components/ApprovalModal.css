@@ -155,3 +155,18 @@
   .approval__actions { justify-content: stretch; }
   .approval__btn { flex: 1 1 auto; justify-content: center; }
 }
+
+/* Administrator rights: red, explicit, and never mistaken for a routine ask. */
+.approval--admin .approval__panel {
+  border: 2px solid #ff3b5c;
+  box-shadow: 0 0 0 1px rgba(255, 59, 92, 0.25), 0 0 48px rgba(255, 59, 92, 0.35);
+  background: linear-gradient(180deg, rgba(60, 6, 16, 0.96), rgba(18, 4, 8, 0.98));
+}
+.approval--admin .approval__head { align-items: center; gap: 12px; border-bottom-color: rgba(255, 59, 92, 0.4); }
+.approval__shield svg { width: 34px; height: 34px; fill: rgba(255, 59, 92, 0.18); stroke: #ff3b5c; stroke-width: 1.6; stroke-linecap: round; }
+.approval__admin-kicker { color: #ff6b81; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+.approval--admin h3 { color: #ffe3e8; }
+.approval__reason { margin: 0 0 10px; padding: 8px 10px; border-left: 3px solid #ffb347; background: rgba(255, 179, 71, 0.08); color: #ffe7c2; white-space: pre-wrap; }
+.approval__admin-warn { margin: 12px 0 0; color: #ffb3c0; font-size: 12px; line-height: 1.5; }
+.approval__btn--admin { border-color: #ff3b5c; color: #fff; background: rgba(255, 59, 92, 0.22); font-weight: 600; }
+.approval__btn--admin:hover { background: rgba(255, 59, 92, 0.38); }

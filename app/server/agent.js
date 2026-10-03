@@ -474,6 +474,9 @@ function buildPreview(tool, args) {
   if (tool.name === 'bash') {
     return { kind: 'command', command: args.command, cwd: args.cwd || '.' };
   }
+  if (tool.name === 'run_as_admin') {
+    return { kind: 'admin', command: String(args.command ?? ''), reason: String(args.reason ?? ''), cwd: args.cwd || 'the workspace' };
+  }
   if (tool.name === 'write_file') {
     const content = String(args.content ?? '');
     return {

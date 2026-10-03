@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.6.0",
- "build": "27804e007bb0",
- "commit": "aa478c826a59",
- "date": "2026-10-03T12:10:16-04:00",
+ "version": "0.7.0",
+ "build": "031ba2104508",
+ "commit": "cbc0c032c11a",
+ "date": "2026-10-03T13:41:42-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "b46aa555e12ce63a1b76f871dd38f9415dbe7b24efb9c6185bcd78102e9c3617",
+   "h": "e1e6c7b4ca8f5717635d9bdf3c1cd5928444c86ac82db6cfb85dab80b51ea8a4",
    "s": 7664640
   },
   {
    "p": "build.json",
-   "h": "57c84688c80bd4161fe0e5604502ddf0a150f1e6487078fef84742b163eeec18",
+   "h": "07733cf94c743f19952104e5bce7dd5a7365d57d4b43c5b79a31b45138beb26e",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "b7be57ea3152dd7672e6178ac72904208ba2d8384b4bd58f4e6f318bee18e826",
+   "h": "45037c1e231f784fcc90882ef4a8bc8428e995e193290693f673f704266dcbcc",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "826c672068ffaf872982bd02b58835ba5d1e44ffb9b4287d53e9cb6786c85e64",
+   "h": "59d7e09b5ff550c1c11d2fbeba425bf5bc5c62b230525003a9b28de428bd00ff",
    "s": 1191
   },
   {
@@ -76,8 +76,8 @@
   },
   {
    "p": "server/agent.js",
-   "h": "fdf9cea344dd9bce13fdafe92366dfb4cc10689f0ee5429785861c3cc86457c1",
-   "s": 28304
+   "h": "da53acc8613f3a34f12e2e9e61aa341eacfbe68ec16145314808e70200bff293",
+   "s": 28485
   },
   {
    "p": "server/auth.js",
@@ -106,8 +106,8 @@
   },
   {
    "p": "server/boards/toolchains.js",
-   "h": "f4af05d9f2c8c5befc16f38e363678dce004f71117f37ed18add5088463dc59d",
-   "s": 7498
+   "h": "664ab92a0d0d05ef0b14bb92017956c195064cf9538ebf44712775e4cb9e2478",
+   "s": 8627
   },
   {
    "p": "server/brain.js",
@@ -201,8 +201,8 @@
   },
   {
    "p": "server/permissions.js",
-   "h": "3205da9c30dcd2bf2057a30133c0295825ee20125c3591b73b86b6f8b6c579cc",
-   "s": 6467
+   "h": "b44667b015d502681df36c4f08dbd058ad3017162c48089e093a39368377308c",
+   "s": 7391
   },
   {
    "p": "server/projects.js",
@@ -211,8 +211,8 @@
   },
   {
    "p": "server/prompts.js",
-   "h": "e10f839708d56fbc912b54e5a2b42def7f34ec71d193734c5a8b57778fdcf03c",
-   "s": 5509
+   "h": "ac16792637cd0d543d769c7182713d91d1c0c6a99b53472d8faa8c2d43a600af",
+   "s": 6361
   },
   {
    "p": "server/providers.js",
@@ -266,8 +266,8 @@
   },
   {
    "p": "server/toolRegistry.js",
-   "h": "8a6fa720eac52a12d04894296c7da4d2bf549946b61a129753a16c800d2b2d24",
-   "s": 7299
+   "h": "73881692780a5a91244dce0d0d66dde062c371a23a92efd844a7bc66bd62052b",
+   "s": 7307
   },
   {
    "p": "server/tools.js",
@@ -275,9 +275,14 @@
    "s": 18532
   },
   {
+   "p": "server/tools/admin.js",
+   "h": "cd6aa46213c85d2201b9a94dbd2a895b003c033615121cbed11956da31845585",
+   "s": 6896
+  },
+  {
    "p": "server/tools/boards.js",
-   "h": "a5ab1d1437209aeb17d9f80c66d8fd1c8eddafe977acb9c75fa5f704a67abf6e",
-   "s": 27722
+   "h": "8472c7e3fc2cb767884f03e161722f9ee9e6043a53590bb4557b5e07aeaedfab",
+   "s": 27760
   },
   {
    "p": "server/tools/computer.js",
@@ -331,8 +336,8 @@
   },
   {
    "p": "server/tools/register.js",
-   "h": "b29c2cde68e38ebebb1aa5bb07a4ba53b007d6956a4c1701c20984ba88e1539a",
-   "s": 681
+   "h": "80f2efaaec0f052ea062ecfda7e2c452ec5607a27769c5797aad10c6712c1792",
+   "s": 703
   },
   {
    "p": "server/tools/shell.js",
@@ -851,13 +856,13 @@
   },
   {
    "p": "src/components/ApprovalModal.css",
-   "h": "b0a9fb34522f2f8966e835434f4defda0252010d99e2fd972f4d42cdce6751b9",
-   "s": 3825
+   "h": "22e2c67bbd28cf4d1ea913098e5cd12e801622a71040d8714d8e42a5ded67f6e",
+   "s": 5032
   },
   {
    "p": "src/components/ApprovalModal.jsx",
-   "h": "76e527bc931529f0e266353cb11ff82ad993af8c572a5a3ad78bc3dcbbc8c823",
-   "s": 4652
+   "h": "02c0f4dc26f9e313aac20566e2c63a127ae1eedd9009aee07fb7be576e205a75",
+   "s": 6960
   },
   {
    "p": "src/components/CodeEditor.css",
@@ -926,13 +931,13 @@
   },
   {
    "p": "src/components/PresenceChat.jsx",
-   "h": "47a865292a1a9706408c1128f8a9df1a915657f7efeecb000e335512014f1c85",
-   "s": 10838
+   "h": "1eb4eadf0070ba5417fbb92bc73ac600a66bb0eb95a57909738ba1e75964f790",
+   "s": 12238
   },
   {
    "p": "src/components/PresenceView.css",
-   "h": "5a1e09b3e330cd9f0397ec079728cfc9123ca79b2642135c82c7a474714645ba",
-   "s": 21352
+   "h": "7a1e6b08a55a3fa1094ab82a0139be78640c954a116438e351b8a67fb71ff613",
+   "s": 21927
   },
   {
    "p": "src/components/PresenceView.jsx",

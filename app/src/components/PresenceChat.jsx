@@ -134,6 +134,28 @@ async function decide(id, decision) {
 
 function ApprovalCard({ m }) {
   const { request, state } = m;
+  if (request.permission === 'admin') {
+    return (
+      <div className={`pchat__approval pchat__approval--admin is-${state}`} role="alert">
+        <div className="pchat__approval-head">
+          <span className="pchat__perm is-admin">administrator</span>
+          It asks to run a command <b>as administrator</b>
+        </div>
+        <div className="pchat__approval-body"><Preview preview={request.preview} /></div>
+        {state === 'pending' && (<>
+          <p className="pchat__admin-warn">Full control of this PC. Allow only if you expect it; Windows will ask you to confirm next.</p>
+          <div className="pchat__approval-actions">
+            <button type="button" className="is-deny" onClick={() => decide(request.id, 'deny')}>Deny</button>
+            <button type="button" className="is-admin" onClick={() => decide(request.id, 'once')}>Allow as administrator, once</button>
+          </div>
+        </>)}
+        {state === 'sending' && <div className="pchat__approval-state">sending…</div>}
+        {state === 'approved' && <div className="pchat__approval-state is-ok">✓ allowed — confirm in the Windows prompt</div>}
+        {state === 'denied' && <div className="pchat__approval-state is-no">✕ denied</div>}
+        {state === 'expired' && <div className="pchat__approval-state">{m.error || 'no longer waiting'}</div>}
+      </div>
+    );
+  }
   const verb = request.permission === 'execute' ? 'run' : request.permission === 'write' ? 'change a file with' : 'use';
   return (
     <div className={`pchat__approval is-${state}`}>

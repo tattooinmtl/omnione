@@ -12,7 +12,7 @@
 import { webSearch, browserOpen } from './tools.js';
 import { listMcpTools, callMcpTool } from './mcp.js';
 
-/** @typedef {'read'|'write'|'execute'} Permission */
+/** @typedef {'read'|'write'|'execute'|'admin'} Permission */
 
 const registry = new Map();
 
