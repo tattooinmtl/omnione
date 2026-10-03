@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.5.2",
- "build": "f7b33a78af02",
- "commit": "f0243d24dbe7",
- "date": "2026-10-03T12:00:50-04:00",
+ "version": "0.6.0",
+ "build": "27804e007bb0",
+ "commit": "aa478c826a59",
+ "date": "2026-10-03T12:10:16-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "0cd316480dc20c0499c4d1108ed7157940b92b0f353e4a3fe353a442632cc096",
+   "h": "b46aa555e12ce63a1b76f871dd38f9415dbe7b24efb9c6185bcd78102e9c3617",
    "s": 7664640
   },
   {
    "p": "build.json",
-   "h": "14eb91c295837913e75b1a5dedd5fdef942e1026bfdea5bbe82eba61e633b031",
+   "h": "57c84688c80bd4161fe0e5604502ddf0a150f1e6487078fef84742b163eeec18",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "a72257124b1411c612a81dc261f9931b4f5a3ce4803bb74cfab1e5f408e37da5",
+   "h": "b7be57ea3152dd7672e6178ac72904208ba2d8384b4bd58f4e6f318bee18e826",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "3bd67b48d364100c6ce378da7a9d66deb869667780cfc76968ad938367077187",
+   "h": "826c672068ffaf872982bd02b58835ba5d1e44ffb9b4287d53e9cb6786c85e64",
    "s": 1191
   },
   {
@@ -93,6 +93,16 @@
    "p": "server/boards/drivers.js",
    "h": "fc6502cac8e3a4f4fa79b16a2ddebf386f6acfffdfcaab4ee72c441d8711df01",
    "s": 6427
+  },
+  {
+   "p": "server/boards/esptool.js",
+   "h": "32215f2e0a5a9ef0d7c750acbe848dea217609ff9472db8ff6458a0e4735b1a7",
+   "s": 5085
+  },
+  {
+   "p": "server/boards/portOwner.js",
+   "h": "e07b300565dd0bf0e49b78f7087cfdd61146a6b485bc766c90edbacca0ae48d6",
+   "s": 8534
   },
   {
    "p": "server/boards/toolchains.js",
@@ -266,8 +276,8 @@
   },
   {
    "p": "server/tools/boards.js",
-   "h": "90f912db23eeee1b994d61442fe5bca1a0dfa5ce67c3e931e10c284c941392b6",
-   "s": 20166
+   "h": "a5ab1d1437209aeb17d9f80c66d8fd1c8eddafe977acb9c75fa5f704a67abf6e",
+   "s": 27722
   },
   {
    "p": "server/tools/computer.js",

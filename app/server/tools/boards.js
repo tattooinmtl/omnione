@@ -17,6 +17,11 @@ import { detectBoards, identify } from '../boards/detect.js';
 import { detectToolchains, requirementsFor, which, installCommandFor } from '../boards/toolchains.js';
 import { diagnose, driverStatusFor } from '../boards/drivers.js';
 import { resolveInWorkspace, toWorkspaceRelative } from '../workspace.js';
+import {
+  esptoolPath, esptoolMajor, esptoolCommand, classifyFailure, FAILURE_HINTS,
+  parseChipInfo, parseAddress, hex, SECTOR,
+} from '../boards/esptool.js';
+import { whoHoldsPort, ownOpenPorts } from '../boards/portOwner.js';
 
 /* Run a command through the bash tool so the whole safety apparatus applies. */
 function sh(command, ctx, { cwd = '.', timeoutMs = 300_000 } = {}) {
@@ -187,7 +192,9 @@ registerTool({
         exitCode,
         output: `${stdout || ''}\n${stderr || ''}`.trim().slice(-4000),
         ...(exitCode !== 0
-          ? { hint: 'If it timed out: hold BOOT (or press RESET) while the upload starts, and confirm nothing else has the port open — a serial monitor will block it.' }
+          ? { hint: /could not open|access is denied|busy/i.test(`${stdout}${stderr}`)
+        ? 'The port is in use. Run serial_port_owner to see which program holds it.'
+        : 'If it could not connect: the upload resets the board itself, so first check nothing else holds the port (serial_port_owner). Only a board without an auto-reset circuit needs BOOT held.' }
           : {}),
       },
     };
@@ -241,63 +248,201 @@ registerTool({
 });
 
 // --- ESP32 low level -------------------------------------------------------
+//
+// All of these go through runEsptool: esptool resets the chip into its
+// bootloader itself (DTR/RTS, then USB reset for native-USB chips), so no
+// one has to hold BOOT unless the board has no auto-reset circuit at all,
+// and a failure says which of "port in use", "no such port" or "chip never
+// answered" it was.
+
+const RESET_PROP = {
+  type: 'string',
+  enum: ['auto', 'usb', 'manual'],
+  description: 'How to put the chip in download mode. auto (default): esptool pulses DTR/RTS, and retries with a USB reset if that fails. usb: native-USB chips (S2/S3/C3/C6/H2). manual: only when the user is holding BOOT/IO0.',
+};
+
+async function runEsptool({ port, command, args = [], reset = 'auto', after = 'run', baud, chip }, ctx, timeoutMs) {
+  const tool = esptoolPath();
+  if (!tool) return { error: { ok: false, error: `esptool is not installed. Install it with: ${installCommandFor('esptool')}` } };
+  const major = esptoolMajor(tool);
+  const tries = reset === 'auto' ? ['auto', 'usb'] : [reset];
+  let last = null;
+  for (const mode of tries) {
+    const r = await sh(esptoolCommand({ tool, major, port, command, args, reset: mode, after, baud, chip }), ctx, { timeoutMs });
+    if (!r.ok) return { error: r };
+    const text = `${r.result.stdout || ''}\n${r.result.stderr || ''}`;
+    const failure = r.result.exitCode === 0 ? null : classifyFailure(text);
+    last = { exitCode: r.result.exitCode, text, resetUsed: mode, failure };
+    // Only a chip that never answered is worth another reset strategy.
+    if (r.result.exitCode === 0 || failure !== 'no_bootloader') break;
+  }
+  return last;
+}
+
+function espResult(run, port, extra = {}) {
+  const success = run.exitCode === 0;
+  return {
+    ok: true,
+    result: {
+      port,
+      success,
+      reset: run.resetUsed,
+      ...extra,
+      ...(success ? {} : {
+        failure: run.failure || 'error',
+        hint: FAILURE_HINTS[run.failure] || 'See the output for esptool\'s own message.',
+      }),
+      output: run.text.trim().slice(-3000),
+    },
+  };
+}
 
 registerTool({
   name: 'esp_chip_info',
-  description: 'Read an ESP32\'s actual chip type, MAC, flash size and crystal frequency with esptool. Use it to identify a board for certain — a USB id only identifies the serial bridge, not the chip behind it.',
+  description: 'Read an ESP32\'s actual chip type, revision, features, crystal frequency, MAC, and its flash chip (maker, id, size), with esptool. Resets the board into the bootloader on its own and back into its program afterwards. A USB id only identifies the serial bridge; this identifies the chip.',
   permission: 'execute',
   schema: {
     type: 'object',
-    properties: { port: { type: 'string', description: 'Serial port from board_list.' } },
+    properties: { port: { type: 'string', description: 'Serial port from board_list.' }, reset: RESET_PROP },
     required: ['port'],
   },
-  handler: async ({ port }, ctx = {}) => {
-    const tool = which('esptool') || which('esptool.py');
-    if (!tool) return { ok: false, error: `esptool is not installed. Install it with: ${installCommandFor('esptool')}` };
+  handler: async ({ port, reset = 'auto' }, ctx = {}) => {
+    // flash-id prints everything chip-id does, plus the flash chip and size.
+    const run = await runEsptool({ port, command: 'flash_id', reset }, ctx, 90_000);
+    if (run.error) return run.error;
+    return espResult(run, port, run.exitCode === 0 ? parseChipInfo(run.text) : {});
+  },
+});
 
-    const r = await sh(`${quote(tool)} --port ${quote(port)} chip_id`, ctx, { timeoutMs: 60_000 });
-    if (!r.ok) return r;
-    const { exitCode, stdout, stderr } = r.result;
-    const text = `${stdout || ''}\n${stderr || ''}`;
-    return {
-      ok: true,
-      result: {
-        port,
-        success: exitCode === 0,
-        chip: (text.match(/Detecting chip type\.*\s*(.+)/i) || [, null])[1]?.trim() || null,
-        features: (text.match(/Features:\s*(.+)/i) || [, null])[1]?.trim() || null,
-        mac: (text.match(/MAC:\s*([0-9a-f:]+)/i) || [, null])[1] || null,
-        crystal: (text.match(/Crystal is\s*(.+)/i) || [, null])[1]?.trim() || null,
-        output: text.slice(-3000),
-        ...(exitCode !== 0 ? { hint: 'Hold BOOT while connecting if the chip does not respond, and close any serial monitor holding the port.' } : {}),
+registerTool({
+  name: 'esp_reset',
+  description: 'Reset an ESP32 over its serial lines, no hands needed: "run" reboots it into its program (e.g. after flashing, or to see its startup output with board_monitor); "bootloader" leaves it waiting in download mode.',
+  permission: 'execute',
+  schema: {
+    type: 'object',
+    properties: {
+      port: { type: 'string' },
+      mode: { type: 'string', enum: ['run', 'bootloader'], default: 'run' },
+      reset: RESET_PROP,
+    },
+    required: ['port'],
+  },
+  handler: async ({ port, mode = 'run', reset = 'auto' }, ctx = {}) => {
+    const run = await runEsptool({ port, command: 'chip_id', reset, after: mode === 'bootloader' ? 'stay' : 'run' }, ctx, 60_000);
+    if (run.error) return run.error;
+    return espResult(run, port, {
+      mode,
+      ...(run.exitCode === 0 ? {
+        state: mode === 'bootloader' ? 'in download mode (until the next reset)' : 'rebooted into its program',
+      } : {}),
+    });
+  },
+});
+
+registerTool({
+  name: 'esp_write_flash',
+  description: 'Write prebuilt binary images to an ESP32\'s flash at given addresses: an ESP-IDF build (bootloader, partition table, app), a vendor firmware .bin, or a single partition. For Arduino sketches use board_compile + board_upload instead. Overwrites what is at those addresses.',
+  permission: 'execute',
+  schema: {
+    type: 'object',
+    properties: {
+      port: { type: 'string' },
+      images: {
+        type: 'array',
+        minItems: 1,
+        maxItems: 8,
+        description: 'What to write where, e.g. [{"address":"0x1000","file":"build/bootloader.bin"},{"address":"0x8000","file":"build/partition-table.bin"},{"address":"0x10000","file":"build/app.bin"}]. Files are relative to the workspace root.',
+        items: {
+          type: 'object',
+          properties: { address: { type: 'string' }, file: { type: 'string' } },
+          required: ['address', 'file'],
+        },
       },
-    };
+      chip: { type: 'string', description: 'esptool chip name (esp32, esp32s3, …). Default: detected.' },
+      baud: { type: 'integer', description: 'Upload speed. Default 460800; use 115200 if writes fail midway.', default: 460800 },
+      reset: RESET_PROP,
+    },
+    required: ['port', 'images'],
+  },
+  handler: async ({ port, images, chip, baud = 460800, reset = 'auto' }, ctx = {}) => {
+    if (!Array.isArray(images) || images.length === 0 || images.length > 8) {
+      return { ok: false, error: 'Give 1 to 8 images, each { address, file }.' };
+    }
+    const args = [];
+    const written = [];
+    const ranges = [];
+    for (const im of images) {
+      const addr = parseAddress(im?.address);
+      if (addr === null) return { ok: false, error: `"${im?.address}" is not an address. Use hex like 0x10000.` };
+      if (addr % SECTOR) return { ok: false, error: `${hex(addr)} is not on a 4 KB boundary; ESP32 flash is written in 0x1000 sectors.` };
+      let abs;
+      try { abs = resolveInWorkspace(im.file); } catch (e) { return { ok: false, error: e.message }; }
+      if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) return { ok: false, error: `No such file: ${im.file}` };
+      const size = fs.statSync(abs).size;
+      if (!size) return { ok: false, error: `${im.file} is empty.` };
+      const clash = ranges.find((r) => addr < r.end && addr + size > r.start);
+      if (clash) return { ok: false, error: `${im.file} at ${hex(addr)} overlaps ${clash.file}.` };
+      ranges.push({ start: addr, end: addr + size, file: im.file });
+      args.push(hex(addr), quote(abs));
+      written.push({ address: hex(addr), file: toWorkspaceRelative(abs), bytes: size });
+    }
+    const run = await runEsptool({ port, command: 'write_flash', args, reset, baud, chip }, ctx, 600_000);
+    if (run.error) return run.error;
+    return espResult(run, port, { images: written, ...(run.exitCode === 0 ? { note: 'Written and verified; the board was reset into its program. Use board_monitor to watch it start.' } : {}) });
+  },
+});
+
+registerTool({
+  name: 'esp_erase_region',
+  description: 'Erase one region of an ESP32\'s flash, e.g. a corrupt OTA slot, NVS or an app partition, leaving the rest intact. Address and size must be multiples of 0x1000. Destroys what is in that region.',
+  permission: 'execute',
+  schema: {
+    type: 'object',
+    properties: {
+      port: { type: 'string' },
+      address: { type: 'string', description: 'Start, e.g. 0x9000.' },
+      size: { type: 'string', description: 'Length, e.g. 0x6000.' },
+      reset: RESET_PROP,
+    },
+    required: ['port', 'address', 'size'],
+  },
+  handler: async ({ port, address, size, reset = 'auto' }, ctx = {}) => {
+    const a = parseAddress(address);
+    const n = parseAddress(size);
+    if (a === null || n === null || n === 0) return { ok: false, error: 'address and size must be numbers, e.g. "0x9000" and "0x6000".' };
+    if (a % SECTOR || n % SECTOR) return { ok: false, error: `Both must be multiples of 0x1000 (got ${hex(a)}, ${hex(n)}).` };
+    const run = await runEsptool({ port, command: 'erase_region', args: [hex(a), hex(n)], reset }, ctx, 180_000);
+    if (run.error) return run.error;
+    return espResult(run, port, { erased: { from: hex(a), to: hex(a + n), bytes: n } });
   },
 });
 
 registerTool({
   name: 'esp_erase_flash',
-  description: 'Erase an ESP32\'s entire flash. Destroys the firmware and any stored data on the device — only use it when the user has asked to wipe the board or to recover one that will not flash.',
+  description: 'Erase an ESP32\'s entire flash. Destroys the firmware and any stored data on the device — only use it when the user has asked to wipe the board or to recover one that will not flash. To clear one partition, use esp_erase_region.',
   permission: 'execute',
   schema: {
     type: 'object',
-    properties: { port: { type: 'string' } },
+    properties: { port: { type: 'string' }, reset: RESET_PROP },
     required: ['port'],
   },
-  handler: async ({ port }, ctx = {}) => {
-    const tool = which('esptool') || which('esptool.py');
-    if (!tool) return { ok: false, error: `esptool is not installed. Install it with: ${installCommandFor('esptool')}` };
-    const r = await sh(`${quote(tool)} --port ${quote(port)} erase_flash`, ctx, { timeoutMs: 180_000 });
-    if (!r.ok) return r;
-    return {
-      ok: true,
-      result: {
-        port,
-        success: r.result.exitCode === 0,
-        output: `${r.result.stdout || ''}\n${r.result.stderr || ''}`.trim().slice(-2000),
-      },
-    };
+  handler: async ({ port, reset = 'auto' }, ctx = {}) => {
+    const run = await runEsptool({ port, command: 'erase_flash', reset }, ctx, 180_000);
+    if (run.error) return run.error;
+    return espResult(run, port);
   },
+});
+
+registerTool({
+  name: 'serial_port_owner',
+  description: 'Is a serial port free, busy or missing, and if busy, which process has it (PID, name, path, command line). Use it whenever a flash, chip read or monitor fails with "access denied" or "port busy".',
+  permission: 'read',
+  schema: {
+    type: 'object',
+    properties: { port: { type: 'string', description: 'e.g. COM5 or /dev/ttyUSB0.' } },
+    required: ['port'],
+  },
+  handler: async ({ port }) => ({ ok: true, result: await whoHoldsPort(port) }),
 });
 
 // --- MicroPython -----------------------------------------------------------
@@ -409,6 +554,7 @@ registerTool({
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        ownOpenPorts.delete(String(port).toUpperCase());
         ctx.signal?.removeEventListener('abort', onAbort);
         // Always release the port: an open handle blocks the next upload,
         // which is the single most common way flashing mysteriously fails.
@@ -420,6 +566,7 @@ registerTool({
 
       try {
         sp = new SerialPort({ path: port, baudRate: Number(baud) || 115200 });
+        ownOpenPorts.set(String(port).toUpperCase(), 'board_monitor');
       } catch (e) {
         return finish({ ok: false, error: `Could not open ${port}: ${e.message}` });
       }
@@ -428,7 +575,7 @@ registerTool({
         ok: false,
         error: `${port}: ${e.message}`,
         ...(/access denied|busy/i.test(e.message)
-          ? { hint: 'Something else has the port open — close any other serial monitor.' }
+          ? { hint: 'Something else has the port open. Run serial_port_owner to see which program.' }
           : {}),
       }));
       sp.on('data', (c) => { buf = (buf + c.toString('utf8')).slice(-64_000); });
