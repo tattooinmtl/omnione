@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.7.1",
- "build": "fcb82a304943",
- "commit": "0204272c2579",
- "date": "2026-10-03T18:31:13-04:00",
+ "version": "0.7.2",
+ "build": "49bd3597302c",
+ "commit": "01946c202049",
+ "date": "2026-10-03T18:42:47-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "5d91318d856565447d20516827a2d64dd05f7284da60a35ddaf3dbf1e9ff6506",
+   "h": "94670d5c9faba9536c5b33f1116ec78cc2f18d3000f36c02008695136cf439ba",
    "s": 7664640
   },
   {
    "p": "build.json",
-   "h": "e42ad673a3318bc55173f4462d6eaa5cc053f32f19c5334a90238433166e4552",
+   "h": "d67b61f5188a4eabc5d6bb84c5bc2916a4e589778ba1622968cd4fec64dee85a",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "a0a1932d6df94b077f9062f89fd5556c9c7233a85a059fc5b18fee94bf4a2aed",
+   "h": "933103db509b57a22e97b80e25518d939b950cb86df0296e68c765b2ec4cc45a",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "97292b5c6c217cfbdabb6767b70fcbddf8d49773fc9678ae242809eda9e180ad",
+   "h": "a7fc3718d97d1b7bd0bc0a9bbc6bcc90476a4a6590c3dca4ed5545ff5cf0e407",
    "s": 1191
   },
   {

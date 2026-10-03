@@ -1,7 +1,7 @@
 {
   "name": "omnione",
   "private": true,
-  "version": "0.7.1",
+  "version": "0.7.2",
   "type": "module",
   "description": "OmniOne — a local AI agent with memory, moods, a heartbeat and a live face. Websim-style: prompt left, preview center, code editor on the go. React + Vite + Three.js.",
   "scripts": {
