@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.4.1",
- "build": "65e0cc636e5a",
- "commit": "33becae93860",
- "date": "2026-10-02T18:31:33-04:00",
+ "version": "0.5.0",
+ "build": "d04a26133af3",
+ "commit": "c90d56b39b35",
+ "date": "2026-10-03T08:18:34-04:00",
  "setup": {
   "version": "1.1",
   "source": "14ce6c8561a7"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "c339386611815b71bf9f5a22c34bccec4fc862cab9bcb3fd1214f7bb2e2fa824",
+   "h": "5aedcc79d3dc145a06691decd9de0ba4eb50227e6f92cafb41e28f437fa54233",
    "s": 7657472
   },
   {
    "p": "build.json",
-   "h": "d4741be32d0ec131e4932bbf5c31389abd7df722a8ad520f12f2f9bafb1b5547",
+   "h": "088f84733f2d9d1baca01c41688193778932473c451e242bad29983c32598694",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "c365068bb2c3b38297d313f8529d71311619405fb5281ead7ea2a4a79b8aa53c",
+   "h": "db70ee0547289d1ca0fa6c495cd73df181d3f0d44f98b63cad85c2fc309b1b2e",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "82e72c3b155f65b9604f288b698d465a35952479ce922e8559ba9626a9aeba7d",
+   "h": "7c6e1d4ce8830aabcded9f3565ecfe4b498847ff0dba07c98eb1cc1715cccd50",
    "s": 1191
   },
   {
@@ -100,6 +100,11 @@
    "s": 7498
   },
   {
+   "p": "server/brain.js",
+   "h": "bf9c3973cfa7c5461653d4c4f25ccb2ca9555b807417e8b476e25d9b14e833dc",
+   "s": 6158
+  },
+  {
    "p": "server/btw.js",
    "h": "dff1f3614558ef64ed59fd236fd73a8d413e2f4b59e2578cec4a8bca78e3cf45",
    "s": 3299
@@ -141,8 +146,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "4d79915a86dfedeafba5a6a20d40cc15db3dfa0c39a99ac6115ca4eefeb0e643",
-   "s": 46570
+   "h": "a42e2de38026099c2da2013371caaf5a2f1a1d3b76c54f7572759a125bb21fb8",
+   "s": 47059
   },
   {
    "p": "server/mcp.js",
@@ -916,13 +921,13 @@
   },
   {
    "p": "src/components/PresenceView.css",
-   "h": "20091109670c0e20d97575ebafbccdc2360d40be16d31c5422c361036c44ae66",
-   "s": 18570
+   "h": "efc2fef0a56c227e8bf1c3a4e711d2bcc45bf760af26b596342ff066a03d7389",
+   "s": 20947
   },
   {
    "p": "src/components/PresenceView.jsx",
-   "h": "85fc59f1c59d953657493b82af1822447abed7f55b84810105210a96b94c90e8",
-   "s": 23733
+   "h": "2f47067ddea0dd207974f9121ff1b97783098029c45516e5cfaeb9d2b2686e39",
+   "s": 29408
   },
   {
    "p": "src/components/PreviewPanel.css",
@@ -1023,6 +1028,11 @@
    "p": "src/main.jsx",
    "h": "27c4eedd0c43d7598d320ebbf0fe5ca21868836361f7748c09da1e354102aea4",
    "s": 353
+  },
+  {
+   "p": "src/presence/BrainNetwork.js",
+   "h": "5b6bf3399afd3c2d43a5dac39a8626632ff6e3120ab4cbb2bc9fd469b0d54443",
+   "s": 26028
   },
   {
    "p": "src/presence/FaceScene.js",

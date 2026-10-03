@@ -90,6 +90,7 @@ import { getCore, CORE_LIMITS, recentMemories } from './mind/memory.js';
 import { getState as getMindState, currentMood, listGoals, setHeartbeat, resolveProposal } from './mind/state.js';
 import { readJournal } from './mind/journal.js';
 import { readSoul, writeSoul } from './mind/prompt.js';
+import { brainGraph, recordFeel } from './brain.js';
 import { beat, startHeartbeat, heartbeatStatus, onHeartbeatEvent } from './mind/heartbeat.js';
 import { synthesizeSpeech } from './tools/media.js';
 import { publicAccount, startConnect, pollConnect, cancelConnect, refreshAccount, disconnect, syncUsage, CloudError } from './cloud.js';
@@ -963,6 +964,21 @@ app.get('/api/mind', (_req, res) => {
     memories: recentMemories(15),
     heartbeat: heartbeatStatus(),
   });
+});
+
+// The brain network for the Presence view: conversations, tools and skills,
+// and the emotions felt while each action ran.
+app.get('/api/brain', (_req, res) => {
+  res.json(brainGraph());
+});
+
+app.post('/api/brain/feel', (req, res) => {
+  const { emotion, action } = req.body || {};
+  try {
+    res.json({ count: recordFeel(emotion, action) });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 app.put('/api/mind/soul', (req, res) => {

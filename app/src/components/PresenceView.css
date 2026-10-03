@@ -200,9 +200,10 @@
 .presence__engine {
   position: relative;
   flex: none;
-  height: 300px;
+  height: 320px;
   display: grid;
-  grid-template-columns: minmax(220px, 280px) 1fr;
+  /* Two equal halves: the emotion engine, and the brain network it feeds. */
+  grid-template-columns: 1fr 1fr;
   border-top: 1px solid rgba(138, 107, 255, 0.4);
   background: #05041c;
   box-shadow: inset 0 18px 40px -20px rgba(90, 60, 200, 0.45);
@@ -420,6 +421,66 @@
 .presence__readout .pcard__head { margin: -10px -14px 4px; color: #b9a8ff; background: rgba(138, 107, 255, 0.08); border-bottom-color: rgba(138, 107, 255, 0.3); }
 .presence__net { position: relative; min-width: 0; min-height: 0; }
 
+/* The two halves of the engine band. */
+.presence__half { position: relative; min-width: 0; min-height: 0; }
+.presence__half--emotion { display: grid; grid-template-columns: minmax(170px, 230px) 1fr; }
+.presence__brain { border-left: 1px solid rgba(138, 107, 255, 0.4); background: #04030f; }
+.presence__brain-canvas { cursor: grab; touch-action: none; }
+.presence__brain-canvas:active { cursor: grabbing; }
+.presence__brain-legend {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: flex;
+  gap: 10px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-dim, #8a96a8);
+  pointer-events: none;
+}
+.presence__brain-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 6px var(--c);
+}
+.presence__brain-legend .is-conversation { --c: #ff8a2a; }
+.presence__brain-legend .is-skill { --c: #3dff7a; }
+.presence__brain-legend .is-tool { --c: #3fc8ff; }
+.presence__brain-legend .is-emotion { --c: #e04dff; }
+.presence__brain-hint {
+  position: absolute;
+  left: 8px;
+  top: 20px;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: rgba(185, 168, 255, 0.45);
+  pointer-events: none;
+}
+.brain-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.brain-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 6px 0 0 6px;
+  font-size: 10px;
+  color: color-mix(in srgb, var(--c, #ddd) 35%, white);
+  text-shadow: 0 0 4px #000, 0 0 2px #000;
+  white-space: nowrap;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  will-change: transform;
+}
+.brain-label.is-brain { font-size: 11px; color: #fff; translate: -50% -50%; margin: 0; letter-spacing: 0.1em; text-shadow: 0 0 10px #8a6bff; }
+.brain-label.is-emotion { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; }
+.brain-label.is-active { color: #fff; text-shadow: 0 0 8px var(--c), 0 0 2px var(--c); z-index: 1; }
+
 /* Approval, answered from the chat. */
 .pchat__approval {
   flex-shrink: 0;
@@ -475,7 +536,9 @@
   .presence__grid { grid-template-columns: 1fr; grid-template-rows: minmax(360px, 60vh) auto auto; overflow-y: auto; }
   .presence__stage { order: -1; min-height: 360px; }
   .presence__engine { height: auto; grid-template-columns: 1fr; }
+  .presence__half--emotion { grid-template-columns: 1fr; }
   .presence__net { height: 240px; }
+  .presence__brain { height: 360px; border-left: 0; border-top: 1px solid rgba(138, 107, 255, 0.4); }
   .presence__readout { border-right: 0; border-bottom: 1px solid rgba(138, 107, 255, 0.3); }
   .presence__col--left, .presence__col--right { border: 0; border-top: 1px solid var(--p-line); overflow: visible; }
   .pchat { flex: none; height: 440px; }
@@ -495,5 +558,7 @@
   .presence__col--left.pcard { border-width: 1px 0 0; }
   .pchat { flex: none; height: 440px; }
   .presence__engine { flex: none; height: auto; grid-template-columns: 1fr; }
+  .presence__half--emotion { grid-template-columns: 1fr; }
   .presence__net { height: 260px; }
+  .presence__brain { height: 380px; }
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { FaceScene } from '../presence/FaceScene.js';
 import { VoiceWave } from '../presence/VoiceWave.js';
 import { NeuralCore } from '../presence/NeuralCore.js';
+import { BrainNetwork, emotionColor } from '../presence/BrainNetwork.js';
 import { EmotionRuntime, EMOTION_COLORS } from '../presence/emotionEngine.js';
 import { Voice, speakable, speechChunks } from '../presence/voice.js';
 import PresenceChat, { chatText } from './PresenceChat.jsx';
@@ -14,6 +15,12 @@ import './PresenceView.css';
  * run in progress (re-broadcast by AiPanel as gwn:agent-event), to what the
  * agent does on its own time (the /api/mind/events stream), and to its mood;
  * one animation loop turns that into expression, gesture, voice and colour.
+ *
+ * Under it, side by side: the emotion engine and the brain network it feeds.
+ * Every emotion the engine moves fires from the brain into that emotion's
+ * neuron; every tool or skill the agent uses then runs on from the emotions
+ * it was felt with, to the action, to the conversation it happened in, and
+ * the pairing is recorded so the links build up over time.
  *
  * Around it: the mind — journal, goals, proposals, the heartbeat's controls
  * and budget — so you can see what it has been doing while you were away.
@@ -52,6 +59,12 @@ export default function PresenceView({ onClose, toast }) {
   const waveRef = useRef(null);
   const coreRef = useRef(null);
   const labelsRef = useRef(null);
+  const brainRef = useRef(null);
+  const brainLabelsRef = useRef(null);
+  const brainNet = useRef(null);
+  const brainLive = useRef({ conv: null, prompt: '', held: new Map() });
+  const [brainPath, setBrainPath] = useState('');
+  const [brainCounts, setBrainCounts] = useState(null);
   const [affect, setAffect] = useState(null);
   const [lastPath, setLastPath] = useState('');
   const engine = useRef(null);
@@ -81,6 +94,16 @@ export default function PresenceView({ onClose, toast }) {
     } catch { /* server down; keep the last state */ }
   }, []);
 
+  const loadBrain = useCallback(async () => {
+    try {
+      const r = await fetch('/api/brain');
+      if (!r.ok) return;
+      const g = await r.json();
+      brainNet.current?.setGraph(g);
+      if (brainNet.current?.counts) setBrainCounts({ ...brainNet.current.counts });
+    } catch { /* server down; keep what is drawn */ }
+  }, []);
+
   // Renderers, engine, voice and the single animation loop.
   useEffect(() => {
     engine.current = new EmotionRuntime();
@@ -96,12 +119,20 @@ export default function PresenceView({ onClose, toast }) {
     } catch (e) {
       toastRef.current?.(`WebGL unavailable: ${e.message}`, 'error');
     }
+    try {
+      brainNet.current = new BrainNetwork(brainRef.current, brainLabelsRef.current, {
+        onPath: (labels) => setBrainPath(labels.join(' → ')),
+      });
+    } catch { brainNet.current = null; }
+    const brain = brainNet.current;
     wave = new VoiceWave(waveRef.current);
 
     // Every appraised event animates its path through the network, and the
     // HUD spells it out.
     const offTrace = engine.current.onTrace((t) => {
       core?.addTrace(t);
+      // The same emotions, in the brain: each one fires from the centre.
+      for (const m of t.emotions) brain?.fire(['brain', `emotion:${m.emotion}`], emotionColor(m.emotion));
       const dims = Object.entries(t.appraisal || {})
         .filter(([k, v]) => typeof v === 'number' && Math.abs(v) > 0.4 && k !== 'certainty')
         .map(([k]) => k);
@@ -110,9 +141,9 @@ export default function PresenceView({ onClose, toast }) {
       setLastPath(`${t.source} → ${dims.join(', ') || 'appraisal'} → ${emos.join(', ')} → ${regions.join(', ') || 'face'}`);
     });
 
-    const onResize = () => { face?.resize(); wave.resize(); core?.resize(); };
+    const onResize = () => { face?.resize(); wave.resize(); core?.resize(); brain?.resize(); };
     const ro = new ResizeObserver(onResize);
-    [faceRef, waveRef, coreRef].forEach((r) => r.current && ro.observe(r.current));
+    [faceRef, waveRef, coreRef, brainRef].forEach((r) => r.current && ro.observe(r.current));
 
     let raf = 0;
     let last = performance.now();
@@ -139,6 +170,8 @@ export default function PresenceView({ onClose, toast }) {
         emotions: st.emotions,
       });
       core?.render(dt);
+      brain?.setEmotions(st.emotions, Math.max(st.arousal, arousal.current * 0.6));
+      brain?.render(dt);
       if ((domTick += dt) > 0.25) {
         domTick = 0;
         setDominant(f.dominant);
@@ -156,8 +189,16 @@ export default function PresenceView({ onClose, toast }) {
       voice.current?.stopListening();
       face?.dispose();
       core?.dispose();
+      brain?.dispose();
+      brainNet.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    loadBrain();
+    const t = setInterval(loadBrain, 60000);
+    return () => clearInterval(t);
+  }, [loadBrain]);
 
   // React to the run in progress.
   useEffect(() => {
@@ -165,6 +206,7 @@ export default function PresenceView({ onClose, toast }) {
       const ev = e.detail || {};
       if (!engine.current) return;
       engine.current.handleEvent(ev);
+      routeToBrain(ev);
       // A new question interrupts whatever it was still saying.
       if (ev.type === 'user_prompt') voice.current?.stop();
       if (['user_prompt', 'tool_call', 'error', 'stuck', 'approval_request', 'done', 'heartbeat_start'].includes(ev.type)) {
@@ -185,12 +227,56 @@ export default function PresenceView({ onClose, toast }) {
           }
         }
         refresh();
+        loadBrain();
       }
       if (ev.type === 'mood' || (ev.type === 'tool_result' && ev.tool === 'set_mood')) refresh();
     };
     window.addEventListener('gwn:agent-event', onEvent);
     return () => window.removeEventListener('gwn:agent-event', onEvent);
-  }, [refresh]);
+  }, [refresh, loadBrain]);
+
+  /* The agent's actions, into the brain, through the emotions the engine is
+   * feeling right now (it has already appraised this event). */
+  const routeToBrain = (ev) => {
+    const brain = brainNet.current;
+    const live = brainLive.current;
+    if (!brain) return;
+    if (ev.type === 'user_prompt') {
+      live.prompt = String(ev.text || '').slice(0, 80);
+      if (live.conv) brain.fire(['brain', live.conv]);
+    } else if (ev.type === 'session' && ev.sessionId) {
+      live.conv = `conv:${ev.sessionId}`;
+      if (!brain.has(live.conv)) {
+        brain.addConversation(live.conv, live.prompt || 'New conversation');
+        if (brain.counts) setBrainCounts({ ...brain.counts });
+      }
+      brain.fire(['brain', live.conv]);
+    } else if (ev.type === 'tool_call' && ev.name) {
+      const toolId = `tool:${ev.name}`;
+      brain.addAction(toolId, 'tool', ev.name.replace(/^mcp__[^_]+__/, ''));
+      const skill = SKILL_TOOL_NAMES.has(ev.name) && typeof ev.input?.name === 'string' ? `skill:${ev.input.name}` : null;
+      if (skill) brain.addAction(skill, 'skill', ev.input.name);
+      const action = skill || toolId;
+      const felt = feltNow(engine.current);
+      const conv = ev.heartbeat ? null : live.conv;
+      for (const e of felt.length ? felt : [null]) {
+        brain.fire(['brain', e && `emotion:${e}`, toolId, skill, conv].filter(Boolean), e ? emotionColor(e) : undefined);
+      }
+      const held = [toolId, skill].filter(Boolean);
+      held.forEach((id) => brain.hold(id, true));
+      if (ev.id) live.held.set(ev.id, held);
+      // The pairing is the record: emotion → action, kept across sessions.
+      for (const e of felt) {
+        fetch('/api/brain/feel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ emotion: e, action }) }).catch(() => {});
+      }
+    } else if (ev.type === 'tool_result') {
+      const held = live.held.get(ev.id);
+      if (held) { held.forEach((id) => brain.hold(id, false)); live.held.delete(ev.id); }
+    } else if (ev.type === 'done' || ev.type === 'error' || ev.type === 'heartbeat_end') {
+      brain.releaseAll();
+      live.held.clear();
+    }
+  };
 
   // What it does on its own time.
   useEffect(() => {
@@ -429,7 +515,8 @@ export default function PresenceView({ onClose, toast }) {
       </div>
 
       {/* Everything emotional, together: the live readout and the network. */}
-      <section className="presence__engine" aria-label="Emotion engine">
+      <section className="presence__engine" aria-label="Emotion engine and neural network">
+        <div className="presence__half presence__half--emotion">
         <div className="presence__readout">
           <header className="pcard__head">Emotions now</header>
           {affect && (<>
@@ -457,9 +544,36 @@ export default function PresenceView({ onClose, toast }) {
           <div className="presence__core-label">EMOTION ENGINE</div>
           {lastPath && <div className="presence__core-path">{lastPath}</div>}
         </div>
+        </div>
+        <div className="presence__half presence__brain" aria-label="Neural network">
+          <canvas ref={brainRef} className="presence__core presence__brain-canvas" title="Drag to rotate · wheel to zoom" />
+          <div ref={brainLabelsRef} className="brain-labels" aria-hidden="true" />
+          <div className="presence__core-label">NEURAL NETWORK</div>
+          <div className="presence__brain-legend">
+            <span className="is-conversation">conversations{brainCounts ? ` ${brainCounts.conversations}` : ''}</span>
+            <span className="is-skill">skills{brainCounts ? ` ${brainCounts.skills}` : ''}</span>
+            <span className="is-tool">tools{brainCounts ? ` ${brainCounts.tools}` : ''}</span>
+            <span className="is-emotion">emotions</span>
+          </div>
+          <div className="presence__brain-hint">drag to rotate · wheel to zoom</div>
+          {brainPath && <div className="presence__core-path">{brainPath}</div>}
+        </div>
       </section>
     </div>
   );
+}
+
+const SKILL_TOOL_NAMES = new Set(['load_skill', 'load_skill_file']);
+
+/* The emotions it is feeling enough to count: the strongest two above a
+ * floor, as the engine holds them right now. */
+export function feltNow(engine, floor = 0.15) {
+  const em = engine?.core?.state?.emotions || {};
+  return Object.entries(em)
+    .filter(([, v]) => v >= floor)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([k]) => k);
 }
 
 function Meter({ label, value, text, warn, color }) {
