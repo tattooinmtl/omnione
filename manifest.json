@@ -1,12 +1,12 @@
 {
  "app": "omnione",
- "version": "0.5.0",
- "build": "d04a26133af3",
- "commit": "c90d56b39b35",
- "date": "2026-10-03T08:18:34-04:00",
+ "version": "0.5.1",
+ "build": "1524a4549120",
+ "commit": "f1f83bd2f27b",
+ "date": "2026-10-03T11:54:07-04:00",
  "setup": {
-  "version": "1.1",
-  "source": "14ce6c8561a7"
+  "version": "1.2",
+  "source": "897d6f692aa4"
  },
  "files": [
   {
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "5aedcc79d3dc145a06691decd9de0ba4eb50227e6f92cafb41e28f437fa54233",
-   "s": 7657472
+   "h": "22ff4cfe9c8850ac43bec9ae782b0b8fa783296180f627b8305f948832bc7cd0",
+   "s": 7664640
   },
   {
    "p": "build.json",
-   "h": "088f84733f2d9d1baca01c41688193778932473c451e242bad29983c32598694",
+   "h": "5319f571d9a23f25ddbe2559d67bcad4a70ebfa52c40a245cf425aad1f2d7d03",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "db70ee0547289d1ca0fa6c495cd73df181d3f0d44f98b63cad85c2fc309b1b2e",
+   "h": "f6066bf9361c29c318b4fbcdcdce5478874ce795250ca2cf57ab042a2fd673b1",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "7c6e1d4ce8830aabcded9f3565ecfe4b498847ff0dba07c98eb1cc1715cccd50",
+   "h": "01578b714cc471093a3e5acd01a7964b57e1bd478a750100b0e9a64cac5a77e3",
    "s": 1191
   },
   {
