@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.5.1",
- "build": "1524a4549120",
- "commit": "f1f83bd2f27b",
- "date": "2026-10-03T11:54:07-04:00",
+ "version": "0.5.2",
+ "build": "f7b33a78af02",
+ "commit": "f0243d24dbe7",
+ "date": "2026-10-03T12:00:50-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "22ff4cfe9c8850ac43bec9ae782b0b8fa783296180f627b8305f948832bc7cd0",
+   "h": "0cd316480dc20c0499c4d1108ed7157940b92b0f353e4a3fe353a442632cc096",
    "s": 7664640
   },
   {
    "p": "build.json",
-   "h": "5319f571d9a23f25ddbe2559d67bcad4a70ebfa52c40a245cf425aad1f2d7d03",
+   "h": "14eb91c295837913e75b1a5dedd5fdef942e1026bfdea5bbe82eba61e633b031",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "f6066bf9361c29c318b4fbcdcdce5478874ce795250ca2cf57ab042a2fd673b1",
+   "h": "a72257124b1411c612a81dc261f9931b4f5a3ce4803bb74cfab1e5f408e37da5",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "01578b714cc471093a3e5acd01a7964b57e1bd478a750100b0e9a64cac5a77e3",
+   "h": "3bd67b48d364100c6ce378da7a9d66deb869667780cfc76968ad938367077187",
    "s": 1191
   },
   {
@@ -826,8 +826,8 @@
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "fa848264fad6757573c3243642c90378bea2de98a58d657f79eff08a8c309dd2",
-   "s": 30315
+   "h": "9ce594f5b261d307087400d4dfece0e377d8fa24323057c34993c248c015e385",
+   "s": 30722
   },
   {
    "p": "src/components/AppShell.css",
@@ -916,13 +916,13 @@
   },
   {
    "p": "src/components/PresenceChat.jsx",
-   "h": "b311820a8ee769fa698000bdc5352d26621327aa0f6e6159d7652ed77030d1d5",
-   "s": 9601
+   "h": "47a865292a1a9706408c1128f8a9df1a915657f7efeecb000e335512014f1c85",
+   "s": 10838
   },
   {
    "p": "src/components/PresenceView.css",
-   "h": "efc2fef0a56c227e8bf1c3a4e711d2bcc45bf760af26b596342ff066a03d7389",
-   "s": 20947
+   "h": "5a1e09b3e330cd9f0397ec079728cfc9123ca79b2642135c82c7a474714645ba",
+   "s": 21352
   },
   {
    "p": "src/components/PresenceView.jsx",

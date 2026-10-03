@@ -5,7 +5,9 @@ import { Preview } from './ApprovalModal.jsx';
  *
  * Sending goes through gwn:submit-prompt — the same path as the main
  * composer — so it is the same conversation, and the reply drives the face,
- * the emotion engine and the voice exactly as a spoken question does.
+ * the emotion engine and the voice exactly as a spoken question does. It
+ * works while Omi-One is busy too: a message interrupts the task, and
+ * /btw asks on the side (the answer, from gwn:btw, shows here).
  *
  * The log is built from gwn:agent-event, which AiPanel re-broadcasts for
  * every run, so replies to prompts typed in the main panel show up here too.
@@ -93,6 +95,16 @@ function onAgentEvent(e) {
   emit();
 }
 
+/* /btw side questions, asked from here or the main panel. */
+function onBtw(e) {
+  const d = e.detail || {};
+  if (!d.id) return;
+  const i = messages.findIndex((m) => m.role === 'btw' && m.btwId === d.id);
+  if (i < 0) push({ role: 'btw', btwId: d.id, question: d.question, text: d.answer ?? null, failed: Boolean(d.failed) });
+  else messages = messages.map((m, k) => (k === i ? { ...m, text: d.answer ?? m.text, failed: Boolean(d.failed) } : m));
+  emit();
+}
+
 /* A run that ends leaves any unanswered approval moot. */
 function expirePending() {
   messages = messages.map((m) => (m.role === 'approval' && m.state === 'pending' ? { ...m, state: 'expired' } : m));
@@ -166,10 +178,12 @@ if (typeof window !== 'undefined') {
   if (prev) {
     window.removeEventListener('gwn:agent-event', prev.onAgentEvent);
     window.removeEventListener('gwn:generation-result', prev.onResult);
+    if (prev.onBtw) window.removeEventListener('gwn:btw', prev.onBtw);
   }
-  window.__gwnPresenceChat = { onAgentEvent, onResult };
+  window.__gwnPresenceChat = { onAgentEvent, onResult, onBtw };
   window.addEventListener('gwn:agent-event', onAgentEvent);
   window.addEventListener('gwn:generation-result', onResult);
+  window.addEventListener('gwn:btw', onBtw);
 }
 
 const subscribe = (fn) => { subs.add(fn); return () => subs.delete(fn); };
@@ -190,7 +204,8 @@ export default function PresenceChat() {
 
   const send = () => {
     const t = text.trim();
-    if (!t || running) return;
+    if (!t) return;
+    if (/^\/btw\s*$/i.test(t)) return; // nothing asked yet
     window.dispatchEvent(new CustomEvent('gwn:submit-prompt', { detail: { text: t } }));
     setText('');
     if (taRef.current) taRef.current.style.height = 'auto';
@@ -217,7 +232,12 @@ export default function PresenceChat() {
         )}
         {log.map((m) => (m.role === 'approval'
           ? <ApprovalCard key={m.id} m={m} />
-          : (
+          : m.role === 'btw' ? (
+            <div key={m.id} className={`pchat__msg is-btw${m.failed ? ' is-failed' : ''}`}>
+              <div className="pchat__btw-q"><b>BTW</b> {m.question}</div>
+              <div>{m.text ?? 'Omi-One is answering…'}</div>
+            </div>
+          ) : (
             <div key={m.id} className={`pchat__msg is-${m.role}${m.live ? ' is-live' : ''}`}>
               {m.role === 'tool' ? <span>⚙ {m.text}</span> : (m.text || (m.live ? '…' : ''))}
             </div>
@@ -229,7 +249,7 @@ export default function PresenceChat() {
           ref={taRef}
           rows={1}
           value={text}
-          placeholder={running ? 'It is working…' : 'Type a message — Enter to send'}
+          placeholder={running ? 'Working… type to interrupt, or /btw to ask on the side' : 'Type a message — Enter to send'}
           onChange={(e) => {
             setText(e.target.value);
             e.target.style.height = 'auto';
@@ -237,7 +257,7 @@ export default function PresenceChat() {
           }}
           onKeyDown={onKey}
         />
-        <button type="button" onClick={send} disabled={running || !text.trim()} aria-label="Send">➤</button>
+        <button type="button" onClick={send} disabled={!text.trim()} aria-label={running ? 'Interrupt and send' : 'Send'} title={running ? (/^\/btw\s/i.test(text) ? 'Ask on the side' : 'Interrupt and send') : 'Send'}>➤</button>
       </div>
     </div>
   );

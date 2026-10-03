@@ -278,9 +278,10 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     return () => window.removeEventListener('gwn:request-generation', onRequest);
   }, []);
 
-  // Prompts that arrive from outside the composer — spoken in the Presence
-  // view, or a proposal the user accepted — go through the same path as a
-  // typed one, so they show up in the history too.
+  // Prompts that arrive from outside the composer — typed or spoken in the
+  // Presence view, or a proposal the user accepted — go through exactly the
+  // same path as a typed one (submitText): /btw is a side question, anything
+  // else interrupts a run in progress or starts one.
   const onGenerateRef = useRef(onGenerate);
   onGenerateRef.current = onGenerate;
   const generatingRef = useRef(generating);
@@ -288,9 +289,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   useEffect(() => {
     const onSubmit = (e) => {
       const text = String(e.detail?.text || '').trim();
-      if (!text || generatingRef.current) return;
-      setHistory((h) => [...h, { role: 'user', text }]);
-      onGenerateRef.current(text);
+      if (text) submitTextRef.current?.(text);
     };
     window.addEventListener('gwn:submit-prompt', onSubmit);
     return () => window.removeEventListener('gwn:submit-prompt', onSubmit);
@@ -398,7 +397,12 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     const id = `btw-${Date.now()}`;
     setHistory((h) => [...h, { role: 'btw', id, text: question, answer: null }]);
     setShowHistory(true);
-    const set = (patch) => setHistory((h) => h.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+    const tell = (detail) => window.dispatchEvent(new CustomEvent('gwn:btw', { detail: { id, question, ...detail } }));
+    tell({ answer: null });
+    const set = (patch) => {
+      setHistory((h) => h.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+      tell(patch);
+    };
     try {
       const r = await fetch('/api/btw', {
         method: 'POST',
@@ -414,36 +418,39 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   };
   const dismissBtw = (id) => setHistory((h) => h.filter((m) => m.id !== id));
 
-  const submit = () => {
-    if (paletteOpen) return;
-    const text = prompt.trim();
+  /* Everything anyone sends, from any chat box or the voice: /btw asks on
+   * the side without stopping anything; any other message interrupts the
+   * task in progress (it goes out the moment that task has stopped) or
+   * starts a new one. Returns false when there was nothing to send. */
+  const submitText = (raw) => {
+    const text = String(raw || '').trim();
     const btw = text.match(/^\/btw(?:\s+([\s\S]*))?$/i);
     if (btw) {
       const question = (btw[1] || '').trim();
-      if (!question) { api.toast && api.toast('Type your question after /btw', 'info'); return; }
-      setPrompt('');
-      if (taRef.current) taRef.current.style.height = 'auto';
+      if (!question) { api.toast && api.toast('Type your question after /btw', 'info'); return false; }
       askBtw(question);
-      return;
+      return true;
     }
-    if (!text) return;
-    if (generating) {
-      // Interrupt: stop the current task, then send this the moment it has
-      // stopped (the effect below). /btw asks without interrupting.
-      setHistory((h) => [...h, { role: 'user', text }]);
-      setPrompt('');
-      setActiveSkill(null);
-      if (taRef.current) taRef.current.style.height = 'auto';
+    if (!text) return false;
+    setHistory((h) => [...h, { role: 'user', text }]);
+    setActiveSkill(null);
+    if (generatingRef.current) {
       interruptRef.current = text;
       if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
       api.toast && api.toast('Stopping the current task to start yours…', 'info');
-      return;
+      return true;
     }
-    setHistory((h) => [...h, { role: 'user', text }]);
+    onGenerateRef.current(text);
+    return true;
+  };
+  const submitTextRef = useRef(submitText);
+  submitTextRef.current = submitText;
+
+  const submit = () => {
+    if (paletteOpen) return;
+    if (!submitText(prompt)) return;
     setPrompt('');
-    setActiveSkill(null);
     if (taRef.current) taRef.current.style.height = 'auto';
-    onGenerate(text);
   };
 
   // Compute the slash-palette state from the current prompt
@@ -647,7 +654,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
                     : 'Add an API key in Settings, or switch provider to OmniOne Local…'
               }
             />
-            {generating ? (
+            {generating && !prompt.trim() ? (
               <button
                 type="button"
                 className="ai-panel__send ai-panel__send--stop"
@@ -663,7 +670,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
               className="ai-panel__send"
               onClick={submit}
               disabled={!prompt.trim() || paletteOpen}
-              title="Send"
+              title={generating ? (/^\/btw\s/i.test(prompt) ? 'Ask on the side' : 'Interrupt and send') : 'Send'}
             >
               {'➤'}
             </button>
