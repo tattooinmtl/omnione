@@ -8,6 +8,7 @@ import SettingsModal from './SettingsModal.jsx';
 import SkillsModal from './SkillsModal.jsx';
 import DraftsModal from './DraftsModal.jsx';
 import PresenceView, { PresenceOrb } from './PresenceView.jsx';
+import { STATIC_COMMANDS } from './CommandPalette.jsx';
 import AccountBar from './account/AccountBar.jsx';
 import StatsView from './stats/StatsView.jsx';
 import DoctorView from './doctor/DoctorView.jsx';
@@ -370,12 +371,12 @@ export default function AppShell() {
             generating={generating}
             trace={trace}
             api={{
-              openHelp: () => setHelpOpen(true),
-              openSkills: () => setSkillsOpen(true),
-              openDrafts: () => setDraftsOpen(true),
-              openSettings: () => setSettingsOpen(true),
-              openTools: () => showToast('Tools panel — coming online in the next round', 'info'),
-              openHooks: () => showToast('Hooks panel — coming online in the next round', 'info'),
+              // A command typed in Presence opens its panel in front:
+              // Presence covers everything, so it closes first.
+              openHelp: () => { setPresenceOpen(false); setHelpOpen(true); },
+              openSkills: () => { setPresenceOpen(false); setSkillsOpen(true); },
+              openDrafts: () => { setPresenceOpen(false); setDraftsOpen(true); },
+              openSettings: () => { setPresenceOpen(false); setSettingsOpen(true); },
               saveProject: onSave,
               downloadZip: onDownloadZip,
               toast: showToast,
@@ -461,16 +462,13 @@ function HelpModal({ onClose }) {
         </header>
         <div className="help-modal__body">
           <h4>Slash commands</h4>
-          <p>Type <code>/</code> in the prompt to open the command palette. <kbd>↑</kbd>/<kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select.</p>
+          <p>Type <code>/</code> in the prompt to open the command palette. <kbd>↑</kbd>/<kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select. Commands work the same in the Presence chat, and are never sent to Omi-One as a task.</p>
           <table className="help-modal__table">
             <tbody>
-              <tr><td><code>/help</code></td><td>Show this help</td></tr>
-              <tr><td><code>/skills</code></td><td>Open the skills navigator (arrow-key list)</td></tr>
-              <tr><td><code>/save</code></td><td>Save the current project as JSON</td></tr>
-              <tr><td><code>/zip</code></td><td>Download the current project as a ZIP</td></tr>
-              <tr><td><code>/settings</code></td><td>Open AI settings (provider, model, key)</td></tr>
-              <tr><td><code>/clear</code></td><td>Clear the prompt textarea</td></tr>
-              <tr><td><code>/new</code></td><td>Start a new conversation (forget the current history)</td></tr>
+              {/* The same list the palette and the command parser use, so it can't drift. */}
+              {STATIC_COMMANDS.map((c) => (
+                <tr key={c.trigger}><td><code>/{c.trigger}{c.trigger === 'btw' ? ' <question>' : ''}</code></td><td>{c.description}</td></tr>
+              ))}
               <tr><td><code>/run &lt;name&gt;</code></td><td>Load a skill into the prompt (one entry per installed skill)</td></tr>
             </tbody>
           </table>

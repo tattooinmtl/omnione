@@ -302,3 +302,45 @@
   cursor: pointer;
 }
 .ai-panel__limit-go:disabled { opacity: 0.5; cursor: default; }
+
+/* The thinking box: capped and scrollable, so long thinking can be read to
+   the end instead of running off the bottom of the panel. */
+.ai-panel__thinking {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 11px;
+}
+.ai-panel__thinking summary { cursor: pointer; padding: 4px 8px; color: var(--fg-dim, #8a96a8); letter-spacing: 0.08em; }
+.ai-panel__thinking-body {
+  max-height: min(38vh, 320px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 8px 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--fg-dim, #9aa6b8);
+  line-height: 1.45;
+}
+
+/* A command's answer in the conversation. */
+.ai-panel__cmd {
+  flex-shrink: 0;
+  border: 1px solid rgba(47, 123, 255, 0.45);
+  background: rgba(47, 123, 255, 0.06);
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.ai-panel__cmd-tag { font-size: 9px; letter-spacing: 0.14em; color: #6fa8ff; border: 1px solid currentColor; padding: 0 5px; }
+.cmd-out { margin-top: 6px; max-height: 50vh; overflow-y: auto; }
+.cmd-out__sec + .cmd-out__sec { margin-top: 8px; }
+.cmd-out__head { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-dim, #8a96a8); }
+.cmd-out__head span { opacity: 0.7; }
+.cmd-out ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.cmd-out li { line-height: 1.35; }
+.cmd-out li span { color: var(--fg-dim, #9aa6b8); }
+.cmd-out__none { color: var(--fg-dim, #8a96a8); font-style: italic; margin-top: 2px; }
+.cmd-out__note { margin: 8px 0 0; color: var(--fg-dim, #9aa6b8); }

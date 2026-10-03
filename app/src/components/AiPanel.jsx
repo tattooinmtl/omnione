@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import ContextMeter from './ContextMeter.jsx';
-import CommandPalette from './CommandPalette.jsx';
+import CommandPalette, { parseCommand } from './CommandPalette.jsx';
 import ApprovalModal from './ApprovalModal.jsx';
 import ProjectBar from './ProjectBar.jsx';
 import { useProviderTokenBudget, fetchSettings } from '../hooks/useProviderTokenBudget';
@@ -365,8 +365,8 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     saveProject: () => { setPaletteOpen(false); api.saveProject && api.saveProject(); },
     downloadZip: () => { setPaletteOpen(false); api.downloadZip && api.downloadZip(); },
     openSettings: () => { setPaletteOpen(false); api.openSettings && api.openSettings(); },
-    openTools: () => { setPaletteOpen(false); api.openTools && api.openTools(); },
-    openHooks: () => { setPaletteOpen(false); api.openHooks && api.openHooks(); },
+    openTools: () => { setPaletteOpen(false); listTools(); },
+    openHooks: () => { setPaletteOpen(false); listHooks(); },
     clearPrompt: () => { setPaletteOpen(false); setPrompt(''); setActiveSkill(null); setTimeout(() => taRef.current?.focus(), 30); },
     newSession: ({ quiet = false, keepView = false } = {}) => {
       if (keepView) {
@@ -389,6 +389,68 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       setTimeout(() => taRef.current?.focus(), 30);
     },
     runSkill: (name) => runSkill(name),
+  };
+
+  /* A command's answer, shown in the conversation (and in the Presence chat)
+   * like a message, but never sent to the agent. sections: [{ heading, items:
+   * [{ name, detail }] }]. */
+  const showCommandOutput = (title, { sections = [], note = '' } = {}) => {
+    const out = { role: 'cmd', id: `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, title, sections, note };
+    setHistory((h) => [...h, out]);
+    setShowHistory(true);
+    window.dispatchEvent(new CustomEvent('gwn:command-output', { detail: out }));
+  };
+  const dismissCmd = (id) => setHistory((h) => h.filter((m) => m.id !== id));
+
+  const listHooks = async () => {
+    try {
+      const r = await fetch('/api/hooks');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || `status ${r.status}`);
+      const events = j.events || [];
+      const hooks = j.hooks || [];
+      showCommandOutput(`/hooks — ${hooks.length} registered`, {
+        sections: events.map((ev) => ({
+          heading: ev,
+          items: hooks.filter((h) => h.event === ev).map((h) => ({
+            name: `${h.name}${h.runtime ? ` (.${h.runtime})` : ''}`,
+            detail: h.description || '',
+          })),
+        })),
+        note: hooks.length
+          ? 'Each runs at its event: UserPromptSubmit before a prompt is sent, PreToolUse before a tool runs (it can block it), PostToolUse after.'
+          : 'No hooks yet. Put a script in the app\'s hooks/<Event>/ folder (UserPromptSubmit, PreToolUse or PostToolUse) and it is picked up automatically.',
+      });
+    } catch (e) {
+      showCommandOutput('/hooks', { note: `Could not read the hooks: ${e.message}` });
+    }
+  };
+
+  const listTools = async () => {
+    try {
+      const r = await fetch('/api/tools');
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || `status ${r.status}`);
+      const tools = j.tools || [];
+      const groups = new Map();
+      for (const t of tools) {
+        const key = t.source && t.source !== 'builtin' ? `MCP: ${String(t.source).replace(/^mcp:?/, '')}` : 'Built in';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(t);
+      }
+      const ASK = { read: 'runs freely', write: 'asks to change files', execute: 'asks first', admin: 'administrator, asks every time' };
+      showCommandOutput(`/tools — ${tools.length} the AI can call`, {
+        sections: [...groups.entries()].map(([heading, list]) => ({
+          heading,
+          items: list.sort((a, b) => a.name.localeCompare(b.name)).map((t) => ({
+            name: t.name,
+            detail: `${ASK[t.permission] || t.permission} · ${String(t.description || '').split(/(?<=\.)\s/)[0].slice(0, 120)}`,
+          })),
+        })),
+      });
+    } catch (e) {
+      showCommandOutput('/tools', { note: `Could not read the tools: ${e.message}` });
+    }
   };
 
   // /btw <question>: a quick side question. Works while Omi-One is busy;
@@ -431,6 +493,21 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       askBtw(question);
       return true;
     }
+    // Slash commands run here and never reach the agent.
+    const command = parseCommand(text);
+    if (command) {
+      if (command.kind === 'unknown') {
+        api.toast && api.toast(`Unknown command /${command.name}. Type / to see the commands.`, 'error');
+        return false;
+      }
+      if (command.kind === 'skill') {
+        if (!command.name) { api.toast && api.toast('Name the skill: /run <name>', 'info'); return false; }
+        runSkill(command.name); // fills the prompt with the skill template
+        return 'keep';
+      }
+      command.cmd.run(paletteApi);
+      return true;
+    }
     if (!text) return false;
     setHistory((h) => [...h, { role: 'user', text }]);
     setActiveSkill(null);
@@ -448,7 +525,8 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
 
   const submit = () => {
     if (paletteOpen) return;
-    if (!submitText(prompt)) return;
+    const sent = submitText(prompt);
+    if (!sent || sent === 'keep') return;
     setPrompt('');
     if (taRef.current) taRef.current.style.height = 'auto';
   };
@@ -507,11 +585,12 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     // Static command: replace the prompt with /<trigger> and run if it
     // takes no argument. Otherwise leave the cursor in the textarea for
     // the user to type the argument.
-    setPrompt(`/${trigger} `);
     setPaletteOpen(false);
     setTimeout(() => taRef.current?.focus(), 30);
-    // Commands without arguments execute immediately
+    // Commands without arguments execute immediately, and leave the box empty
+    // so a second Enter can't send "/hooks" to the agent as a task.
     const argless = ['help', 'skills', 'drafts', 'save', 'zip', 'settings', 'clear', 'new', 'tools', 'hooks'];
+    setPrompt(argless.includes(trigger) ? '' : `/${trigger} `);
     if (argless.includes(trigger)) {
       setTimeout(() => cmd.run(paletteApi), 50);
     }
@@ -571,6 +650,15 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
                   {m.answer === null ? <span className="ai-panel__btw-wait">Omi-One is answering…</span> : m.answer}
                 </div>
               </div>
+            ) : m.role === 'cmd' ? (
+              <div key={m.id} className="ai-panel__cmd" role="note">
+                <div className="ai-panel__btw-head">
+                  <span className="ai-panel__cmd-tag">COMMAND</span>
+                  <span className="ai-panel__btw-q">{m.title}</span>
+                  <button type="button" className="ai-panel__btw-x" onClick={() => dismissCmd(m.id)} aria-label="Dismiss" title="Dismiss">×</button>
+                </div>
+                <CommandOutput m={m} />
+              </div>
             ) : (
               <div key={i} className={`ai-panel__row ai-panel__row-${m.role}`}>
                 <span className="ai-panel__row-role">{m.role === 'user' ? 'You' : 'AI'}</span>
@@ -610,7 +698,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
         {trace && trace.thinking && (
           <details className="ai-panel__thinking" open>
             <summary>Thinking…</summary>
-            <div className="ai-panel__thinking-body">{trace.thinking}</div>
+            <ThinkingBody text={trace.thinking} />
           </details>
         )}
       </div>
@@ -715,3 +803,43 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   );
 }
 
+
+/* The model's thinking, in a box of its own that scrolls. It follows the
+ * newest text while you are at the bottom, and stays put once you scroll up
+ * to read, until you scroll back down. */
+function ThinkingBody({ text }) {
+  const ref = useRef(null);
+  const follow = useRef(true);
+  useEffect(() => {
+    const el = ref.current;
+    if (el && follow.current) el.scrollTop = el.scrollHeight;
+  }, [text]);
+  const onScroll = () => {
+    const el = ref.current;
+    if (el) follow.current = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+  };
+  return <div ref={ref} className="ai-panel__thinking-body" onScroll={onScroll} tabIndex={0}>{text}</div>;
+}
+
+/* A command's answer: headed lists, or a note. */
+export function CommandOutput({ m }) {
+  return (
+    <div className="cmd-out">
+      {(m.sections || []).map((sec) => (
+        <div key={sec.heading} className="cmd-out__sec">
+          <div className="cmd-out__head">{sec.heading} <span>{sec.items.length}</span></div>
+          {sec.items.length === 0
+            ? <div className="cmd-out__none">none</div>
+            : (
+              <ul>
+                {sec.items.map((it) => (
+                  <li key={it.name}><code>{it.name}</code>{it.detail ? <span> — {it.detail}</span> : null}</li>
+                ))}
+              </ul>
+            )}
+        </div>
+      ))}
+      {m.note && <p className="cmd-out__note">{m.note}</p>}
+    </div>
+  );
+}

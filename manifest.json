@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.7.0",
- "build": "031ba2104508",
- "commit": "cbc0c032c11a",
- "date": "2026-10-03T13:41:42-04:00",
+ "version": "0.7.1",
+ "build": "fcb82a304943",
+ "commit": "0204272c2579",
+ "date": "2026-10-03T18:31:13-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "e1e6c7b4ca8f5717635d9bdf3c1cd5928444c86ac82db6cfb85dab80b51ea8a4",
+   "h": "5d91318d856565447d20516827a2d64dd05f7284da60a35ddaf3dbf1e9ff6506",
    "s": 7664640
   },
   {
    "p": "build.json",
-   "h": "07733cf94c743f19952104e5bce7dd5a7365d57d4b43c5b79a31b45138beb26e",
+   "h": "e42ad673a3318bc55173f4462d6eaa5cc053f32f19c5334a90238433166e4552",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "45037c1e231f784fcc90882ef4a8bc8428e995e193290693f673f704266dcbcc",
+   "h": "a0a1932d6df94b077f9062f89fd5556c9c7233a85a059fc5b18fee94bf4a2aed",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "59d7e09b5ff550c1c11d2fbeba425bf5bc5c62b230525003a9b28de428bd00ff",
+   "h": "97292b5c6c217cfbdabb6767b70fcbddf8d49773fc9678ae242809eda9e180ad",
    "s": 1191
   },
   {
@@ -836,13 +836,13 @@
   },
   {
    "p": "src/components/AiPanel.css",
-   "h": "6dcfeb5a9fd9862e5d744711b60ca09c657c1af10f2f6b76557c80302da2dc27",
-   "s": 7688
+   "h": "25737bbd4220aba3e10619a03ec0b74a9a5a22d35851d7c142eadbe4b4926592",
+   "s": 9386
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "9ce594f5b261d307087400d4dfece0e377d8fa24323057c34993c248c015e385",
-   "s": 30722
+   "h": "02ebe066556ef8d3911ec881ea92e0c021f9c1123dcc676ea939d3c34156cc03",
+   "s": 36387
   },
   {
    "p": "src/components/AppShell.css",
@@ -851,8 +851,8 @@
   },
   {
    "p": "src/components/AppShell.jsx",
-   "h": "2d69eb8df259a4b85e5fb5d2007bcc08b473e2d9e8d4b6db75dbf4d27ab933e7",
-   "s": 24554
+   "h": "6c9a864bdcfd5f6bdd4966c5811d45858c85ddb020667b6c0bb3c41c6e924a60",
+   "s": 24376
   },
   {
    "p": "src/components/ApprovalModal.css",
@@ -881,8 +881,8 @@
   },
   {
    "p": "src/components/CommandPalette.jsx",
-   "h": "e90b2948c8b263ac2df7911042fec78378fa08809a1d4cb34b6ce8c125da8134",
-   "s": 5187
+   "h": "eb641e0166009792207778780c950e70437ab271b70b7dd4eacad49f4ba98036",
+   "s": 7126
   },
   {
    "p": "src/components/ContextMenu.css",
@@ -931,8 +931,8 @@
   },
   {
    "p": "src/components/PresenceChat.jsx",
-   "h": "1eb4eadf0070ba5417fbb92bc73ac600a66bb0eb95a57909738ba1e75964f790",
-   "s": 12238
+   "h": "ba3c0115cf17a7c863b4fdff796b07e37922d672028d8a7e0d16f8cb9e01e5e1",
+   "s": 12934
   },
   {
    "p": "src/components/PresenceView.css",

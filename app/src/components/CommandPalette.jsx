@@ -10,7 +10,7 @@ import './CommandPalette.css';
  * dynamic (each uploaded skill becomes a /run <name> command).
  */
 
-const STATIC_COMMANDS = [
+export const STATIC_COMMANDS = [
   { trigger: 'help',     description: 'Show keyboard shortcuts and the full command list',     run: (api) => api.runHelp() },
   { trigger: 'btw',      description: 'Ask a quick side question, even while Omi-One is working', run: () => {} },
   { trigger: 'skills',   description: 'Open the skills list (arrow-key navigator)',            run: (api) => api.openSkills() },
@@ -24,12 +24,38 @@ const STATIC_COMMANDS = [
   { trigger: 'hooks',    description: 'List registered hooks',                                  run: (api) => api.openHooks() },
 ];
 
+/* Is this text a slash command? Returns
+ *   null                         — not a command (plain text, or a path like /usr/bin)
+ *   { kind: 'static', cmd, arg } — one of the commands above
+ *   { kind: 'skill', name }      — /run <skill>
+ *   { kind: 'unknown', name }    — looks like a command, but there is no such command
+ * Every chat box runs this before anything reaches the agent, so a command
+ * is never sent to Omi-One as a task. (/btw is handled by its caller.) */
+export function parseCommand(text) {
+  const m = String(text || '').trim().match(/^\/([a-z][\w-]*)(?:\s+([\s\S]*))?$/i);
+  if (!m) return null;
+  const name = m[1].toLowerCase();
+  const arg = (m[2] || '').trim();
+  if (name === 'run') return { kind: 'skill', name: arg };
+  const cmd = STATIC_COMMANDS.find((c) => c.trigger === name);
+  return cmd ? { kind: 'static', cmd, arg } : { kind: 'unknown', name };
+}
+
 function filterCommands(commands, query) {
   if (!query) return commands;
-  const q = query.toLowerCase();
-  return commands.filter((c) =>
-    c.trigger.toLowerCase().includes(q) || (c.description || '').toLowerCase().includes(q)
-  );
+  const q = query.toLowerCase().trim();
+  const rank = (c) => {
+    const t = c.trigger.toLowerCase();
+    if (t === q) return 0;            // /hooks → /hooks, first
+    if (t.startsWith(q)) return 1;
+    if (t.includes(q)) return 2;
+    return 3;                          // matched on the description only
+  };
+  return commands
+    .filter((c) => c.trigger.toLowerCase().includes(q) || (c.description || '').toLowerCase().includes(q))
+    .map((c, i) => ({ c, i, r: rank(c) }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .map((x) => x.c);
 }
 
 export default function CommandPalette({
@@ -63,7 +89,8 @@ export default function CommandPalette({
     if (el) el.scrollIntoView({ block: 'nearest' });
   }, [idx]);
 
-  // Keyboard nav on the palette container
+  // Keyboard nav. Focus stays in the prompt box while the palette is open,
+  // so the keys are caught on the window: the palette itself never has focus.
   const onKey = (e) => {
     if (!open) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); setCursor((c) => (c + 1) % Math.max(safe.length, 1)); }
@@ -75,10 +102,23 @@ export default function CommandPalette({
     } else if (e.key === 'Escape') { e.preventDefault(); onClose(); }
   };
 
+  const onKeyRef = useRef(onKey);
+  onKeyRef.current = onKey;
+  useEffect(() => {
+    if (!open) return undefined;
+    const h = (e) => {
+      if (!['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(e.key)) return;
+      // Tab picks the highlighted command, like Enter.
+      onKeyRef.current(e.key === 'Tab' ? { key: 'Enter', preventDefault: () => e.preventDefault() } : e);
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [open]);
+
   if (!open) return null;
 
   return (
-    <div className="cmd-palette" onKeyDown={onKey} tabIndex={-1} ref={listRef}>
+    <div className="cmd-palette" tabIndex={-1} ref={listRef}>
       <div className="cmd-palette__head">
         <span className="cmd-palette__head-prefix">/</span>
         <span className="cmd-palette__head-query">{query}</span>

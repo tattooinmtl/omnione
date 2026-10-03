@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Preview } from './ApprovalModal.jsx';
+import { CommandOutput } from './AiPanel.jsx';
 
 /* Text chat inside Presence.
  *
@@ -105,6 +106,14 @@ function onBtw(e) {
   emit();
 }
 
+/* A slash command's answer (/hooks, /tools), run from here or the main panel. */
+function onCommandOutput(e) {
+  const d = e.detail || {};
+  if (!d.id) return;
+  push({ role: 'cmd', out: d });
+  emit();
+}
+
 /* A run that ends leaves any unanswered approval moot. */
 function expirePending() {
   messages = messages.map((m) => (m.role === 'approval' && m.state === 'pending' ? { ...m, state: 'expired' } : m));
@@ -201,8 +210,10 @@ if (typeof window !== 'undefined') {
     window.removeEventListener('gwn:agent-event', prev.onAgentEvent);
     window.removeEventListener('gwn:generation-result', prev.onResult);
     if (prev.onBtw) window.removeEventListener('gwn:btw', prev.onBtw);
+    if (prev.onCommandOutput) window.removeEventListener('gwn:command-output', prev.onCommandOutput);
   }
-  window.__gwnPresenceChat = { onAgentEvent, onResult, onBtw };
+  window.__gwnPresenceChat = { onAgentEvent, onResult, onBtw, onCommandOutput };
+  window.addEventListener('gwn:command-output', onCommandOutput);
   window.addEventListener('gwn:agent-event', onAgentEvent);
   window.addEventListener('gwn:generation-result', onResult);
   window.addEventListener('gwn:btw', onBtw);
@@ -254,7 +265,12 @@ export default function PresenceChat() {
         )}
         {log.map((m) => (m.role === 'approval'
           ? <ApprovalCard key={m.id} m={m} />
-          : m.role === 'btw' ? (
+          : m.role === 'cmd' ? (
+            <div key={m.id} className="pchat__msg is-btw is-cmd">
+              <div className="pchat__btw-q"><b>COMMAND</b> {m.out.title}</div>
+              <CommandOutput m={m.out} />
+            </div>
+          ) : m.role === 'btw' ? (
             <div key={m.id} className={`pchat__msg is-btw${m.failed ? ' is-failed' : ''}`}>
               <div className="pchat__btw-q"><b>BTW</b> {m.question}</div>
               <div>{m.text ?? 'Omi-One is answering…'}</div>
