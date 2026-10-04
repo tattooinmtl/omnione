@@ -9,6 +9,7 @@ import SkillsModal from './SkillsModal.jsx';
 import DraftsModal from './DraftsModal.jsx';
 import PresenceView, { PresenceOrb } from './PresenceView.jsx';
 import { STATIC_COMMANDS } from './CommandPalette.jsx';
+import { MAIN_ORIGIN, startLiveFeed } from '../widgets/liveFeed.js';
 import AccountBar from './account/AccountBar.jsx';
 import StatsView from './stats/StatsView.jsx';
 import DoctorView from './doctor/DoctorView.jsx';
@@ -65,13 +66,21 @@ export default function AppShell() {
   const [fixesPending, setFixesPending] = useState(0);
   const openSettings = useCallback((tab = 'ai') => { setSettingsTab(tab); setSettingsOpen(true); }, []);
 
+  // Runs started in the floating windows (the Presence widget) reach this
+  // window's Presence, chat and engines through the live channel.
+  useEffect(() => startLiveFeed({ origin: MAIN_ORIGIN }), []);
+
   // The tray icon opens the window at #settings, #settings-access,
-  // #settings-app or #doctor; so can a link. The hash is cleared after use.
+  // #settings-app, #doctor, #presence, #skills or #stats; so can a link.
+  // The hash is cleared after use.
   useEffect(() => {
     const route = () => {
       const h = window.location.hash.replace(/^#/, '');
       if (!h) return;
       if (h === 'doctor') { setSettingsOpen(false); setDoctorOpen(true); }
+      else if (h === 'presence') setPresenceOpen(true);
+      else if (h === 'skills') { setPresenceOpen(false); setSkillsOpen(true); }
+      else if (h === 'stats') { setPresenceOpen(false); setStatsOpen(true); }
       else if (h.startsWith('settings')) { setDoctorOpen(false); openSettings(h.split('-')[1] || 'ai'); }
       else return;
       history.replaceState(null, '', window.location.pathname + window.location.search);

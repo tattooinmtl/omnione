@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import ContextMeter from './ContextMeter.jsx';
 import CommandPalette, { parseCommand } from './CommandPalette.jsx';
+import { MAIN_ORIGIN } from '../widgets/liveFeed.js';
 import ApprovalModal from './ApprovalModal.jsx';
 import ProjectBar from './ProjectBar.jsx';
 import { useProviderTokenBudget, fetchSettings } from '../hooks/useProviderTokenBudget';
@@ -157,7 +158,9 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
         for (let attempt = 0; ; attempt++) {
           resp = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            // The origin tags this run's events on the live channel, so the
+            // floating windows see it and this window skips its own echo.
+            headers: { 'Content-Type': 'application/json', 'X-Omni-Origin': MAIN_ORIGIN },
             body: JSON.stringify({ prompt: p, currentCode, sessionId: sessionIdRef.current }),
             signal: ac.signal,
           });

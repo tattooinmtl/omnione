@@ -3,6 +3,7 @@ import { FaceScene } from '../presence/FaceScene.js';
 import { VoiceWave } from '../presence/VoiceWave.js';
 import { NeuralCore } from '../presence/NeuralCore.js';
 import { BrainNetwork, emotionColor } from '../presence/BrainNetwork.js';
+import { createBrainRouter } from '../presence/brainRouter.js';
 import { EmotionRuntime, EMOTION_COLORS } from '../presence/emotionEngine.js';
 import { Voice, speakable, speechChunks } from '../presence/voice.js';
 import PresenceChat, { chatText } from './PresenceChat.jsx';
@@ -62,7 +63,6 @@ export default function PresenceView({ onClose, toast }) {
   const brainRef = useRef(null);
   const brainLabelsRef = useRef(null);
   const brainNet = useRef(null);
-  const brainLive = useRef({ conv: null, prompt: '', held: new Map() });
   const [brainPath, setBrainPath] = useState('');
   const [brainCounts, setBrainCounts] = useState(null);
   const [affect, setAffect] = useState(null);
@@ -222,7 +222,9 @@ export default function PresenceView({ onClose, toast }) {
         if (line) {
           setSaid(speakable(line, 320));
           const delivery = engine.current.express(line);
-          if (voiceOnRef.current) {
+          // A question asked in another window (ev.origin) is answered aloud
+          // there; speaking it here too would talk over it.
+          if (voiceOnRef.current && !ev.origin) {
             for (const chunk of speechChunks(line)) voice.current.speak(chunk, delivery.voice);
           }
         }
@@ -235,48 +237,17 @@ export default function PresenceView({ onClose, toast }) {
     return () => window.removeEventListener('gwn:agent-event', onEvent);
   }, [refresh, loadBrain]);
 
-  /* The agent's actions, into the brain, through the emotions the engine is
-   * feeling right now (it has already appraised this event). */
-  const routeToBrain = (ev) => {
-    const brain = brainNet.current;
-    const live = brainLive.current;
-    if (!brain) return;
-    if (ev.type === 'user_prompt') {
-      live.prompt = String(ev.text || '').slice(0, 80);
-      if (live.conv) brain.fire(['brain', live.conv]);
-    } else if (ev.type === 'session' && ev.sessionId) {
-      live.conv = `conv:${ev.sessionId}`;
-      if (!brain.has(live.conv)) {
-        brain.addConversation(live.conv, live.prompt || 'New conversation');
-        if (brain.counts) setBrainCounts({ ...brain.counts });
-      }
-      brain.fire(['brain', live.conv]);
-    } else if (ev.type === 'tool_call' && ev.name) {
-      const toolId = `tool:${ev.name}`;
-      brain.addAction(toolId, 'tool', ev.name.replace(/^mcp__[^_]+__/, ''));
-      const skill = SKILL_TOOL_NAMES.has(ev.name) && typeof ev.input?.name === 'string' ? `skill:${ev.input.name}` : null;
-      if (skill) brain.addAction(skill, 'skill', ev.input.name);
-      const action = skill || toolId;
-      const felt = feltNow(engine.current);
-      const conv = ev.heartbeat ? null : live.conv;
-      for (const e of felt.length ? felt : [null]) {
-        brain.fire(['brain', e && `emotion:${e}`, toolId, skill, conv].filter(Boolean), e ? emotionColor(e) : undefined);
-      }
-      const held = [toolId, skill].filter(Boolean);
-      held.forEach((id) => brain.hold(id, true));
-      if (ev.id) live.held.set(ev.id, held);
-      // The pairing is the record: emotion → action, kept across sessions.
-      for (const e of felt) {
-        fetch('/api/brain/feel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ emotion: e, action }) }).catch(() => {});
-      }
-    } else if (ev.type === 'tool_result') {
-      const held = live.held.get(ev.id);
-      if (held) { held.forEach((id) => brain.hold(id, false)); live.held.delete(ev.id); }
-    } else if (ev.type === 'done' || ev.type === 'error' || ev.type === 'heartbeat_end') {
-      brain.releaseAll();
-      live.held.clear();
-    }
-  };
+  /* The agent's actions, into the brain (shared with the Neural window). */
+  const brainRouter = useRef(null);
+  if (!brainRouter.current) {
+    brainRouter.current = createBrainRouter({
+      getBrain: () => brainNet.current,
+      getEngine: () => engine.current,
+      onCounts: setBrainCounts,
+      recordHeartbeat: true,
+    });
+  }
+  const routeToBrain = (ev) => brainRouter.current.handle(ev);
 
   // What it does on its own time.
   useEffect(() => {
@@ -563,18 +534,7 @@ export default function PresenceView({ onClose, toast }) {
   );
 }
 
-const SKILL_TOOL_NAMES = new Set(['load_skill', 'load_skill_file']);
-
-/* The emotions it is feeling enough to count: the strongest two above a
- * floor, as the engine holds them right now. */
-export function feltNow(engine, floor = 0.15) {
-  const em = engine?.core?.state?.emotions || {};
-  return Object.entries(em)
-    .filter(([, v]) => v >= floor)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 2)
-    .map(([k]) => k);
-}
+export { feltNow } from '../presence/brainRouter.js';
 
 function Meter({ label, value, text, warn, color }) {
   const v = Math.max(0, Math.min(1, value || 0));

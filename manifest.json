@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.7.2",
- "build": "49bd3597302c",
- "commit": "01946c202049",
- "date": "2026-10-03T18:42:47-04:00",
+ "version": "0.8.0",
+ "build": "09619539627c",
+ "commit": "7a29339e56f8",
+ "date": "2026-10-04T10:56:00-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "94670d5c9faba9536c5b33f1116ec78cc2f18d3000f36c02008695136cf439ba",
-   "s": 7664640
+   "h": "55aa239563398a3ed92ddc15a86cd3fbd5a82aa2b9ad4450eab920d58b732117",
+   "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "d67b61f5188a4eabc5d6bb84c5bc2916a4e589778ba1622968cd4fec64dee85a",
+   "h": "e30d945f294db30a9355de984dac2326b38c86f7d37de9ab16dfca6d70f586eb",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "933103db509b57a22e97b80e25518d939b950cb86df0296e68c765b2ec4cc45a",
+   "h": "1b889d124baeb18393fad62965540a0fd1dc638e9edc03a07aad10d515cde37d",
    "s": 183594
   },
   {
    "p": "package.json",
-   "h": "a7fc3718d97d1b7bd0bc0a9bbc6bcc90476a4a6590c3dca4ed5545ff5cf0e407",
+   "h": "5a7c6e6bb6ff1d3e0934ba8f8877d5dbb6a6a028a94fbcb452e208e2702e647b",
    "s": 1191
   },
   {
@@ -156,8 +156,18 @@
   },
   {
    "p": "server/index.js",
-   "h": "a42e2de38026099c2da2013371caaf5a2f1a1d3b76c54f7572759a125bb21fb8",
-   "s": 47059
+   "h": "abee3430cd7483f3713b85b2cea449d886fecf2202170f0bafb3f27b91d89341",
+   "s": 48958
+  },
+  {
+   "p": "server/listen.js",
+   "h": "dcfed9bfe43dc4be7059391a7886718dce09f6e6ea19ea440b714d5584a3bbd4",
+   "s": 8250
+  },
+  {
+   "p": "server/live.js",
+   "h": "4b4f44227ee64432f207f7f550d4590baf8a8a840c30103740e787881ab8931a",
+   "s": 1283
   },
   {
    "p": "server/mcp.js",
@@ -831,8 +841,8 @@
   },
   {
    "p": "src/App.jsx",
-   "h": "780cf4305f41946a51c06dd55b687c9724272267f0622cd67f2e04ffabaffafb",
-   "s": 380
+   "h": "222d606647cf39de57cf78b1a992eb21683f3edc38a6cabff66109cd8399c01a",
+   "s": 565
   },
   {
    "p": "src/components/AiPanel.css",
@@ -841,8 +851,8 @@
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "02ebe066556ef8d3911ec881ea92e0c021f9c1123dcc676ea939d3c34156cc03",
-   "s": 36387
+   "h": "1db721d57ef98ac0d2abe33869ba215dbd12fd7b6be489a31e9af9ae27a228fd",
+   "s": 36626
   },
   {
    "p": "src/components/AppShell.css",
@@ -851,8 +861,8 @@
   },
   {
    "p": "src/components/AppShell.jsx",
-   "h": "6c9a864bdcfd5f6bdd4966c5811d45858c85ddb020667b6c0bb3c41c6e924a60",
-   "s": 24376
+   "h": "0ac2e7eae794119f22ff5da68bd1533e872947caf0f57f243c911e8ce527bc2f",
+   "s": 24907
   },
   {
    "p": "src/components/ApprovalModal.css",
@@ -941,8 +951,8 @@
   },
   {
    "p": "src/components/PresenceView.jsx",
-   "h": "2f47067ddea0dd207974f9121ff1b97783098029c45516e5cfaeb9d2b2686e39",
-   "s": 29408
+   "h": "b7a0c3c62422463af56c2fb7c7be3808757f58a8247b62833e0ceffdf6707323",
+   "s": 27372
   },
   {
    "p": "src/components/PreviewPanel.css",
@@ -1046,8 +1056,8 @@
   },
   {
    "p": "src/presence/BrainNetwork.js",
-   "h": "5b6bf3399afd3c2d43a5dac39a8626632ff6e3120ab4cbb2bc9fd469b0d54443",
-   "s": 26028
+   "h": "19024aef96a40d8b48c458f31a4f75a7e08d585321a494825b56af103db8ea63",
+   "s": 26159
   },
   {
    "p": "src/presence/FaceScene.js",
@@ -1063,6 +1073,11 @@
    "p": "src/presence/VoiceWave.js",
    "h": "84fb0f02afe1137b1c8fbd4495f5f4c90a145c6646485bb756863f3cd709ee49",
    "s": 5211
+  },
+  {
+   "p": "src/presence/brainRouter.js",
+   "h": "c975d58984e819c7bb108d823f60b1f1b9d6a5bd28c77c137c80c0e913a3c549",
+   "s": 4101
   },
   {
    "p": "src/presence/emotion/appraisal.js",
@@ -1123,6 +1138,46 @@
    "p": "src/utils/workspaceApi.js",
    "h": "efce949171ce74c55c5423918e701bc04ed07bd21161adff1af1ffdd5deace70",
    "s": 2368
+  },
+  {
+   "p": "src/widgets/EmotionWidget.jsx",
+   "h": "0cb29272482a7adf95ae00e3cc834190a70ba504418cc48b6512f4ee381c40b8",
+   "s": 4248
+  },
+  {
+   "p": "src/widgets/NeuralWidget.jsx",
+   "h": "6458d8b32b6436048eddbdc23cf41ffe3447d20f957f87cc5849b7191fb0ece7",
+   "s": 3514
+  },
+  {
+   "p": "src/widgets/PresenceWidget.jsx",
+   "h": "b977a9eb2caa72a55f624eb65c7d558f689f383289abacd611319c92bb86db18",
+   "s": 11661
+  },
+  {
+   "p": "src/widgets/Widget.css",
+   "h": "ad8a7917581524c7671f263475afc6250f3646803864a0b8fb37f748442d654a",
+   "s": 8822
+  },
+  {
+   "p": "src/widgets/WidgetPage.jsx",
+   "h": "63c8fb9d9ea3cb0d764764db965826c3bebc992bc591fdb87802ee104a5d02bd",
+   "s": 3128
+  },
+  {
+   "p": "src/widgets/liveFeed.js",
+   "h": "26e0642e47437cbf82542414c5aa80782e57d4b9d9432a4151f37efd374b5b43",
+   "s": 1839
+  },
+  {
+   "p": "src/widgets/native.js",
+   "h": "20e43371246e3c56f5290bab435871e40425d878e61fb2ec98f5437ba9dc6aa2",
+   "s": 1823
+  },
+  {
+   "p": "src/widgets/runPrompt.js",
+   "h": "813fb172cf51117a2af94194091cb5c1b81448aed2337d724634182611eab73a",
+   "s": 3409
   },
   {
    "p": "vite.config.js",

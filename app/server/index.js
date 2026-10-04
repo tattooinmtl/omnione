@@ -91,6 +91,8 @@ import { getState as getMindState, currentMood, listGoals, setHeartbeat, resolve
 import { readJournal } from './mind/journal.js';
 import { readSoul, writeSoul } from './mind/prompt.js';
 import { brainGraph, recordFeel } from './brain.js';
+import { subscribeLive, publishLive, originOf } from './live.js';
+import { listener as speechListener } from './listen.js';
 import { beat, startHeartbeat, heartbeatStatus, onHeartbeatEvent } from './mind/heartbeat.js';
 import { synthesizeSpeech } from './tools/media.js';
 import { publicAccount, startConnect, pollConnect, cancelConnect, refreshAccount, disconnect, syncUsage, CloudError } from './cloud.js';
@@ -641,9 +643,14 @@ app.post('/api/generate', async (req, res) => {
   res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders?.();
 
+  // Every event also goes to the live channel, so the other windows (the
+  // Presence widget, the emotion and neural windows) see this run too.
+  const origin = originOf(req);
   const send = (ev) => {
     if (!res.writableEnded) res.write(`data: ${JSON.stringify(ev)}\n\n`);
+    publishLive(ev, origin);
   };
+  publishLive({ type: 'user_prompt', text: prompt, sessionId }, origin);
 
   // Abort the run when the client goes away.
   //
@@ -1023,6 +1030,40 @@ app.get('/api/mind/events', (req, res) => {
   const ping = setInterval(() => send({ type: 'ping', mood: currentMood() }), 30_000);
   ping.unref?.();
   req.on('close', () => { off(); clearInterval(ping); });
+});
+
+// Every run's events, for every window (see live.js).
+app.get('/api/live', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+  const send = (ev) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(ev)}\n\n`); };
+  send({ type: 'hello' });
+  const off = subscribeLive(send);
+  const ping = setInterval(() => send({ type: 'ping' }), 30_000);
+  ping.unref?.();
+  res.on('close', () => { off(); clearInterval(ping); });
+});
+
+// Always-listening voice input for the Presence widget: Windows' offline
+// recognizer, wake word "Omi-One". Runs only while someone is connected.
+app.get('/api/listen', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+  const send = (ev) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(ev)}\n\n`); };
+  const off = speechListener().subscribe(send);
+  const ping = setInterval(() => send({ type: 'ping' }), 30_000);
+  ping.unref?.();
+  res.on('close', () => { off(); clearInterval(ping); });
+});
+
+app.get('/api/listen/status', (_req, res) => {
+  res.json(speechListener().status());
 });
 
 // The voice. Synthesizes with MiniMax and returns the audio itself, so the

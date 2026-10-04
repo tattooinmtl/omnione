@@ -306,7 +306,8 @@ export class BrainNetwork {
     n = {
       id, kind, key: key ?? id.split(':').slice(1).join(':'), label: label || id, detail: detail || '',
       weight: weight || 0, idx: this.nodes.length, act: 0, held: 0, degree: 0, fixed: id === 'brain',
-      pos: new THREE.Vector3(Math.cos(th) * rr * shell, y * shell * 0.75, Math.sin(th) * rr * shell),
+      // The brain node is the brain itself: at the centre, where its links meet.
+      pos: kind === 'brain' ? new THREE.Vector3(0, 0, 0) : new THREE.Vector3(Math.cos(th) * rr * shell, y * shell * 0.75, Math.sin(th) * rr * shell),
       vel: new THREE.Vector3(),
     };
     this.nodes.push(n);
