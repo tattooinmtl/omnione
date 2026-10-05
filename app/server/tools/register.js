@@ -24,3 +24,4 @@ import './admin.js';
 import './vision.js';
 import './create.js';
 import './schedules.js';
+import './vercel.js';

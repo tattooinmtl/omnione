@@ -64,6 +64,11 @@ import {
   listMcpTools,
   callMcpTool,
   getClients,
+  addServer as addMcpServer,
+  removeServer as removeMcpServer,
+  setServerDisabled as setMcpServerDisabled,
+  testServer as testMcpServer,
+  PRESETS as MCP_PRESETS,
   CONFIG_PATH as MCP_CONFIG_PATH,
 } from './mcp.js';
 import {
@@ -100,6 +105,7 @@ import { synthesizeSpeech } from './tools/media.js';
 import { speakingVoice, allPersonalities, sanitizePersonality, PRESETS } from './personality.js';
 import { getPrefs, setPrefs } from './prefs.js';
 import { cloneVoice } from './tools/create.js';
+import { connectVercel, disconnectVercel, vercelStatus, setVercelTeam, listTeams as listVercelTeams, VercelError } from './vercel.js';
 import { listSchedules, addSchedule, updateSchedule, removeSchedule, runSchedule, startSchedules, getSchedule } from './schedules.js';
 import { publicAccount, startConnect, pollConnect, cancelConnect, refreshAccount, disconnect, syncUsage, CloudError } from './cloud.js';
 import { getStats, usageEntries, flushStats, recordUsage } from './stats.js';
@@ -275,7 +281,36 @@ app.post('/api/mcp/reload', (_req, res) => {
 });
 
 app.get('/api/mcp/servers', (_req, res) => {
-  res.json({ servers: getClients() });
+  res.json({
+    servers: getClients(),
+    presets: Object.entries(MCP_PRESETS).map(([id, p]) => ({ id, label: p.label, ...p.def })),
+  });
+});
+
+// Settings → Connections: add (or replace) a server, then try to connect so
+// the answer says at once whether it works.
+app.post('/api/mcp/servers', async (req, res) => {
+  const { name, preset, ...def } = req.body || {};
+  try {
+    const usePreset = preset ? MCP_PRESETS[preset] : null;
+    if (preset && !usePreset) return res.status(400).json({ error: `No preset "${preset}".` });
+    const serverName = name || preset;
+    addMcpServer(serverName, usePreset ? usePreset.def : def);
+    let test = null;
+    try { test = { ok: true, ...(await testMcpServer(serverName)) }; } catch (e) { test = { ok: false, error: e.message }; }
+    res.json({ name: serverName, test, servers: getClients() });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+app.post('/api/mcp/servers/:name/test', async (req, res) => {
+  try { res.json({ ok: true, ...(await testMcpServer(req.params.name)), servers: getClients() }); } catch (e) { res.json({ ok: false, error: e.message, servers: getClients() }); }
+});
+app.post('/api/mcp/servers/:name/enabled', (req, res) => {
+  try { setMcpServerDisabled(req.params.name, !req.body?.enabled); res.json({ servers: getClients() }); } catch (e) { res.status(404).json({ error: e.message }); }
+});
+app.delete('/api/mcp/servers/:name', (req, res) => {
+  try { removeMcpServer(req.params.name); res.json({ servers: getClients() }); } catch (e) { res.status(404).json({ error: e.message }); }
 });
 
 app.get('/api/mcp/tools', async (_req, res) => {
@@ -1164,6 +1199,32 @@ app.post('/api/schedules/:id/run', (req, res) => {
   if (!getSchedule(req.params.id)) return res.status(404).json({ error: 'No such scheduled task.' });
   runSchedule(req.params.id, { reason: 'manual' }).catch((e) => console.error('[omnione] schedule run:', e.message));
   res.json({ started: true });
+});
+
+// --- Vercel ---------------------------------------------------------------------------
+// The token goes in once and stays in .gwn-secrets.json; the browser only ever
+// gets the account name and the last 4 characters.
+
+const vercelFail = (res, e) => res.status(e instanceof VercelError ? (e.status === 401 || e.status === 403 ? 401 : 400) : 500).json({ error: e.message });
+app.get('/api/connections/vercel', async (_req, res) => {
+  const st = vercelStatus();
+  if (!st.connected) return res.json(st);
+  let teams = [];
+  try { teams = await listVercelTeams(); } catch { /* offline or token revoked: still show the status */ }
+  res.json({ ...st, teams });
+});
+app.post('/api/connections/vercel', async (req, res) => {
+  try {
+    const r = await connectVercel({ token: req.body?.token, teamId: req.body?.teamId });
+    res.json({ ...vercelStatus(), teams: r.teams, email: r.email });
+  } catch (e) { vercelFail(res, e); }
+});
+app.post('/api/connections/vercel/team', (req, res) => {
+  try { setVercelTeam(req.body?.teamId || null); res.json(vercelStatus()); } catch (e) { vercelFail(res, e); }
+});
+app.delete('/api/connections/vercel', (_req, res) => {
+  disconnectVercel();
+  res.json(vercelStatus());
 });
 
 // --- preferences, personalities, voices -------------------------------------------

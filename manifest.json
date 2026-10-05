@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.9.1",
- "build": "19f775be4486",
- "commit": "23063c59b923",
- "date": "2026-10-05T17:54:49-04:00",
+ "version": "0.11.0",
+ "build": "e493362c0cac",
+ "commit": "796f66e5b2e2",
+ "date": "2026-10-05T19:13:46-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,13 +16,13 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "964ede64e63681bc983b7de3bd1e56ec8242ad87ff44689a177e5733c491ac55",
+   "h": "d27ca02bb054fb4987b1e558809d2306eaa2f58f5245014306e18a601b239a13",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "d08d9913dedb71fdca1939f9df43899689a82295191b885163e9b9bed31de513",
-   "s": 120
+   "h": "3b93a250586e3c3a5c7a7f316311262d0013cfff8c4e7606b66e83b635625f93",
+   "s": 121
   },
   {
    "p": "hooks/PostToolUse/audit-log.js",
@@ -51,13 +51,13 @@
   },
   {
    "p": "package-lock.json",
-   "h": "d0c2bd77dbc90a50eefc455fbf6f0d09fa48933b9cabffc16a9364da97dc004a",
-   "s": 219231
+   "h": "bec336ff9615f498ce375912bd64ba791cca04a73ae6f1c8fe289082e9da855b",
+   "s": 219233
   },
   {
    "p": "package.json",
-   "h": "27ee2e3a0f74897653dde7f6d02304cb7a31ac0d1d24acd8be1feed289861b19",
-   "s": 1268
+   "h": "0fdc161201beaa920d5a577ee47d1f5e9d96a9ec442dcae9b4af17127e352df8",
+   "s": 1269
   },
   {
    "p": "public/omnione.ico",
@@ -166,8 +166,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "1faf0f02dc81ef152b507acf7811c45a1245bc93ded669a804459d48919c69dd",
-   "s": 59321
+   "h": "061381be534e4960f7e25a0c41b86e266d9dc0f3106ee3e3f891042790342110",
+   "s": 62443
   },
   {
    "p": "server/listen.js",
@@ -181,8 +181,18 @@
   },
   {
    "p": "server/mcp.js",
-   "h": "29df9792cd16a6716dc55947114aa6cb081c9dc2991ccdce24d82e8a9884d763",
-   "s": 3326
+   "h": "78665c6363c0f0b9ae5ef0c5ebcf5bb568a5bfeffcad859e6b0766ebaee504b8",
+   "s": 8482
+  },
+  {
+   "p": "server/mcpHttp.js",
+   "h": "44166c31ac13a1fec09b2556529d635f68b5ed948f028d91f47eb9a98e20ef00",
+   "s": 5478
+  },
+  {
+   "p": "server/mcpResult.js",
+   "h": "b56b73b83f031fd8984aaf60a9971d46c15a0b2916f992ecd4fd64f000b97dce",
+   "s": 4104
   },
   {
    "p": "server/mind/heartbeat.js",
@@ -271,8 +281,8 @@
   },
   {
    "p": "server/secrets.js",
-   "h": "1027ff2cc8f2b5fb9145d229ab702176d6cb7821b7a36bb284048ac9746f0f0b",
-   "s": 4927
+   "h": "451cdc731418c1090bdaad106c1356a88f319e2ed1f4e9d2f4ff8e64071a139e",
+   "s": 5548
   },
   {
    "p": "server/sessions.js",
@@ -306,8 +316,8 @@
   },
   {
    "p": "server/toolRegistry.js",
-   "h": "73881692780a5a91244dce0d0d66dde062c371a23a92efd844a7bc66bd62052b",
-   "s": 7307
+   "h": "312086df1f74766eab9e8c3d6bf43c7921bb134db51d13e8a57d72e65ad71930",
+   "s": 7925
   },
   {
    "p": "server/tools.js",
@@ -381,8 +391,8 @@
   },
   {
    "p": "server/tools/register.js",
-   "h": "df1384de0f45c9b5bc86a7d79adeb2ebba9be6d8f3669581f6f0d656309a4838",
-   "s": 775
+   "h": "a50eb2db991ac05b82eaeee668be9cd82c3e761902c6806f8ac9e2f8f613767c",
+   "s": 798
   },
   {
    "p": "server/tools/schedules.js",
@@ -410,6 +420,11 @@
    "s": 3774
   },
   {
+   "p": "server/tools/vercel.js",
+   "h": "d05e81578ee78e521bd8da65db4628b5f1b4153eb858c92f835e0a7c212a8cad",
+   "s": 5765
+  },
+  {
    "p": "server/tools/vision.js",
    "h": "96729e9695851e7ebcf3f55586393573eb90e7f744582b70616f148dff8e4156",
    "s": 5625
@@ -418,6 +433,11 @@
    "p": "server/ui.js",
    "h": "61a3e2df572a5dd7873a1c264ff12357d2d78ce1df2d40f63cc4a07e017bf0e2",
    "s": 1501
+  },
+  {
+   "p": "server/vercel.js",
+   "h": "e6a551b4e0db9e9030a41a8130a6b3bbd2e9b277b0ca528e99e01c24765c7457",
+   "s": 12876
   },
   {
    "p": "server/workspace.js",
@@ -598,6 +618,41 @@
    "p": "skills/baoyu-comic/wuxia.md",
    "h": "b51aa49bf5cd20d410eb858c5f6dcb5f5bdf756a1ad6caded43047d40a28d771",
    "s": 3082
+  },
+  {
+   "p": "skills/blender-autonomous-modeling/SKILL.md",
+   "h": "b8eb27ff52d9f3128185364eab9cf3f27a7abf1df540df3344d50ebfca9e3de4",
+   "s": 5579
+  },
+  {
+   "p": "skills/blender-basics/SKILL.md",
+   "h": "c60bac645b97b4ec13e9421d12a32d5fdeaefd7377de143f2f0e9ba4f7f21997",
+   "s": 5154
+  },
+  {
+   "p": "skills/blender-camera-moves/SKILL.md",
+   "h": "669745f0aa8f059e5a5c24a886c3d67bb872b4d312b3fdab99210ab49c709ceb",
+   "s": 5079
+  },
+  {
+   "p": "skills/blender-hd-render/SKILL.md",
+   "h": "51ea96e2529028bcb2ec8b439f06b5d9ef801856c14a6cd748f8c6011166bc09",
+   "s": 4945
+  },
+  {
+   "p": "skills/blender-pbr-materials/SKILL.md",
+   "h": "ad16d25ba02313e5883c4e65479f19a1b1f856ca6f6a11c193fcf66e2b904d9a",
+   "s": 4480
+  },
+  {
+   "p": "skills/blender-product-shot/SKILL.md",
+   "h": "61071ff22f294e6e4250b78443deaa35fb84a63d96bd97a6e544447e3d703d91",
+   "s": 3785
+  },
+  {
+   "p": "skills/blender-studio-lighting/SKILL.md",
+   "h": "7440a4f2c809e0646a67236427082431fb8138a545d6a93e5aaa23ef2ce610fa",
+   "s": 6332
   },
   {
    "p": "skills/brainstorming/SKILL.md",
@@ -880,6 +935,11 @@
    "s": 35229
   },
   {
+   "p": "skills/vercel-deploy/SKILL.md",
+   "h": "64f8ff9ac6a913a584d2deb791e625773e17a672651848868c3088a36cde6446",
+   "s": 2998
+  },
+  {
    "p": "skills/web-coding/SKILL.md",
    "h": "31908014c3ee4f20ef1244fdf96085f6716350cbc39a4acd0c867120c9039a64",
    "s": 14833
@@ -1021,8 +1081,8 @@
   },
   {
    "p": "src/components/SettingsModal.css",
-   "h": "f3072418a6521b7809b4b9dccc337e315c315980c23b7e7b8b22b9c1290c32da",
-   "s": 15748
+   "h": "7774b98365c891f151f7c900b88d4635e51ef8b719b805dca48fc61671cbd2e8",
+   "s": 16272
   },
   {
    "p": "src/components/SettingsModal.jsx",
@@ -1071,8 +1131,8 @@
   },
   {
    "p": "src/components/settings/ConnectionsTab.jsx",
-   "h": "ac33f626395a74190e3b806abbe6697892afe9a25fc96e4fed76a04bc65702e8",
-   "s": 2161
+   "h": "3563105d13c2870e81b9832f967ba622f336ef6311190f661e2ffa6686cd8fe7",
+   "s": 12328
   },
   {
    "p": "src/components/settings/MediaTab.jsx",

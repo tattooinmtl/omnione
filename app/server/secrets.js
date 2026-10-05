@@ -9,7 +9,9 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const SECRETS_PATH = path.join(PROJECT_ROOT, '.gwn-secrets.json');
+let SECRETS_PATH = path.join(PROJECT_ROOT, '.gwn-secrets.json');
+
+export function _setSecretsPathForTest(p) { SECRETS_PATH = p || path.join(PROJECT_ROOT, '.gwn-secrets.json'); cache = null; }
 
 const DEFAULT_SECRETS = { providers: {} };
 
@@ -44,6 +46,21 @@ export function getSecrets() {
 export function getProviderKey(providerId) {
   const s = getSecrets();
   return s.providers?.[providerId]?.apiKey || null;
+}
+
+/* Outside services (Vercel, GitHub, Telegram…): { token, … } per name.
+ * Same file and same rule as API keys: the token never leaves this server. */
+export function getConnection(name) {
+  return getSecrets().connections?.[name] || null;
+}
+
+export function setConnection(name, value) {
+  const s = getSecrets();
+  if (!s.connections) s.connections = {};
+  if (value == null) delete s.connections[name];
+  else s.connections[name] = value;
+  writeToDisk(s);
+  cache = s;
 }
 
 export function getActiveSettings() {

@@ -10,7 +10,8 @@
 // codebase should be constructing tool schemas by hand.
 
 import { webSearch, browserOpen } from './tools.js';
-import { listMcpTools, callMcpTool } from './mcp.js';
+import { listMcpTools, callMcpTool, getServer } from './mcp.js';
+import { convertMcpResult } from './mcpResult.js';
 
 /** @typedef {'read'|'write'|'execute'|'admin'} Permission */
 
@@ -168,13 +169,26 @@ export async function syncMcpTools() {
       name,
       description: t.description || `MCP tool ${t.name} from ${t.server}`,
       schema: t.inputSchema || { type: 'object', properties: {} },
-      // An MCP server can do anything; treat its tools as side-effecting
-      // until the permission layer can ask the server what it actually does.
-      permission: 'write',
+      permission: mcpPermission(t),
       source: 'mcp',
-      handler: (args) => callMcpTool({ server: t.server, name: t.name, args }),
+      handler: async (args, ctx = {}) => convertMcpResult(
+        await callMcpTool({ server: t.server, name: t.name, args, signal: ctx.signal }),
+        { tool: `${t.server}-${t.name}` },
+      ),
     });
     added.push(name);
   }
   return added;
+}
+
+/* An MCP server can do anything, so its tools ask first ('write') unless the
+ * server marks one read-only, or the user set a permission for that server in
+ * .gwn-mcp.json. Code execution always asks. */
+function mcpPermission(t) {
+  const def = getServer(t.server) || {};
+  if (/exec|python|code|shell|command/i.test(t.name)) return 'execute';
+  if (Array.isArray(def.readOnlyTools) && def.readOnlyTools.includes(t.name)) return 'read';
+  if (def.permission) return def.permission;
+  if (t.annotations?.readOnlyHint === true) return 'read';
+  return 'write';
 }
