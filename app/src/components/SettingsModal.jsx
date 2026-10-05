@@ -216,6 +216,17 @@ function BehaviourSetting() {
           {CREATIVITY.map(([v, l]) => <option key={l} value={v}>{l}</option>)}
         </select>
       </label>
+      <label>
+        <span>Helpers working at the same time</span>
+        <select id="ai-parallel" value={prefs.ai.parallelAgents} onChange={(e) => save({ ai: { parallelAgents: Number(e.target.value) } }, `Up to ${e.target.value} helper${e.target.value === '1' ? '' : 's'} at once.`)}>
+          {[1, 2, 3, 4, 5, 6, 8].map((n) => <option key={n} value={n}>{n}{n === 4 ? ' (default, MiniMax allows 4)' : n === 1 ? ' (one after another)' : ''}</option>)}
+        </select>
+      </label>
+      <p className="settings-modal__note">
+        For a big job Omi-One can send several helpers (subagents) off at once, each on its own part,
+        and gather their answers. Each one is a request to your AI provider at the same moment: MiniMax
+        accepts 4 at once per key, so more than 4 makes the extra ones wait their turn.
+      </p>
       <Switch id="ai-thinking" on={prefs.ai.thinking} onChange={(on) => save({ ai: { thinking: on } })} label="Show thinking" hint="Shows the model's reasoning in the chat while it works." />
       <Msg msg={msg} />
     </Section>

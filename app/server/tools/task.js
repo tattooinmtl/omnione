@@ -12,12 +12,13 @@ import { registerTool, listTools } from '../toolRegistry.js';
 import { createSession, deleteSession, textOf } from '../sessions.js';
 import { getAgents, getAgent, toolsForAgent, DEFAULT_SUBAGENT_ITERATIONS } from '../subagent.js';
 import { getWorkspaceRoot } from '../workspace.js';
+import { acquireSlot } from '../agentSlots.js';
 
 const MAX_SUMMARY_CHARS = 12_000;
 
 registerTool({
   name: 'task',
-  description: 'Delegate a self-contained sub-job to a subagent, which works in its own context and reports back a summary. Use it for open-ended searching or investigation that would otherwise fill your context with dozens of reads. Give it everything it needs in one prompt — it cannot ask you follow-up questions.',
+  description: 'Delegate a self-contained sub-job to a subagent, which works in its own context and reports back a summary. Use it for open-ended searching or investigation that would otherwise fill your context with dozens of reads. Give it everything it needs in one prompt — it cannot ask you follow-up questions. To split independent work (research several topics, inspect several folders), call task several times in the same turn: read-only subagents run at the same time, up to the limit in Settings (4 by default).',
   permission: 'read',
   schema: {
     type: 'object',
@@ -83,6 +84,15 @@ registerTool({
     let failure = null;
     const toolsUsed = [];
 
+    // One model slot per subagent, shared by every run (see agentSlots.js).
+    let release;
+    try {
+      release = await acquireSlot(signal);
+    } catch {
+      deleteSession(childId);
+      return { ok: false, error: 'Run cancelled.' };
+    }
+
     try {
       for await (const ev of runAgent({
         sessionId: childId,
@@ -107,6 +117,8 @@ registerTool({
         return { ok: false, error: 'Run cancelled.' };
       }
       failure = e?.message || String(e);
+    } finally {
+      release();
     }
 
     if (failure && !summary) {

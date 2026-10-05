@@ -19,6 +19,8 @@ import { runOpenAI, runAnthropic, runStub, ContextOverflowError } from './adapte
 import { buildSystemPrompt } from './prompts.js';
 import { modelSeesImages } from './attachments.js';
 import { getPrefs } from './prefs.js';
+import { parallelLimit } from './agentSlots.js';
+import { getAgent } from './subagent.js';
 import { executeTool, formatToolResult, listTools, syncMcpTools, getTool } from './toolRegistry.js';
 import './tools/register.js';
 import { checkPermission, requestApproval, cancelPending, getMode } from './permissions.js';
@@ -289,7 +291,8 @@ export async function* runAgent({
         }
         results.push(step.value);
       } else {
-        yield { type: 'step', step: { id: `par-${iteration}-${results.length}`, label: `Running ${group.length} reads in parallel`, status: 'done' } };
+        const label = group[0].name === 'task' ? `Running ${group.length} subagents at the same time` : `Running ${group.length} reads in parallel`;
+        yield { type: 'step', step: { id: `par-${iteration}-${results.length}`, label, status: 'done' } };
         const drained = await Promise.all(group.map(async (call) => {
           const events = [];
           const it = runOneTool(call, sessionId, signal, runConfig);
@@ -589,28 +592,39 @@ async function summarizeDropped({ dropped, runAdapter, provider, model, apiKey, 
   return out;
 }
 
-/* Group consecutive tool calls that can safely run at the same time: read
- * tools the permission layer will allow without asking. The subagent `task`
- * is excluded — it streams its own long run and holds a model slot. */
-export function groupForParallel(toolUses, sessionId) {
+/* Group consecutive tool calls that can safely run at the same time:
+ *   - read tools the permission layer will allow without asking;
+ *   - subagent `task` calls whose agent is read-only, up to the parallel
+ *     limit (MiniMax takes 4 requests at once). A subagent with full tools
+ *     may ask for approval, so it runs alone: one approval prompt at a time.
+ * Reads and subagents never share a group. */
+export function groupForParallel(toolUses, sessionId, { agentLimit = parallelLimit() } = {}) {
   const groups = [];
   let cur = [];
+  let curKind = null;
+  const flush = () => { if (cur.length) groups.push(cur); cur = []; curKind = null; };
   for (const call of toolUses) {
-    const tool = getTool(call.name);
-    const parallelSafe = tool
-      && tool.permission === 'read'
-      && tool.name !== 'task'
-      && checkPermission({ sessionId, tool, args: call.input || {} }).decision === 'allow';
-    if (parallelSafe) {
-      cur.push(call);
-    } else {
-      if (cur.length) groups.push(cur);
-      cur = [];
+    const kind = parallelKind(call, sessionId);
+    if (!kind) {
+      flush();
       groups.push([call]);
+      continue;
     }
+    if (kind !== curKind || (kind === 'task' && cur.length >= agentLimit)) flush();
+    cur.push(call);
+    curKind = kind;
   }
-  if (cur.length) groups.push(cur);
+  flush();
   return groups;
+}
+
+function parallelKind(call, sessionId) {
+  const tool = getTool(call.name);
+  if (!tool || tool.permission !== 'read') return null;
+  if (checkPermission({ sessionId, tool, args: call.input || {} }).decision !== 'allow') return null;
+  if (tool.name !== 'task') return 'read';
+  const agent = getAgent(String(call.input?.agent || 'explore'));
+  return agent && agent.tools !== 'full' ? 'task' : null;
 }
 
 function stableJson(v) {

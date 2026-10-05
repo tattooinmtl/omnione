@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.9.0",
- "build": "b804536ff853",
- "commit": "f61cce0ab3dd",
- "date": "2026-10-05T14:31:17-04:00",
+ "version": "0.9.1",
+ "build": "19f775be4486",
+ "commit": "23063c59b923",
+ "date": "2026-10-05T17:54:49-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "37507194388b252b4314f588b1c175f58a4f9eb0af0a90f811fccb650ffc62fc",
+   "h": "964ede64e63681bc983b7de3bd1e56ec8242ad87ff44689a177e5733c491ac55",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "33514c8a5639073a24d065055d392723c080dcb43352b7cafe35162308566b38",
+   "h": "d08d9913dedb71fdca1939f9df43899689a82295191b885163e9b9bed31de513",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "074ad15986f6af36f46d8be56c220ea4576a8538bcfdc619c3994e5bc939e07d",
+   "h": "d0c2bd77dbc90a50eefc455fbf6f0d09fa48933b9cabffc16a9364da97dc004a",
    "s": 219231
   },
   {
    "p": "package.json",
-   "h": "4319717b933e6416d0e16bef85077bd2f6fb65e0a6de751eff20dedbefe6dca6",
+   "h": "27ee2e3a0f74897653dde7f6d02304cb7a31ac0d1d24acd8be1feed289861b19",
    "s": 1268
   },
   {
@@ -76,8 +76,13 @@
   },
   {
    "p": "server/agent.js",
-   "h": "b3d30cd29fd4aaa53b21f0c4c18c1ecba9981ab605e11bdaa05ae4d62e68a6ed",
-   "s": 28855
+   "h": "769ab629d1688b88ff31de091a31bd6c337ad122968eacdef2911626df6aaa57",
+   "s": 29656
+  },
+  {
+   "p": "server/agentSlots.js",
+   "h": "521fadd5be28d85b70ef026da505e1cd762dfce96ec67f45ca9a94f3536f1fda",
+   "s": 1568
   },
   {
    "p": "server/attachments.js",
@@ -231,8 +236,8 @@
   },
   {
    "p": "server/prefs.js",
-   "h": "8107c3b5fc0fcc15ba8eb641f9d8e045feac9f026ffae8b38ceec7ab4d0fadb9",
-   "s": 3028
+   "h": "3162abf49d29d6dfbb55b09ec0fee1a19d167a6cb98473104e7b0f8fac05c740",
+   "s": 3119
   },
   {
    "p": "server/projects.js",
@@ -396,8 +401,8 @@
   },
   {
    "p": "server/tools/task.js",
-   "h": "c00df77893fa246828c7a3846d559d27ce375195abedbb62c1135739b7de34bd",
-   "s": 5878
+   "h": "c2a30cb68ee45ca6a5f20cc50be88ffd09c2737556928e602b4a0855d119cc61",
+   "s": 6428
   },
   {
    "p": "server/tools/todo.js",
@@ -1021,8 +1026,8 @@
   },
   {
    "p": "src/components/SettingsModal.jsx",
-   "h": "49317583b33779c3b60fbb8554f581015b5782bba2e5339453f30c34749be38f",
-   "s": 19967
+   "h": "2ddde7c3899a78421db9b27f371913e7ec407d1a92f6aa779d36c368b9af12c3",
+   "s": 20814
   },
   {
    "p": "src/components/SkillsModal.css",

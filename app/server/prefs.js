@@ -17,6 +17,7 @@ export const DEFAULTS = {
   ai: {
     temperature: null,          // null = the provider's default
     thinking: true,             // show the model's thinking in the chat
+    parallelAgents: 4,          // subagents calling the model at once (MiniMax allows 4)
   },
   personality: {
     active: 'omi-one',          // a preset id or a custom one
