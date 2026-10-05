@@ -1,4 +1,5 @@
-// MiniMax media tools: H3 video generation and text-to-speech.
+// MiniMax media tools: H3 video generation and text-to-speech (pictures,
+// cloned voices and music are in create.js and share the helpers here).
 //
 // Both use the MiniMax key saved in Settings — the same one the chat provider
 // uses — so there is nothing extra to configure. They cost money per call, so
@@ -50,7 +51,7 @@ function requireKey() {
 }
 
 /* fetch with a deadline, cancelled with the run. */
-async function fetchWithTimeout(url, init, { signal, timeoutMs = API_TIMEOUT_MS } = {}) {
+export async function fetchWithTimeout(url, init, { signal, timeoutMs = API_TIMEOUT_MS } = {}) {
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(new Error('timeout')), timeoutMs);
   timer.unref?.();
@@ -72,7 +73,7 @@ async function fetchWithTimeout(url, init, { signal, timeoutMs = API_TIMEOUT_MS 
 
 /* Call a MiniMax JSON endpoint. MiniMax reports some failures as HTTP 200
  * with a non-zero base_resp.status_code, so both are checked. */
-async function minimaxJson(method, pathname, body, ctx = {}) {
+export async function minimaxJson(method, pathname, body, ctx = {}) {
   const auth = requireKey();
   if (auth.error) return auth.error;
 
@@ -85,7 +86,7 @@ async function minimaxJson(method, pathname, body, ctx = {}) {
         ...(body ? { 'Content-Type': 'application/json' } : {}),
       },
       body: body ? JSON.stringify(body) : undefined,
-    }, { signal: ctx.signal });
+    }, { signal: ctx.signal, timeoutMs: ctx.timeoutMs || API_TIMEOUT_MS });
   } catch (e) {
     if (e?.name === 'AbortError' && ctx.signal?.aborted) throw e;
     return { ok: false, error: `MiniMax request failed: ${e?.message || e}` };
@@ -108,7 +109,7 @@ async function minimaxJson(method, pathname, body, ctx = {}) {
 }
 
 /* Pick a workspace path and refuse to clobber an existing file unless asked. */
-function prepareDest(dest, { overwrite = false } = {}) {
+export function prepareDest(dest, { overwrite = false } = {}) {
   let abs;
   try { abs = resolveInWorkspace(dest); } catch (e) { return { error: { ok: false, error: e.message } }; }
   if (!overwrite && fs.existsSync(abs)) {
@@ -116,6 +117,33 @@ function prepareDest(dest, { overwrite = false } = {}) {
   }
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   return { abs };
+}
+
+/* Upload a file to MiniMax's file store (voice samples). Resolves to
+ * { ok, fileId } or { ok: false, error }. */
+export async function minimaxUpload(absPath, purpose, ctx = {}) {
+  const auth = requireKey();
+  if (auth.error) return auth.error;
+  const fd = new FormData();
+  fd.append('purpose', purpose);
+  fd.append('file', new Blob([fs.readFileSync(absPath)]), path.basename(absPath));
+  let resp;
+  try {
+    resp = await fetchWithTimeout(`${apiOrigin()}/v1/files/upload`, {
+      method: 'POST', headers: { Authorization: `Bearer ${auth.key}` }, body: fd,
+    }, { signal: ctx.signal, timeoutMs: 120_000 });
+  } catch (e) {
+    if (e?.name === 'AbortError' && ctx.signal?.aborted) throw e;
+    return { ok: false, error: `MiniMax upload failed: ${e?.message || e}` };
+  }
+  const data = await resp.json().catch(() => null);
+  const code = data?.base_resp?.status_code;
+  if (!resp.ok || (code != null && code !== 0)) {
+    return { ok: false, error: `MiniMax upload failed: ${data?.base_resp?.status_msg || `HTTP ${resp.status}`}` };
+  }
+  const fileId = data?.file?.file_id;
+  if (fileId == null) return { ok: false, error: 'MiniMax upload returned no file_id.' };
+  return { ok: true, fileId };
 }
 
 // --- video -----------------------------------------------------------------

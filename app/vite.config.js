@@ -22,7 +22,8 @@ export default defineConfig({
     host: process.env.OMNIONE_LAN === '1' ? true : 'localhost',
     proxy: {
       '/api': {
-        target: `http://127.0.0.1:${Number(process.env.PORT) || 5180}`,
+        // OMNIONE_API_PORT first: some launchers set PORT to Vite's own port.
+        target: `http://127.0.0.1:${Number(process.env.OMNIONE_API_PORT || process.env.PORT) || 5180}`,
         changeOrigin: false,
         ws: false,
         configure: (proxy) => {

@@ -47,6 +47,7 @@ export default function PresenceWidget({ origin }) {
   const [muted, setMuted] = useState(() => readLS(LS_MUTE, '0') === '1');
   const [voiceOn, setVoiceOn] = useState(() => readLS(LS_VOICE, '1') !== '0');
   const [listen, setListen] = useState({ state: 'off' });
+  const [listenTry, setListenTry] = useState(0);
   const [level, setLevel] = useState(0);
   const [approval, setApproval] = useState(null);
   const [typed, setTyped] = useState('');
@@ -134,11 +135,17 @@ export default function PresenceWidget({ origin }) {
   useEffect(() => {
     if (muted) { setListen({ state: 'muted' }); setLevel(0); return undefined; }
     let es;
+    let retry = 0;
     try { es = new EventSource('/api/listen'); } catch { setListen({ state: 'error', error: { message: 'No live connection to OmniOne.' } }); return undefined; }
     es.onmessage = (m) => {
       let ev;
       try { ev = JSON.parse(m.data); } catch { return; }
-      if (ev.type === 'state') setListen(ev);
+      if (ev.type === 'state' && ev.state === 'off' && ev.reason) {
+        // Turned off in Settings → Voice: stop reconnecting, look again in a minute.
+        es.close();
+        setListen(ev);
+        retry = setTimeout(() => setListenTry((n) => n + 1), 60_000);
+      } else if (ev.type === 'state') setListen(ev);
       else if (ev.type === 'level') setLevel(ev.v / 100);
       else if (ev.type === 'error') setListen({ state: 'error', error: ev });
       else if (ev.type === 'speech') engine.current?.gesture('lookAtUser');
@@ -150,8 +157,8 @@ export default function PresenceWidget({ origin }) {
       }
     };
     es.onerror = () => setListen((s) => (s.state === 'error' ? s : { state: 'reconnecting' }));
-    return () => es.close();
-  }, [muted, ask]);
+    return () => { es.close(); clearTimeout(retry); };
+  }, [muted, ask, listenTry]);
 
   const toggleMute = () => {
     const next = !muted;

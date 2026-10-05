@@ -344,3 +344,61 @@
 .cmd-out li span { color: var(--fg-dim, #9aa6b8); }
 .cmd-out__none { color: var(--fg-dim, #8a96a8); font-style: italic; margin-top: 2px; }
 .cmd-out__note { margin: 8px 0 0; color: var(--fg-dim, #9aa6b8); }
+
+/* Attachments: the + button, the chips waiting to be sent, and drop target. */
+.ai-panel__attach {
+  width: 32px;
+  height: 40px;
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--blue-2);
+  background: transparent;
+  border: 1px solid rgba(95, 168, 255, 0.35);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.ai-panel__attach:hover:not(:disabled) { background: rgba(95, 168, 255, 0.1); }
+.ai-panel__attach:disabled { opacity: 0.5; cursor: progress; }
+.ai-panel__prompt-wrap.is-drop { outline: 1px dashed var(--blue-2); outline-offset: 3px; }
+
+.ai-panel__files { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+.ai-panel__file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 3px 6px 3px 3px;
+  font-size: 11px;
+  color: var(--fg);
+  background: rgba(95, 168, 255, 0.07);
+  border: 1px solid rgba(95, 168, 255, 0.25);
+  border-radius: 2px;
+}
+.ai-panel__file img { width: 32px; height: 32px; object-fit: cover; border-radius: 1px; }
+.ai-panel__file-ext {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  font: 600 9px/1 monospace; text-transform: uppercase;
+  color: var(--blue-2); background: rgba(95, 168, 255, 0.12);
+}
+.ai-panel__file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-panel__file button {
+  border: none; background: none; color: var(--fg-dim); cursor: pointer; font-size: 14px; padding: 0 2px;
+}
+.ai-panel__file button:hover { color: #ff5f56; }
+.ai-panel__row-text .ai-panel__files { margin-top: 6px; }
+
+/* Pictures, songs and videos Omi-One made, inline in the chat. */
+.ai-panel__media { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.ai-panel__media-item { margin: 0; display: grid; gap: 4px; max-width: 100%; }
+.ai-panel__media-item img,
+.ai-panel__media-item video {
+  max-width: min(320px, 100%);
+  max-height: 320px;
+  border: 1px solid rgba(95, 168, 255, 0.25);
+  border-radius: 2px;
+  display: block;
+}
+.ai-panel__media-item audio { width: min(320px, 100%); }
+.ai-panel__media-item figcaption { font-size: 10px; color: var(--fg-dim); word-break: break-all; }

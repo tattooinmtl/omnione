@@ -19,6 +19,11 @@
 
 import { toOpenAITools, toAnthropicTools } from './toolRegistry.js';
 import { pickStubTemplate } from './stubTemplates.js';
+import { readImage } from './attachments.js';
+
+/* Pictures re-sent on every turn cost tokens each time, so only the newest
+ * few go as pictures; older ones become a line saying where they are. */
+const MAX_IMAGES_SENT = 8;
 
 const MAX_RETRIES = 3;
 const RETRYABLE_STATUS = new Set([408, 409, 429, 500, 502, 503, 504, 529]);
@@ -123,11 +128,21 @@ export function repairToolPairs(messages) {
 
 // --- neutral -> OpenAI -----------------------------------------------------
 
-export function toOpenAIMessages(system, messages) {
+export function toOpenAIMessages(system, messages, { images = false } = {}) {
   const out = [{ role: 'system', content: system }];
+  const pics = imagePicker(messages, images);
   for (const m of repairToolPairs(messages)) {
     if (m.role === 'user') {
-      out.push({ role: 'user', content: textFrom(m) });
+      const parts = userParts(m, pics);
+      const onlyText = parts.every((p) => p.kind === 'text');
+      out.push({
+        role: 'user',
+        content: onlyText
+          ? parts.map((p) => p.text).join('\n')
+          : parts.map((p) => (p.kind === 'text'
+            ? { type: 'text', text: p.text }
+            : { type: 'image_url', image_url: { url: `data:${p.mediaType};base64,${p.data}` } })),
+      });
     } else if (m.role === 'assistant') {
       const text = textFrom(m);
       const toolUses = blocks(m).filter((b) => b.type === 'tool_use');
@@ -141,22 +156,93 @@ export function toOpenAIMessages(system, messages) {
       }
       out.push(msg);
     } else if (m.role === 'tool') {
-      // OpenAI wants one message per result, each keyed to its call id.
+      // OpenAI wants one message per result, each keyed to its call id. Tool
+      // messages carry text only, so pictures a tool returned follow as one
+      // user message after the results.
+      const extra = [];
       for (const b of blocks(m)) {
-        out.push({ role: 'tool', tool_call_id: b.toolUseId, content: b.text });
+        const imgs = toolImages(b, pics);
+        out.push({ role: 'tool', tool_call_id: b.toolUseId, content: b.text + imgs.notes });
+        extra.push(...imgs.loaded);
+      }
+      if (extra.length) {
+        out.push({
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Pictures returned by the tool calls above:' },
+            ...extra.map((p) => ({ type: 'image_url', image_url: { url: `data:${p.mediaType};base64,${p.data}` } })),
+          ],
+        });
       }
     }
   }
   return out;
 }
 
+/* Decides which picture blocks are sent as pictures: the newest
+ * MAX_IMAGES_SENT, and none when the model can't see. */
+function imagePicker(messages, enabled) {
+  const send = new Set();
+  if (!enabled) return { send, enabled };
+  const all = [];
+  for (const m of messages) {
+    for (const b of blocks(m)) {
+      if (b.type === 'image') all.push(b);
+      if (b.type === 'tool_result') for (const i of b.images || []) all.push(i);
+    }
+  }
+  for (const b of all.slice(-MAX_IMAGES_SENT)) send.add(b);
+  return { send, enabled };
+}
+
+function imageNote(b, pics) {
+  const where = b.path ? ` at ${b.path}` : '';
+  return pics.enabled
+    ? `[Earlier picture${where}, not re-sent; use view_image to look again]`
+    : `[Picture${where}: the current model can't see pictures. Say so, and suggest a model that can (MiniMax-M3, gpt-4o, Claude).]`;
+}
+
+/* A user message as ordered parts: {kind:'text', text} or {kind:'image', mediaType, data}. */
+function userParts(m, pics) {
+  const parts = [];
+  for (const b of blocks(m)) {
+    if (b.type === 'text' && b.text) parts.push({ kind: 'text', text: b.text });
+    else if (b.type === 'image') {
+      const img = pics.send.has(b) ? readImage(b.path) : null;
+      if (img) parts.push({ kind: 'image', ...img });
+      else parts.push({ kind: 'text', text: pics.send.has(b) ? `[Picture at ${b.path} is no longer there]` : imageNote(b, pics) });
+    }
+  }
+  if (!parts.length) parts.push({ kind: 'text', text: '' });
+  return parts;
+}
+
+/* Pictures attached to one tool result: those that load, plus text notes for the rest. */
+function toolImages(b, pics) {
+  const loaded = [];
+  let notes = '';
+  for (const i of b.images || []) {
+    const img = pics.send.has(i) ? readImage(i.path) : null;
+    if (img) loaded.push(img);
+    else notes += `
+${imageNote(i, pics)}`;
+  }
+  return { loaded, notes };
+}
+
 // --- neutral -> Anthropic --------------------------------------------------
 
-export function toAnthropicMessages(messages) {
+export function toAnthropicMessages(messages, { images = false } = {}) {
   const out = [];
+  const pics = imagePicker(messages, images);
   for (const m of repairToolPairs(messages)) {
     if (m.role === 'user') {
-      out.push({ role: 'user', content: [{ type: 'text', text: textFrom(m) }] });
+      out.push({
+        role: 'user',
+        content: userParts(m, pics).map((p) => (p.kind === 'text'
+          ? { type: 'text', text: p.text || ' ' }
+          : { type: 'image', source: { type: 'base64', media_type: p.mediaType, data: p.data } })),
+      });
     } else if (m.role === 'assistant') {
       const content = [];
       for (const b of blocks(m)) {
@@ -166,15 +252,22 @@ export function toAnthropicMessages(messages) {
       // Anthropic rejects an empty content array.
       if (content.length) out.push({ role: 'assistant', content });
     } else if (m.role === 'tool') {
-      // Anthropic carries tool results in a user-role message.
+      // Anthropic carries tool results in a user-role message, and a result
+      // may hold pictures directly.
       out.push({
         role: 'user',
-        content: blocks(m).map((b) => ({
-          type: 'tool_result',
-          tool_use_id: b.toolUseId,
-          content: b.text,
-          ...(b.isError ? { is_error: true } : {}),
-        })),
+        content: blocks(m).map((b) => {
+          const imgs = toolImages(b, pics);
+          const text = b.text + imgs.notes;
+          return {
+            type: 'tool_result',
+            tool_use_id: b.toolUseId,
+            content: imgs.loaded.length
+              ? [{ type: 'text', text }, ...imgs.loaded.map((p) => ({ type: 'image', source: { type: 'base64', media_type: p.mediaType, data: p.data } }))]
+              : text,
+            ...(b.isError ? { is_error: true } : {}),
+          };
+        }),
       });
     }
   }
@@ -192,14 +285,15 @@ function textFrom(m) {
 
 // --- OpenAI (and OpenAI-compatible: MiniMax) -------------------------------
 
-export async function* runOpenAI({ system, messages, tools, model, apiKey, baseUrl, signal, maxTokens }) {
+export async function* runOpenAI({ system, messages, tools, model, apiKey, baseUrl, signal, maxTokens, images = false, temperature = null }) {
   const url = `${String(baseUrl).replace(/\/$/, '')}/chat/completions`;
   const body = {
     model,
-    messages: toOpenAIMessages(system, messages),
+    messages: toOpenAIMessages(system, messages, { images }),
     stream: true,
     stream_options: { include_usage: true },
-    temperature: 0.7,
+    // Settings → AI → Creativity; 0.7 when left at the default.
+    temperature: typeof temperature === 'number' ? temperature : 0.7,
     ...(maxTokens ? { max_tokens: maxTokens } : {}),
     ...(tools?.length ? { tools: toOpenAITools(tools), tool_choice: 'auto' } : {}),
   };
@@ -267,7 +361,7 @@ export async function* runOpenAI({ system, messages, tools, model, apiKey, baseU
 
 // --- Anthropic -------------------------------------------------------------
 
-export async function* runAnthropic({ system, messages, tools, model, apiKey, baseUrl, signal, maxTokens }) {
+export async function* runAnthropic({ system, messages, tools, model, apiKey, baseUrl, signal, maxTokens, images = false, temperature = null }) {
   const url = `${String(baseUrl || 'https://api.anthropic.com/v1').replace(/\/$/, '')}/messages`;
   const body = {
     model,
@@ -277,7 +371,8 @@ export async function* runAnthropic({ system, messages, tools, model, apiKey, ba
     // the skill index inside it) across every turn of a run. Without it, a
     // long tool loop re-bills the full prefix on each iteration.
     system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-    messages: toAnthropicMessages(messages),
+    messages: toAnthropicMessages(messages, { images }),
+    ...(typeof temperature === 'number' ? { temperature } : {}),
     ...(tools?.length ? { tools: toAnthropicTools(tools) } : {}),
   };
 

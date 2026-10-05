@@ -3,6 +3,7 @@ import ContextMeter from './ContextMeter.jsx';
 import CommandPalette, { parseCommand } from './CommandPalette.jsx';
 import { MAIN_ORIGIN } from '../widgets/liveFeed.js';
 import ApprovalModal from './ApprovalModal.jsx';
+import { uploadAttachments, ACCEPT } from '../utils/attachments.js';
 import ProjectBar from './ProjectBar.jsx';
 import { useProviderTokenBudget, fetchSettings } from '../hooks/useProviderTokenBudget';
 import './AiPanel.css';
@@ -53,6 +54,24 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   const [sessionId, setSessionId] = useState(null);
   // The agent is paused waiting on this. Null when nothing is pending.
   const [approval, setApproval] = useState(null);
+  // Files waiting to go with the next message, already saved in attachments/.
+  const [attached, setAttached] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  // Settings → AI → Show thinking. Re-read when the window regains focus,
+  // which is when someone comes back from Settings.
+  const [showThinking, setShowThinking] = useState(true);
+  useEffect(() => {
+    const read = () => fetch('/api/prefs').then((r) => r.json()).then((p) => setShowThinking(p?.ai?.thinking !== false)).catch(() => {});
+    read();
+    window.addEventListener('focus', read);
+    window.addEventListener('gwn:prefs-changed', read);
+    return () => { window.removeEventListener('focus', read); window.removeEventListener('gwn:prefs-changed', read); };
+  }, []);
+  const fileInputRef = useRef(null);
+  // Handed from submitText to the request handler (the prompt makes a round
+  // trip through AppShell on the way, the files don't).
+  const outgoingFilesRef = useRef([]);
   const budget = useProviderTokenBudget();
   const taRef = useRef(null);
   const histEndRef = useRef(null);
@@ -142,6 +161,8 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   useEffect(() => {
     const onRequest = async (ev) => {
       const { prompt: p, currentCode } = ev.detail || {};
+      const outgoingFiles = outgoingFilesRef.current.map((f) => ({ path: f.path, name: f.name }));
+      outgoingFilesRef.current = [];
       const ac = new AbortController();
       // Exposed so the Stop button can cancel. Aborting the fetch closes the
       // response, which the server sees as res 'close' and turns into the
@@ -161,7 +182,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
             // The origin tags this run's events on the live channel, so the
             // floating windows see it and this window skips its own echo.
             headers: { 'Content-Type': 'application/json', 'X-Omni-Origin': MAIN_ORIGIN },
-            body: JSON.stringify({ prompt: p, currentCode, sessionId: sessionIdRef.current }),
+            body: JSON.stringify({ prompt: p, currentCode, sessionId: sessionIdRef.current, attachments: outgoingFiles }),
             signal: ac.signal,
           });
           // 409: the run just interrupted is still winding down on the
@@ -211,6 +232,14 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
               } else if (ev.type === 'tool_call') {
                 dispatchProgress({
                   step: { id: `tool-${ev.id}`, label: `${ev.name}(${summarizeArgs(ev.input)})`, status: 'run' },
+                });
+              } else if (ev.type === 'tool_result' && ev.ok && mediaFrom(ev.result).length) {
+                // Pictures, songs and videos Omi-One made show up in the chat.
+                const items = mediaFrom(ev.result);
+                setHistory((h) => [...h, { role: 'media', id: `m-${ev.id}`, items }]);
+                setShowHistory(true);
+                dispatchProgress({
+                  step: { id: `tool-${ev.id}`, label: `${ev.tool}(${summarizeArgs(ev.args)})`, status: 'done', detail: `${ev.durationMs}ms` },
                 });
               } else if (ev.type === 'tool_result') {
                 dispatchProgress({
@@ -511,17 +540,53 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       command.cmd.run(paletteApi);
       return true;
     }
-    if (!text) return false;
-    setHistory((h) => [...h, { role: 'user', text }]);
+    const sending = filesRef.current;
+    if (!text && !sending.length) return false;
+    const message = text || 'Have a look at what I attached.';
+    outgoingFilesRef.current = sending;
+    setAttached([]);
+    setHistory((h) => [...h, { role: 'user', text: message, files: sending }]);
     setActiveSkill(null);
     if (generatingRef.current) {
-      interruptRef.current = text;
+      interruptRef.current = message;
       if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
       api.toast && api.toast('Stopping the current task to start yours…', 'info');
       return true;
     }
-    onGenerateRef.current(text);
+    onGenerateRef.current(message);
     return true;
+  };
+
+  const filesRef = useRef(attached);
+  filesRef.current = attached;
+
+  /* Picked, pasted or dropped files: upload now, send with the next message. */
+  const addFiles = async (list) => {
+    const picked = [...(list || [])];
+    if (!picked.length) return;
+    if (filesRef.current.length + picked.length > 10) {
+      api.toast && api.toast('Up to 10 files per message.', 'info');
+      return;
+    }
+    setUploading(true);
+    try {
+      const saved = await uploadAttachments(picked);
+      setAttached((cur) => [...cur, ...saved]);
+    } catch (e) {
+      api.toast && api.toast(e.message || 'Could not attach that file', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+  const removeFile = (path) => setAttached((cur) => cur.filter((f) => f.path !== path));
+  const onPaste = (e) => {
+    const pasted = [...(e.clipboardData?.files || [])];
+    if (pasted.length) { e.preventDefault(); addFiles(pasted); }
+  };
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    addFiles(e.dataTransfer?.files);
   };
   const submitTextRef = useRef(submitText);
   submitTextRef.current = submitText;
@@ -662,10 +727,17 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
                 </div>
                 <CommandOutput m={m} />
               </div>
+            ) : m.role === 'media' ? (
+              <div key={m.id} className="ai-panel__media">
+                {m.items.map((it) => <MediaItem key={it.path} item={it} />)}
+              </div>
             ) : (
               <div key={i} className={`ai-panel__row ai-panel__row-${m.role}`}>
                 <span className="ai-panel__row-role">{m.role === 'user' ? 'You' : 'AI'}</span>
-                <span className="ai-panel__row-text">{m.text}</span>
+                <span className="ai-panel__row-text">
+                  {m.text}
+                  {m.files?.length > 0 && <FileChips files={m.files} />}
+                </span>
               </div>
             )))}
             <div ref={histEndRef} />
@@ -698,7 +770,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
           </ul>
         )}
 
-        {trace && trace.thinking && (
+        {showThinking && trace && trace.thinking && (
           <details className="ai-panel__thinking" open>
             <summary>Thinking…</summary>
             <ThinkingBody text={trace.thinking} />
@@ -717,7 +789,14 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
           </div>
         )}
 
-        <div className="ai-panel__prompt-wrap">
+        {attached.length > 0 && <FileChips files={attached} onRemove={removeFile} />}
+
+        <div
+          className={`ai-panel__prompt-wrap${dragOver ? ' is-drop' : ''}`}
+          onDragOver={(e) => { if (e.dataTransfer?.types?.includes('Files')) { e.preventDefault(); setDragOver(true); } }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+        >
           <CommandPalette
             open={paletteOpen}
             query={paletteState ? paletteState.query : ''}
@@ -727,6 +806,25 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
             api={paletteApi}
           />
           <div className="ai-panel__row">
+            <input
+              ref={fileInputRef}
+              id="ai-panel-file-input"
+              type="file"
+              multiple
+              accept={ACCEPT}
+              hidden
+              onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
+            />
+            <button
+              type="button"
+              className="ai-panel__attach"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              title="Attach pictures, PDFs, Word or Excel files (or paste / drop them here)"
+              aria-label="Attach files"
+            >
+              {uploading ? '…' : '+'}
+            </button>
             <textarea
               ref={taRef}
               className="ai-panel__input"
@@ -735,6 +833,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
               onChange={onChange}
               onKeyDown={onKey}
               onInput={onInput}
+              onPaste={onPaste}
               placeholder={
                 generating
                   ? 'Omi-One is working… send a message to interrupt, or /btw to ask on the side'
@@ -745,7 +844,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
                     : 'Add an API key in Settings, or switch provider to OmniOne Local…'
               }
             />
-            {generating && !prompt.trim() ? (
+            {generating && !prompt.trim() && !attached.length ? (
               <button
                 type="button"
                 className="ai-panel__send ai-panel__send--stop"
@@ -760,7 +859,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
               type="button"
               className="ai-panel__send"
               onClick={submit}
-              disabled={!prompt.trim() || paletteOpen}
+              disabled={(!prompt.trim() && !attached.length) || uploading || paletteOpen}
               title={generating ? (/^\/btw\s/i.test(prompt) ? 'Ask on the side' : 'Interrupt and send') : 'Send'}
             >
               {'➤'}
@@ -806,6 +905,48 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   );
 }
 
+
+const MEDIA_RE = /\.(png|jpe?g|gif|webp|mp3|wav|m4a|mp4|webm|mov)$/i;
+
+/* Workspace media paths in a tool result ({ saved: [...] } or { path }). */
+function mediaFrom(result) {
+  if (!result || typeof result !== 'object') return [];
+  const paths = [...(Array.isArray(result.saved) ? result.saved : []), result.path, result.preview]
+    .filter((p) => typeof p === 'string' && MEDIA_RE.test(p));
+  return [...new Set(paths)].map((p) => ({
+    path: p,
+    kind: /\.(mp3|wav|m4a)$/i.test(p) ? 'audio' : /\.(mp4|webm|mov)$/i.test(p) ? 'video' : 'image',
+  }));
+}
+
+function MediaItem({ item }) {
+  const src = `/api/workspace/media?path=${encodeURIComponent(item.path)}`;
+  return (
+    <figure className={`ai-panel__media-item ai-panel__media-item--${item.kind}`}>
+      {item.kind === 'image' && <a href={src} target="_blank" rel="noreferrer"><img src={src} alt={item.path} loading="lazy" /></a>}
+      {item.kind === 'audio' && <audio src={src} controls preload="none" />}
+      {item.kind === 'video' && <video src={src} controls preload="metadata" />}
+      <figcaption>{item.path}</figcaption>
+    </figure>
+  );
+}
+
+/* Attached files as small chips: a thumbnail for pictures, the name for the rest. */
+function FileChips({ files, onRemove }) {
+  return (
+    <div className="ai-panel__files">
+      {files.map((f) => (
+        <span key={f.path} className={`ai-panel__file ai-panel__file--${f.kind}`} title={f.path}>
+          {f.preview ? <img src={f.preview} alt="" /> : <span className="ai-panel__file-ext">{(f.name.split('.').pop() || 'file').slice(0, 4)}</span>}
+          <span className="ai-panel__file-name">{f.name}</span>
+          {onRemove && (
+            <button type="button" onClick={() => onRemove(f.path)} aria-label={`Remove ${f.name}`} title="Remove">×</button>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 /* The model's thinking, in a box of its own that scrolls. It follows the
  * newest text while you are at the bottom, and stays put once you scroll up

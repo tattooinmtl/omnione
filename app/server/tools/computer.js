@@ -58,7 +58,10 @@ async function gw(method, route, { json, query, binary = false, signal, timeoutM
 
 const wrap = (fn) => async (args = {}, ctx = {}) => {
   try {
-    return { ok: true, result: await fn(args, ctx) };
+    const out = await fn(args, ctx);
+    // A handler can hand back pictures for the model to see alongside its result.
+    if (out?.images) return { ok: true, result: out.result, images: out.images };
+    return { ok: true, result: out };
   } catch (e) {
     if (e instanceof ComputerError || e instanceof CloudError) return { ok: false, error: e.message };
     throw e;
@@ -153,7 +156,7 @@ registerTool({
 
 registerTool({
   name: 'computer_screenshot',
-  description: "Take a screenshot of your computer's screen. It's saved in your folder (computer/screen-<time>.png) for the user to look at; you get the path. You can't see images yourself: read the screen with computer_run or computer_browse instead.",
+  description: "Take a screenshot of your computer's screen. It's saved in your folder (computer/screen-<time>.png) for the user to look at; you get the path. You see the screenshot too (when the current model can see pictures).",
   permission: 'read',
   schema: { type: 'object', properties: {} },
   handler: wrap(async (_a, ctx) => {
@@ -162,7 +165,7 @@ registerTool({
     fs.mkdirSync(dir, { recursive: true });
     const file = path.join(dir, `screen-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.png`);
     fs.writeFileSync(file, png);
-    return { saved: toWorkspaceRelative(file), bytes: png.length };
+    return { result: { saved: toWorkspaceRelative(file), bytes: png.length }, images: [{ path: file, mediaType: 'image/png' }] };
   }),
 });
 

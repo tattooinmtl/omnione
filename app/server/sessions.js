@@ -292,8 +292,25 @@ export function textOf(message) {
     .join('\n');
 }
 
-export function userMessage(text) {
-  return { role: 'user', content: [{ type: 'text', text }] };
+/* A user turn. Attachments are files already saved into the workspace:
+ *   { kind: 'image', path, mediaType, name }   sent to the model as a picture
+ *   { kind: 'document', path, name, text }     its extracted text goes along
+ *   { kind: 'file', path, name }               only its path is mentioned
+ * Pictures are kept as paths; the adapters read them when sending. */
+export function userMessage(text, attachments = []) {
+  const content = [{ type: 'text', text }];
+  for (const a of attachments || []) {
+    if (!a?.path) continue;
+    if (a.kind === 'image') {
+      content.push({ type: 'image', path: a.path, mediaType: a.mediaType, name: a.name });
+    } else if (a.kind === 'document' && typeof a.text === 'string') {
+      content.push({ type: 'text', text: `[Attached document "${a.name}", saved at ${a.path}]
+${a.text}` });
+    } else {
+      content.push({ type: 'text', text: `[Attached file "${a.name}", saved at ${a.path}]` });
+    }
+  }
+  return { role: 'user', content };
 }
 
 export function toolResultMessage(results) {
@@ -305,6 +322,7 @@ export function toolResultMessage(results) {
       name: r.name,
       text: r.text,
       isError: Boolean(r.isError),
+      ...(r.images?.length ? { images: r.images } : {}),
     })),
   };
 }

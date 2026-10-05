@@ -29,6 +29,8 @@ import {
   recyclePath, revealPath, watchWorkspace, workspaceRootChanged,
 } from './workspaceFiles.js';
 import { pickFolder } from './folderPicker.js';
+import { resolveInWorkspace, toWorkspaceRelative } from './workspace.js';
+import { imageTypeOf, isDocument, extractDocumentText, safeUploadName } from './attachments.js';
 import { serveBuiltUi } from './ui.js';
 import { desktopExe, getAutostart, setAutostart, isElevated } from './desktop.js';
 import { listFixes, getFix, applyFix, rejectFix, undoFix } from './fixes.js';
@@ -95,6 +97,10 @@ import { subscribeLive, publishLive, originOf } from './live.js';
 import { listener as speechListener } from './listen.js';
 import { beat, startHeartbeat, heartbeatStatus, onHeartbeatEvent } from './mind/heartbeat.js';
 import { synthesizeSpeech } from './tools/media.js';
+import { speakingVoice, allPersonalities, sanitizePersonality, PRESETS } from './personality.js';
+import { getPrefs, setPrefs } from './prefs.js';
+import { cloneVoice } from './tools/create.js';
+import { listSchedules, addSchedule, updateSchedule, removeSchedule, runSchedule, startSchedules, getSchedule } from './schedules.js';
 import { publicAccount, startConnect, pollConnect, cancelConnect, refreshAccount, disconnect, syncUsage, CloudError } from './cloud.js';
 import { getStats, usageEntries, flushStats, recordUsage } from './stats.js';
 import { askBtw, BtwError } from './btw.js';
@@ -599,8 +605,72 @@ app.post('/api/btw', async (req, res) => {
   }
 });
 
+// --- attachments -------------------------------------------------------------
+
+// Files dropped or pasted into the chat. They are saved into the workspace's
+// attachments/ folder, so Omi-One can open them again later with read_file or
+// view_image, and so the user can find them. The chat shrinks pictures before
+// sending, so the 25 MB cap is mostly for PDFs and spreadsheets.
+const attachUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024, files: 10 },
+});
+
+app.post('/api/attachments', (req, res) => {
+  attachUpload.array('files', 10)(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'That file is over 25 MB.' : err.message });
+    const files = req.files || [];
+    if (!files.length) return res.status(400).json({ error: 'No files received.' });
+    const dir = path.join(getWorkspaceRoot(), 'attachments');
+    fs.mkdirSync(dir, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+    const saved = files.map((f) => {
+      const name = safeUploadName(f.originalname);
+      let file = path.join(dir, `${stamp}-${name}`);
+      for (let n = 2; fs.existsSync(file); n++) file = path.join(dir, `${stamp}-${n}-${name}`);
+      fs.writeFileSync(file, f.buffer);
+      return { name: f.originalname, path: toWorkspaceRelative(file), size: f.size, kind: attachmentKind(file) };
+    });
+    res.json({ files: saved });
+  });
+});
+
+function attachmentKind(file) {
+  if (imageTypeOf(file)) return 'image';
+  if (isDocument(file)) return 'document';
+  return 'file';
+}
+
+/* The attachments a /api/generate request names, checked and made ready for
+ * the user message: workspace paths only, pictures by path, documents read. */
+async function resolveAttachments(list) {
+  const out = [];
+  for (const a of Array.isArray(list) ? list.slice(0, 10) : []) {
+    const rel = typeof a === 'string' ? a : a?.path;
+    if (!rel) continue;
+    let abs;
+    try { abs = resolveInWorkspace(rel); } catch { continue; }
+    if (!fs.existsSync(abs)) continue;
+    const name = (typeof a === 'object' && a.name) || path.basename(abs);
+    const kind = attachmentKind(abs);
+    if (kind === 'image') out.push({ kind, path: abs, mediaType: imageTypeOf(abs), name });
+    else if (kind === 'document') {
+      let text;
+      try { text = await extractDocumentText(abs); } catch (e) { text = `(Couldn't read it: ${e.message})`; }
+      out.push({ kind, path: toWorkspaceRelative(abs), name, text });
+    } else out.push({ kind, path: toWorkspaceRelative(abs), name });
+  }
+  return out;
+}
+
 app.post('/api/generate', async (req, res) => {
   let { prompt, currentCode, sessionId, maxIterations } = req.body || {};
+  let attachments = [];
+  try { attachments = await resolveAttachments(req.body?.attachments); } catch { attachments = []; }
+  // A message can be only an attachment: "what's in this picture?" is implied.
+  if ((!prompt || typeof prompt !== 'string' || !prompt.trim()) && attachments.length) {
+    prompt = 'Have a look at what I attached.';
+  }
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'Missing `prompt`.' });
   }
@@ -712,6 +782,7 @@ app.post('/api/generate', async (req, res) => {
         apiKey,
         signal: ac.signal,
         maxIterations: cap,
+        attachments,
       })) {
         send(ev);
       }
@@ -1056,11 +1127,18 @@ app.get('/api/listen', (req, res) => {
   res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders?.();
   const send = (ev) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(ev)}\n\n`); };
+  // Settings → Voice can turn the wake word off: then nothing listens.
+  if (!getPrefs().voice.wakeWord) {
+    send({ type: 'state', state: 'off', reason: 'The wake word is off (Settings → Voice).' });
+    return res.end();
+  }
+  listenStreams.add(res);
   const off = speechListener().subscribe(send);
   const ping = setInterval(() => send({ type: 'ping' }), 30_000);
   ping.unref?.();
-  res.on('close', () => { off(); clearInterval(ping); });
+  res.on('close', () => { off(); clearInterval(ping); listenStreams.delete(res); });
 });
+const listenStreams = new Set();
 
 app.get('/api/listen/status', (_req, res) => {
   res.json(speechListener().status());
@@ -1069,6 +1147,118 @@ app.get('/api/listen/status', (_req, res) => {
 // The voice. Synthesizes with MiniMax and returns the audio itself, so the
 // browser can play it through an analyser and move the mouth with it. The
 // client falls back to the browser's own speech synthesis on any error.
+// --- scheduled tasks ----------------------------------------------------------------
+
+app.get('/api/schedules', (_req, res) => res.json(listSchedules()));
+app.post('/api/schedules', (req, res) => {
+  try { res.json(addSchedule(req.body || {})); } catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.patch('/api/schedules/:id', (req, res) => {
+  try { res.json(updateSchedule(req.params.id, req.body || {})); } catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.delete('/api/schedules/:id', (req, res) => {
+  try { removeSchedule(req.params.id); res.json({ ok: true }); } catch (e) { res.status(404).json({ error: e.message }); }
+});
+// Run now: answers at once; the result arrives on the live channel and in the history.
+app.post('/api/schedules/:id/run', (req, res) => {
+  if (!getSchedule(req.params.id)) return res.status(404).json({ error: 'No such scheduled task.' });
+  runSchedule(req.params.id, { reason: 'manual' }).catch((e) => console.error('[omnione] schedule run:', e.message));
+  res.json({ started: true });
+});
+
+// --- preferences, personalities, voices -------------------------------------------
+
+app.get('/api/prefs', (_req, res) => res.json(getPrefs()));
+app.post('/api/prefs', (req, res) => {
+  try {
+    const next = setPrefs(req.body || {});
+    // The wake word just went off: close the open listening streams (their
+    // windows reconnect and are told it is off).
+    if (!next.voice.wakeWord) for (const r of listenStreams) r.end();
+    publishLive({ type: 'prefs' }, 'settings');
+    res.json(next);
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.get('/api/personalities', (_req, res) => {
+  const prefs = getPrefs();
+  res.json({ active: prefs.personality.active, list: allPersonalities(prefs) });
+});
+app.post('/api/personalities', (req, res) => {
+  try {
+    const p = sanitizePersonality(req.body || {});
+    const custom = getPrefs().personality.custom.filter((x) => x.id !== p.id);
+    const prefs = setPrefs({ personality: { custom: [...custom, p], ...(req.body?.activate ? { active: p.id } : {}) } });
+    res.json({ saved: p, active: prefs.personality.active, list: allPersonalities(prefs) });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.post('/api/personalities/active', (req, res) => {
+  const id = String(req.body?.id || '');
+  if (!allPersonalities().some((p) => p.id === id)) return res.status(404).json({ error: `No personality "${id}".` });
+  const prefs = setPrefs({ personality: { active: id } });
+  publishLive({ type: 'personality', id }, 'settings');
+  res.json({ active: prefs.personality.active });
+});
+app.delete('/api/personalities/:id', (req, res) => {
+  const id = req.params.id;
+  if (PRESETS.some((p) => p.id === id)) return res.status(400).json({ error: 'Built-in personalities can\'t be deleted.' });
+  const cur = getPrefs().personality;
+  const prefs = setPrefs({ personality: { custom: cur.custom.filter((p) => p.id !== id), active: cur.active === id ? 'omi-one' : cur.active } });
+  res.json({ active: prefs.personality.active, list: allPersonalities(prefs) });
+});
+
+// Cloning from Settings → Voice: the user records or picks a sample. It is
+// saved into the workspace (voice-samples/) so the clone can be redone, and
+// the user clicked the button, so no approval prompt.
+const voiceUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1 } });
+app.post('/api/voices/clone', (req, res) => {
+  voiceUpload.single('sample')(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'The sample is over 20 MB.' : err.message });
+    if (!req.file) return res.status(400).json({ error: 'No recording received.' });
+    const name = String(req.body?.name || '').trim();
+    if (!name) return res.status(400).json({ error: 'Give the voice a name.' });
+    if (req.body?.consent !== 'yes') return res.status(400).json({ error: 'Confirm it is your voice or that you have permission to clone it.' });
+    const dir = path.join(getWorkspaceRoot(), 'voice-samples');
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, `${Date.now()}-${safeUploadName(req.file.originalname || 'sample.webm')}`);
+    fs.writeFileSync(file, req.file.buffer);
+    try {
+      const r = await cloneVoice({ sample: toWorkspaceRelative(file), name, previewText: req.body?.previewText || 'Hi, this is my new voice. How do I sound?' });
+      if (!r.ok) return res.status(502).json({ error: r.error });
+      if (req.body?.use === 'yes') setPrefs({ voice: { voiceId: r.result.voiceId } });
+      res.json({ ...r.result, prefs: getPrefs().voice });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+});
+app.delete('/api/voices/:id', (req, res) => {
+  const v = getPrefs().voice;
+  const prefs = setPrefs({ voice: {
+    clones: v.clones.filter((c) => c.voiceId !== req.params.id),
+    voiceId: v.voiceId === req.params.id ? 'English_expressive_narrator' : v.voiceId,
+  } });
+  res.json(prefs.voice);
+});
+
+// Pictures, sound and video from the workspace, for the chat to show what
+// Omi-One made. Media types only: this isn't a general file server.
+const MEDIA_TYPES = {
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp',
+  '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.m4a': 'audio/mp4', '.ogg': 'audio/ogg', '.webm': 'video/webm',
+  '.mp4': 'video/mp4', '.mov': 'video/quicktime',
+};
+app.get('/api/workspace/media', (req, res) => {
+  let abs;
+  try { abs = resolveInWorkspace(String(req.query.path || '')); } catch (e) { return res.status(400).json({ error: e.message }); }
+  const type = MEDIA_TYPES[path.extname(abs).toLowerCase()];
+  if (!type) return res.status(415).json({ error: 'Not a picture, sound or video file.' });
+  if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) return res.status(404).json({ error: 'No such file.' });
+  res.setHeader('Content-Type', type);
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(abs);
+});
+
 app.post('/api/speak', async (req, res) => {
   const { text, voice_id, emotion, speed, pitch, model } = req.body || {};
   const t = String(text || '').trim();
@@ -1077,13 +1267,16 @@ app.post('/api/speak', async (req, res) => {
   const ac = new AbortController();
   res.on('close', () => { if (!res.writableEnded) ac.abort(); });
   try {
+    // The voice from Settings → Voice (or the personality's own voice); the
+    // emotion engine's speed and pitch are nudges on top of it.
+    const v = speakingVoice();
     const r = await synthesizeSpeech({
       text: t,
-      model: model || undefined,
-      voice_id: voice_id || undefined,
+      model: model || v.model,
+      voice_id: voice_id || v.voiceId,
       emotion: emotion || undefined,
-      speed: speed == null ? undefined : Math.max(0.5, Math.min(2, Number(speed))),
-      pitch: pitch == null ? undefined : Math.max(-12, Math.min(12, Math.round(Number(pitch)))),
+      speed: Math.max(0.5, Math.min(2, v.speed * (speed == null ? 1 : Number(speed) || 1))),
+      pitch: Math.max(-12, Math.min(12, Math.round(v.pitch + (pitch == null ? 0 : Number(pitch) || 0)))),
       format: 'mp3',
     }, { signal: ac.signal });
     if (!r.ok) return res.status(502).json({ error: r.error });
@@ -1210,6 +1403,7 @@ if (isMain) {
 
   // The heartbeat: the agent's own time between conversations.
   if (startHeartbeat()) console.log('[omnione] heartbeat: on (see /api/mind; GWN_HEARTBEAT=0 disables)');
+  if (startSchedules()) console.log('[omnione] scheduled tasks: on (GWN_SCHEDULES=0 disables)');
 
   // Usage totals to the website profile every 10 minutes, when connected.
   const syncTimer = setInterval(syncUsageNow, 10 * 60 * 1000);

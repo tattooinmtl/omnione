@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.8.0",
- "build": "09619539627c",
- "commit": "7a29339e56f8",
- "date": "2026-10-04T10:56:00-04:00",
+ "version": "0.9.0",
+ "build": "b804536ff853",
+ "commit": "f61cce0ab3dd",
+ "date": "2026-10-05T14:31:17-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "55aa239563398a3ed92ddc15a86cd3fbd5a82aa2b9ad4450eab920d58b732117",
+   "h": "37507194388b252b4314f588b1c175f58a4f9eb0af0a90f811fccb650ffc62fc",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "e30d945f294db30a9355de984dac2326b38c86f7d37de9ab16dfca6d70f586eb",
+   "h": "33514c8a5639073a24d065055d392723c080dcb43352b7cafe35162308566b38",
    "s": 120
   },
   {
@@ -51,13 +51,13 @@
   },
   {
    "p": "package-lock.json",
-   "h": "1b889d124baeb18393fad62965540a0fd1dc638e9edc03a07aad10d515cde37d",
-   "s": 183594
+   "h": "074ad15986f6af36f46d8be56c220ea4576a8538bcfdc619c3994e5bc939e07d",
+   "s": 219231
   },
   {
    "p": "package.json",
-   "h": "5a7c6e6bb6ff1d3e0934ba8f8877d5dbb6a6a028a94fbcb452e208e2702e647b",
-   "s": 1191
+   "h": "4319717b933e6416d0e16bef85077bd2f6fb65e0a6de751eff20dedbefe6dca6",
+   "s": 1268
   },
   {
    "p": "public/omnione.ico",
@@ -71,13 +71,18 @@
   },
   {
    "p": "server/adapters.js",
-   "h": "5c98dd2bdab2204d2a42e5525e783f2a4663817d7417ce7876479c54e3f767dc",
-   "s": 16753
+   "h": "7e1869cacc90549488165ca20b4d7d627a27433ef4414198446e293b05ac8747",
+   "s": 20812
   },
   {
    "p": "server/agent.js",
-   "h": "da53acc8613f3a34f12e2e9e61aa341eacfbe68ec16145314808e70200bff293",
-   "s": 28485
+   "h": "b3d30cd29fd4aaa53b21f0c4c18c1ecba9981ab605e11bdaa05ae4d62e68a6ed",
+   "s": 28855
+  },
+  {
+   "p": "server/attachments.js",
+   "h": "bdd26e353bbc152366962a77cd17e8c2de70bcc89c11691a75a2cdfe87f36bfb",
+   "s": 4766
   },
   {
    "p": "server/auth.js",
@@ -156,8 +161,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "abee3430cd7483f3713b85b2cea449d886fecf2202170f0bafb3f27b91d89341",
-   "s": 48958
+   "h": "1faf0f02dc81ef152b507acf7811c45a1245bc93ded669a804459d48919c69dd",
+   "s": 59321
   },
   {
    "p": "server/listen.js",
@@ -191,8 +196,8 @@
   },
   {
    "p": "server/mind/prompt.js",
-   "h": "3c26782ee6262f904cb76276497427133985dfb7b2138e314b4a95c0cb0cf114",
-   "s": 5285
+   "h": "500471fa1252276ffdf62521d51d052a11a63a389b457df664a26fd3338e8305",
+   "s": 5420
   },
   {
    "p": "server/mind/state.js",
@@ -205,6 +210,11 @@
    "s": 2600
   },
   {
+   "p": "server/notify.js",
+   "h": "c6aef5412c1db11b6ff4ff6c377477bc3e833a9527c2c8c73c3bf87e57d81f79",
+   "s": 2648
+  },
+  {
    "p": "server/pcAccess.js",
    "h": "bcad6aed0c942235593c6669e5d0cbc227d9ae8946b56a8f2c1796033b24c1fa",
    "s": 4934
@@ -213,6 +223,16 @@
    "p": "server/permissions.js",
    "h": "b44667b015d502681df36c4f08dbd058ad3017162c48089e093a39368377308c",
    "s": 7391
+  },
+  {
+   "p": "server/personality.js",
+   "h": "ac24cf708a00cb114b6628284f09f59385dc782f38b42698bdfaddbae3410608",
+   "s": 6066
+  },
+  {
+   "p": "server/prefs.js",
+   "h": "8107c3b5fc0fcc15ba8eb641f9d8e045feac9f026ffae8b38ceec7ab4d0fadb9",
+   "s": 3028
   },
   {
    "p": "server/projects.js",
@@ -235,6 +255,11 @@
    "s": 8489
   },
   {
+   "p": "server/schedules.js",
+   "h": "3c7786438d6909d9ba169dd383cd6b3c33bdf46b0016f5d694ac13d188c82bc1",
+   "s": 13211
+  },
+  {
    "p": "server/searchLog.js",
    "h": "4f9f636d34d28ec1566c96339beb2be99e6dfe11122e16781375ce2c36de105e",
    "s": 3157
@@ -246,8 +271,8 @@
   },
   {
    "p": "server/sessions.js",
-   "h": "e7c919c77c13865e2a1e9456af3a63f9d581aa966551f508348305db6c29a5bb",
-   "s": 11536
+   "h": "e1774dd704d0659ea7452e5eb10f12279e22b845d3ed7a49f21fb54d3249edac",
+   "s": 12507
   },
   {
    "p": "server/skillDrafts.js",
@@ -296,8 +321,13 @@
   },
   {
    "p": "server/tools/computer.js",
-   "h": "835ac050380dceaf145468ebe0835557206323b948a1ff086e4f1278db5c16f4",
-   "s": 12297
+   "h": "3d8878a27963bee2a1c2497df049717f9f5df9c540bb8613acec1671cc5beca9",
+   "s": 12525
+  },
+  {
+   "p": "server/tools/create.js",
+   "h": "672f86fb94f4e23f64925bd92a6c49e8e43de33af0ca3291057281de6da76cd6",
+   "s": 15502
   },
   {
    "p": "server/tools/fixes.js",
@@ -311,13 +341,13 @@
   },
   {
    "p": "server/tools/fs.js",
-   "h": "167ec7008a0fc555f795d5c88ed6bf52e62b0aae88f2aaeac470ce18f52ba042",
-   "s": 13569
+   "h": "d0b748ddba0a6e855796548b7232c10234eb6718d91f1bd7bd64f424d8928762",
+   "s": 14354
   },
   {
    "p": "server/tools/media.js",
-   "h": "5c6107b912f4c57f048b38fc8c92e092d38e4922ba8ba4520fc365524640e7d0",
-   "s": 16779
+   "h": "e7e752dffb699cfbb779e7dc2a9551851301f885700ca851d32a70e1ac98c2fb",
+   "s": 18164
   },
   {
    "p": "server/tools/memory.js",
@@ -346,8 +376,13 @@
   },
   {
    "p": "server/tools/register.js",
-   "h": "80f2efaaec0f052ea062ecfda7e2c452ec5607a27769c5797aad10c6712c1792",
-   "s": 703
+   "h": "df1384de0f45c9b5bc86a7d79adeb2ebba9be6d8f3669581f6f0d656309a4838",
+   "s": 775
+  },
+  {
+   "p": "server/tools/schedules.js",
+   "h": "df18c0b0ac1dfc892ee07c51d47ccc725d121e79e7902475d224140f3203457d",
+   "s": 3246
   },
   {
    "p": "server/tools/shell.js",
@@ -368,6 +403,11 @@
    "p": "server/tools/todo.js",
    "h": "9bb6433bb3b2fb5a3da5ca730d8c3fda9f053cde7f3a6644ff69904ff3796e9c",
    "s": 3774
+  },
+  {
+   "p": "server/tools/vision.js",
+   "h": "96729e9695851e7ebcf3f55586393573eb90e7f744582b70616f148dff8e4156",
+   "s": 5625
   },
   {
    "p": "server/ui.js",
@@ -846,13 +886,13 @@
   },
   {
    "p": "src/components/AiPanel.css",
-   "h": "25737bbd4220aba3e10619a03ec0b74a9a5a22d35851d7c142eadbe4b4926592",
-   "s": 9386
+   "h": "dc5c215f23288026e119f59e4a95570b32896330a6f606a33e7267ed73d134c2",
+   "s": 11596
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "1db721d57ef98ac0d2abe33869ba215dbd12fd7b6be489a31e9af9ae27a228fd",
-   "s": 36626
+   "h": "8f292775353ae4874f9690f7d9b09fd246f7a2e5e3b3a4a55ea8c4c0540a59e3",
+   "s": 43113
   },
   {
    "p": "src/components/AppShell.css",
@@ -976,13 +1016,13 @@
   },
   {
    "p": "src/components/SettingsModal.css",
-   "h": "93ca948aa8205ef1787eccebd894f0a37be4351e2217527b944f245cfa8bd5f1",
-   "s": 9477
+   "h": "f3072418a6521b7809b4b9dccc337e315c315980c23b7e7b8b22b9c1290c32da",
+   "s": 15748
   },
   {
    "p": "src/components/SettingsModal.jsx",
-   "h": "44284bded530aeac8940a6d0f79a54c1ef258e62864e1b16991769e0734968c2",
-   "s": 16836
+   "h": "49317583b33779c3b60fbb8554f581015b5782bba2e5339453f30c34749be38f",
+   "s": 19967
   },
   {
    "p": "src/components/SkillsModal.css",
@@ -1023,6 +1063,41 @@
    "p": "src/components/doctor/DoctorView.jsx",
    "h": "1ddfddefcee6504cf9a443cb17db21eaaf90cdad1e0a15fdc1d352bc96716cfc",
    "s": 8415
+  },
+  {
+   "p": "src/components/settings/ConnectionsTab.jsx",
+   "h": "ac33f626395a74190e3b806abbe6697892afe9a25fc96e4fed76a04bc65702e8",
+   "s": 2161
+  },
+  {
+   "p": "src/components/settings/MediaTab.jsx",
+   "h": "20ad66b124105229fc64a06e2f20dfe203143fc31517ec2ff1dbdbdfd6aa6366",
+   "s": 2677
+  },
+  {
+   "p": "src/components/settings/MemoryTab.jsx",
+   "h": "2b0c079324b00b803c9da9ba4924340b54492bf6ca6c1724fe0468079538d87b",
+   "s": 4913
+  },
+  {
+   "p": "src/components/settings/PersonalityTab.jsx",
+   "h": "1e571500e5e3a39f6f47b2fab40ea7a918c861d68a547d6ff3e3fc55e40d2e4f",
+   "s": 6558
+  },
+  {
+   "p": "src/components/settings/SchedulesTab.jsx",
+   "h": "b9ef95830ac3779896774e104af6c7053c96967e73f0153f8ed46050f050eac2",
+   "s": 8501
+  },
+  {
+   "p": "src/components/settings/VoiceTab.jsx",
+   "h": "8611d04f7a1596847bad642e581287fd39e4c72784d56e8f03aa88ad9c136716",
+   "s": 10805
+  },
+  {
+   "p": "src/components/settings/shared.jsx",
+   "h": "8656b967bee00d3578f78f3f477245ac6f57ce36b4070e4fd8fc555047247cf9",
+   "s": 2656
   },
   {
    "p": "src/components/stats/LineChart.jsx",
@@ -1115,6 +1190,11 @@
    "s": 3932
   },
   {
+   "p": "src/utils/attachments.js",
+   "h": "70048fe974ebb4a14c52b766c40dc0672803521685efa108ca45f2035d61f5bb",
+   "s": 1985
+  },
+  {
    "p": "src/utils/gameFiles.js",
    "h": "d33e7a1382d66887eb5ef192ea8def4168e71cf9a961cf290ece41d7631fe282",
    "s": 11272
@@ -1151,8 +1231,8 @@
   },
   {
    "p": "src/widgets/PresenceWidget.jsx",
-   "h": "b977a9eb2caa72a55f624eb65c7d558f689f383289abacd611319c92bb86db18",
-   "s": 11661
+   "h": "24abb1bf193ddef0f47c554c58813ac73e56fc063a5221aabad305cf890204cd",
+   "s": 12049
   },
   {
    "p": "src/widgets/Widget.css",
@@ -1181,8 +1261,8 @@
   },
   {
    "p": "vite.config.js",
-   "h": "7353e537db199a604faa307fbf3341f4380a67f4d23427335db025a90561aeac",
-   "s": 1634
+   "h": "bd64e418f4f770a1bd9fa734e2855325505ff48bb0a0971fb42251ef95db718f",
+   "s": 1746
   }
  ]
 }

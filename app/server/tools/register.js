@@ -21,3 +21,6 @@ import './fixes.js';
 import './computer.js';
 import './projects.js';
 import './admin.js';
+import './vision.js';
+import './create.js';
+import './schedules.js';

@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { PROJECT_ROOT } from './store.js';
 import { getCore } from './memory.js';
+import { personalityPrompt } from '../personality.js';
 import { recall } from './memory.js';
 import { currentMood, listGoals, getState } from './state.js';
 import { readJournal } from './journal.js';
@@ -51,6 +52,9 @@ export function buildMindContext({ prompt = '', now = Date.now() } = {}) {
 
   const soul = readSoul().trim();
   if (soul) parts.push(`IDENTITY (SOUL.md — written by the user; this is who you are):\n${soul}`);
+
+  const persona = personalityPrompt();
+  if (persona) parts.push(persona);
 
   const core = getCore();
   const projectBlock = core.projectName

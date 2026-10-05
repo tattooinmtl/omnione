@@ -21,9 +21,11 @@ import {
   isIgnored,
 } from '../workspace.js';
 import { registerTool } from '../toolRegistry.js';
+import { isDocument, imageTypeOf, extractDocumentText } from '../attachments.js';
 
 const MAX_READ_BYTES = 2 * 1024 * 1024;
 const DEFAULT_READ_LINES = 2000;
+const MAX_DOC_BYTES = 50 * 1024 * 1024;
 
 /* Binary files waste context and can break the JSON encoding. Sniff for NUL
  * bytes in the first chunk, which is what `git` and `grep` effectively do. */
@@ -37,7 +39,7 @@ function looksBinary(buf) {
 
 registerTool({
   name: 'read_file',
-  description: 'Read a text file from the workspace. Returns numbered lines. Use offset/limit for large files.',
+  description: 'Read a file from the workspace. Returns numbered lines. Use offset/limit for large files. PDF, Word (.docx) and Excel (.xlsx) files come back as their text; for pictures use view_image.',
   permission: 'read',
   schema: {
     type: 'object',
@@ -53,31 +55,40 @@ registerTool({
     if (!fs.existsSync(abs)) return { ok: false, error: `No such file: ${p}` };
     const stat = fs.statSync(abs);
     if (stat.isDirectory()) return { ok: false, error: `${p} is a directory. Use list_dir.` };
+    if (imageTypeOf(abs)) return { ok: false, error: `${p} is a picture. Use view_image to look at it.` };
+    if (isDocument(abs)) {
+      if (stat.size > MAX_DOC_BYTES) return { ok: false, error: `${p} is ${stat.size} bytes, over the ${MAX_DOC_BYTES} limit for documents.` };
+      let text;
+      try { text = await extractDocumentText(abs); } catch (e) { return { ok: false, error: `Couldn't read ${p}: ${e.message}` }; }
+      return numberedResult(abs, text, offset, limit);
+    }
     if (stat.size > MAX_READ_BYTES) {
       return { ok: false, error: `${p} is ${stat.size} bytes, over the ${MAX_READ_BYTES} limit. Use grep, or read it in pieces with offset/limit.` };
     }
     const buf = fs.readFileSync(abs);
     if (looksBinary(buf)) return { ok: false, error: `${p} looks like a binary file.` };
-
-    const lines = buf.toString('utf8').split('\n');
-    const start = Math.max(1, Number(offset) || 1);
-    const count = Math.max(1, Number(limit) || DEFAULT_READ_LINES);
-    const slice = lines.slice(start - 1, start - 1 + count);
-    const width = String(start + slice.length - 1).length;
-    const numbered = slice.map((l, i) => `${String(start + i).padStart(width)}\t${l}`).join('\n');
-
-    return {
-      ok: true,
-      result: {
-        path: toWorkspaceRelative(abs),
-        totalLines: lines.length,
-        shown: `${start}-${start + slice.length - 1}`,
-        truncated: start - 1 + slice.length < lines.length,
-        content: numbered,
-      },
-    };
+    return numberedResult(abs, buf.toString('utf8'), offset, limit);
   },
 });
+
+function numberedResult(abs, text, offset, limit) {
+  const lines = text.split('\n');
+  const start = Math.max(1, Number(offset) || 1);
+  const count = Math.max(1, Number(limit) || DEFAULT_READ_LINES);
+  const slice = lines.slice(start - 1, start - 1 + count);
+  const width = String(start + slice.length - 1).length;
+  const numbered = slice.map((l, i) => `${String(start + i).padStart(width)}\t${l}`).join('\n');
+  return {
+    ok: true,
+    result: {
+      path: toWorkspaceRelative(abs),
+      totalLines: lines.length,
+      shown: `${start}-${start + slice.length - 1}`,
+      truncated: start - 1 + slice.length < lines.length,
+      content: numbered,
+    },
+  };
+}
 
 // --- write -----------------------------------------------------------------
 

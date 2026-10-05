@@ -17,6 +17,8 @@
 
 import { runOpenAI, runAnthropic, runStub, ContextOverflowError } from './adapters.js';
 import { buildSystemPrompt } from './prompts.js';
+import { modelSeesImages } from './attachments.js';
+import { getPrefs } from './prefs.js';
 import { executeTool, formatToolResult, listTools, syncMcpTools, getTool } from './toolRegistry.js';
 import './tools/register.js';
 import { checkPermission, requestApproval, cancelPending, getMode } from './permissions.js';
@@ -82,6 +84,8 @@ export async function* runAgent({
   // 'subagent'. Decides whether the mind is in the prompt and whether the
   // run is remembered.
   kind = systemOverride ? 'subagent' : 'chat',
+  // Files the user attached to this message (see userMessage in sessions.js).
+  attachments = [],
 }) {
   // Refresh MCP tools so a server added since boot is visible this run.
   // Never fatal: a broken MCP server must not stop the agent working.
@@ -114,7 +118,9 @@ export async function* runAgent({
   let toolCallsTotal = 0;
   const runAdapter = adapterFor(provider.apiStyle);
 
-  appendMessage(sessionId, userMessage(prompt));
+  appendMessage(sessionId, userMessage(prompt, attachments));
+  const images = modelSeesImages(provider.id, model);
+  const temperature = getPrefs().ai.temperature;
   if (kind !== 'subagent') recordSession(sessionId);
   let messages = getMessages(sessionId);
 
@@ -147,7 +153,7 @@ export async function* runAgent({
     let turnText = '';
 
     try {
-      const stream = runAdapter({ system, messages, tools, model, apiKey, baseUrl: provider.baseUrl, signal });
+      const stream = runAdapter({ system, messages, tools, model, apiKey, baseUrl: provider.baseUrl, signal, images, temperature });
       for await (const ev of stream) {
         switch (ev.type) {
           case 'delta':
@@ -448,7 +454,7 @@ async function* runOneTool(call, sessionId, signal, runConfig = {}) {
   }
 
   yield { ...resultEvent(call, args, r, started), durationMs, checkpointId };
-  return { toolUseId: call.id, name: call.name, text: formatToolResult(r), isError: !r.ok };
+  return { toolUseId: call.id, name: call.name, text: formatToolResult(r), isError: !r.ok, images: r.ok ? r.images : undefined };
 }
 
 function resultEvent(call, args, r, started) {

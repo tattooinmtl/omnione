@@ -5,17 +5,36 @@ import {
   saveSettings,
   fmtTok,
 } from '../hooks/useProviderTokenBudget.js';
+import PersonalityTab from './settings/PersonalityTab.jsx';
+import VoiceTab from './settings/VoiceTab.jsx';
+import MediaTab from './settings/MediaTab.jsx';
+import SchedulesTab from './settings/SchedulesTab.jsx';
+import ConnectionsTab from './settings/ConnectionsTab.jsx';
+import MemoryTab from './settings/MemoryTab.jsx';
+import { usePrefs, Switch, Msg, Section } from './settings/shared.jsx';
 import './SettingsModal.css';
 
-/* Settings, in three tabs:
- *   AI      provider, model, API key, and the provider chart
- *   Access  Omi-One's folder, and what it may read and change on the PC
- *   App     start with Windows, version
+/* Settings, one tab per subject, listed down the side:
+ *   AI           provider, model, API key, thinking, creativity
+ *   Personality  the role Omi-One plays, and custom ones
+ *   Voice        how it sounds, the wake word, cloning a voice
+ *   Media        defaults for pictures and music
+ *   Schedules    tasks it runs on its own, and their results
+ *   Connections  outside services and MCP servers
+ *   Memory       SOUL.md, what it remembers, the heartbeat
+ *   Access       its folder, and what it may read and change on the PC
+ *   App          start with Windows, notifications, version
  * The tray icon opens this window straight to a tab (#settings / #settings-app).
  */
 
 const TABS = [
   { id: 'ai', label: 'AI' },
+  { id: 'personality', label: 'Personality' },
+  { id: 'voice', label: 'Voice' },
+  { id: 'media', label: 'Media' },
+  { id: 'schedules', label: 'Schedules' },
+  { id: 'connections', label: 'Connections' },
+  { id: 'memory', label: 'Memory' },
   { id: 'access', label: 'Access' },
   { id: 'app', label: 'App' },
 ];
@@ -141,6 +160,7 @@ function AiTab() {
       </form>
 
       <StepsSetting />
+      <BehaviourSetting />
 
       <button type="button" className="settings-modal__disclose" aria-expanded={chart} onClick={() => setChart((c) => !c)}>
         {chart ? '▾' : '▸'} Provider chart
@@ -174,6 +194,31 @@ function AiTab() {
         </div>
       )}
     </>
+  );
+}
+
+/* How the model answers: creativity (temperature) and the visible thinking. */
+const CREATIVITY = [
+  ['', 'Provider default'],
+  ['0.2', 'Precise (0.2)'],
+  ['0.7', 'Balanced (0.7)'],
+  ['1', 'Creative (1.0)'],
+];
+function BehaviourSetting() {
+  const { prefs, save, msg } = usePrefs();
+  if (!prefs) return null;
+  const t = prefs.ai.temperature;
+  return (
+    <Section title="How it answers">
+      <label>
+        <span>Creativity</span>
+        <select id="ai-temperature" value={t == null ? '' : String(t)} onChange={(e) => save({ ai: { temperature: e.target.value === '' ? null : Number(e.target.value) } })}>
+          {CREATIVITY.map(([v, l]) => <option key={l} value={v}>{l}</option>)}
+        </select>
+      </label>
+      <Switch id="ai-thinking" on={prefs.ai.thinking} onChange={(on) => save({ ai: { thinking: on } })} label="Show thinking" hint="Shows the model's reasoning in the chat while it works." />
+      <Msg msg={msg} />
+    </Section>
   );
 }
 
@@ -297,6 +342,23 @@ function AccessTab({ onOpenDoctor }) {
 
 // --- App --------------------------------------------------------------------------------
 
+function NotificationsSetting() {
+  const { prefs, save, msg } = usePrefs();
+  if (!prefs) return null;
+  return (
+    <Section title="Notifications">
+      <Switch
+        id="app-notify"
+        on={prefs.notifications.desktop}
+        onChange={(on) => save({ notifications: { desktop: on } })}
+        label="Windows notifications"
+        hint="When a scheduled task finishes or fails. They appear as coming from Windows PowerShell for now."
+      />
+      <Msg msg={msg} />
+    </Section>
+  );
+}
+
 function AppTab() {
   const [info, setInfo] = useState(null);
   const [auto, setAuto] = useState(null);
@@ -347,6 +409,8 @@ function AppTab() {
         {msg.text && <p className={msg.error ? 'settings-modal__error' : 'settings-modal__status'}>{msg.text}</p>}
       </section>
 
+      <NotificationsSetting />
+
       <section className="settings-modal__section">
         <h4>About</h4>
         <dl className="settings-modal__about">
@@ -376,17 +440,25 @@ export default function SettingsModal({ onClose, initialTab = 'ai', onOpenDoctor
           <h3>SETTINGS</h3>
           <button type="button" className="settings-modal__close" onClick={onClose} aria-label="Close">×</button>
         </header>
-        <nav className="settings-modal__tabs" role="tablist">
-          {TABS.map((t) => (
-            <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'is-on' : ''} onClick={() => setTab(t.id)}>
-              {t.label}
-            </button>
-          ))}
-        </nav>
-        <div className="settings-modal__body" role="tabpanel">
-          {tab === 'ai' && <AiTab />}
-          {tab === 'access' && <AccessTab onOpenDoctor={onOpenDoctor} />}
-          {tab === 'app' && <AppTab />}
+        <div className="settings-modal__layout">
+          <nav className="settings-modal__tabs" role="tablist" aria-orientation="vertical">
+            {TABS.map((t) => (
+              <button key={t.id} id={`settings-tab-${t.id}`} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'is-on' : ''} onClick={() => setTab(t.id)}>
+                {t.label}
+              </button>
+            ))}
+          </nav>
+          <div className="settings-modal__body" role="tabpanel" aria-labelledby={`settings-tab-${tab}`}>
+            {tab === 'ai' && <AiTab />}
+            {tab === 'personality' && <PersonalityTab />}
+            {tab === 'voice' && <VoiceTab />}
+            {tab === 'media' && <MediaTab />}
+            {tab === 'schedules' && <SchedulesTab />}
+            {tab === 'connections' && <ConnectionsTab />}
+            {tab === 'memory' && <MemoryTab />}
+            {tab === 'access' && <AccessTab onOpenDoctor={onOpenDoctor} />}
+            {tab === 'app' && <AppTab />}
+          </div>
         </div>
       </div>
     </div>
