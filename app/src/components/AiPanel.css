@@ -402,3 +402,25 @@
 }
 .ai-panel__media-item audio { width: min(320px, 100%); }
 .ai-panel__media-item figcaption { font-size: 10px; color: var(--fg-dim); word-break: break-all; }
+
+/* Live camera: the button, its red dot, and the strip with the preview. */
+.ai-panel__camera { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.ai-panel__camera.is-on { color: #ff5f56; border-color: rgba(255, 95, 86, 0.6); }
+.ai-panel__cam-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 8px #ff3b30; animation: ai-cam-pulse 1.6s ease-in-out infinite; }
+.ai-panel__cam-dot--badge { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; }
+@keyframes ai-cam-pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .ai-panel__cam-dot { animation: none; } }
+.ai-panel__cam {
+  display: grid; grid-template-columns: 96px 1fr auto; gap: 10px; align-items: center;
+  margin: 4px 0; padding: 6px; border: 1px solid rgba(255, 95, 86, 0.35); border-radius: 2px; background: rgba(255, 59, 48, 0.05);
+}
+.ai-panel__cam img { width: 96px; height: 72px; object-fit: cover; border-radius: 1px; display: block; background: #000; }
+.ai-panel__cam-wait { width: 96px; height: 72px; display: grid; place-items: center; font-size: 10px; color: var(--fg-dim); text-align: center; background: #000; }
+.ai-panel__cam b { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg); }
+.ai-panel__cam > div span { font-size: 11px; color: var(--fg-dim); }
+.ai-panel__cam > button { border: none; background: none; color: var(--fg-dim); font-size: 16px; cursor: pointer; padding: 0 6px; }
+.ai-panel__cam > button:hover { color: #ff5f56; }
+/* Same thin-line look as the app's other icons (the widget's microphone). */
+.ai-panel__camera-icon { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+.ai-panel__camera:not(.is-on) { color: var(--blue-2); }
+.ai-panel__camera.is-on { background: rgba(255, 59, 48, 0.08); }

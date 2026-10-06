@@ -105,6 +105,7 @@ import { synthesizeSpeech } from './tools/media.js';
 import { speakingVoice, allPersonalities, sanitizePersonality, PRESETS } from './personality.js';
 import { getPrefs, setPrefs } from './prefs.js';
 import { cloneVoice } from './tools/create.js';
+import { cameraState, setCamera, takePicture, listWebcams, findNetworkCameras, CameraError, ESP32_SIZES } from './camera.js';
 import { connectVercel, disconnectVercel, vercelStatus, setVercelTeam, listTeams as listVercelTeams, VercelError } from './vercel.js';
 import { listSchedules, addSchedule, updateSchedule, removeSchedule, runSchedule, startSchedules, getSchedule } from './schedules.js';
 import { publicAccount, startConnect, pollConnect, cancelConnect, refreshAccount, disconnect, syncUsage, CloudError } from './cloud.js';
@@ -704,6 +705,15 @@ app.post('/api/generate', async (req, res) => {
   let { prompt, currentCode, sessionId, maxIterations } = req.body || {};
   let attachments = [];
   try { attachments = await resolveAttachments(req.body?.attachments); } catch { attachments = []; }
+  // The live camera: while it's on, every message takes one picture with it.
+  if (cameraState().on) {
+    try {
+      const shot = await takePicture();
+      attachments.push({ kind: 'image', path: shot.path, mediaType: 'image/jpeg', name: shot.name, camera: { label: cameraState().label } });
+    } catch (e) {
+      attachments.push({ kind: 'note', text: `[The live camera is on but didn't give a picture: ${e.message}]` });
+    }
+  }
   // A message can be only an attachment: "what's in this picture?" is implied.
   if ((!prompt || typeof prompt !== 'string' || !prompt.trim()) && attachments.length) {
     prompt = 'Have a look at what I attached.';
@@ -1227,6 +1237,31 @@ app.post('/api/connections/vercel/team', (req, res) => {
 app.delete('/api/connections/vercel', (_req, res) => {
   disconnectVercel();
   res.json(vercelStatus());
+});
+
+// --- live camera --------------------------------------------------------------------
+
+const cameraFail = (res, e) => res.status(e instanceof CameraError ? 400 : 500).json({ error: e.message });
+app.get('/api/camera', async (req, res) => {
+  const out = { ...cameraState(), esp32Sizes: ESP32_SIZES };
+  if (req.query.webcams) out.webcams = await listWebcams().catch(() => []);
+  res.json(out);
+});
+app.post('/api/camera', (req, res) => {
+  try { res.json(setCamera(req.body || {})); } catch (e) { cameraFail(res, e); }
+});
+// A fresh picture for the preview (not saved). Works while the camera is on,
+// or for "Test" in Settings with ?test=1.
+app.get('/api/camera/frame', async (req, res) => {
+  try {
+    const { jpg } = await takePicture({ save: false, ignoreOff: req.query.test === '1' });
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'no-store');
+    res.end(jpg);
+  } catch (e) { cameraFail(res, e); }
+});
+app.post('/api/camera/find', async (_req, res) => {
+  try { res.json({ cameras: await findNetworkCameras() }); } catch (e) { cameraFail(res, e); }
 });
 
 // --- preferences, personalities, voices -------------------------------------------

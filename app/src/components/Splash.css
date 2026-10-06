@@ -127,8 +127,8 @@
   position: relative;
   margin-top: 6px;
   width: 100%;
-  max-width: 560px;
-  aspect-ratio: 1 / 1;
+  max-width: 720px;
+  aspect-ratio: 16 / 9;
   border-radius: 4px;
   overflow: hidden;
   box-shadow:
@@ -250,8 +250,8 @@
 
 @media (max-width: 540px) {
   .splash__video-card {
-    aspect-ratio: 1 / 1;
-    max-width: 86vw;
+    aspect-ratio: 16 / 9;
+    max-width: 92vw;
   }
   .splash__footer {
     font-size: 9px;

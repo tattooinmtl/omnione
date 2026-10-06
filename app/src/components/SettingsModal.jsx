@@ -8,6 +8,7 @@ import {
 import PersonalityTab from './settings/PersonalityTab.jsx';
 import VoiceTab from './settings/VoiceTab.jsx';
 import MediaTab from './settings/MediaTab.jsx';
+import CameraTab from './settings/CameraTab.jsx';
 import SchedulesTab from './settings/SchedulesTab.jsx';
 import ConnectionsTab from './settings/ConnectionsTab.jsx';
 import MemoryTab from './settings/MemoryTab.jsx';
@@ -18,6 +19,7 @@ import './SettingsModal.css';
  *   AI           provider, model, API key, thinking, creativity
  *   Personality  the role Omi-One plays, and custom ones
  *   Voice        how it sounds, the wake word, cloning a voice
+ *   Camera       the live camera (ESP32 or webcam), test picture, on/off
  *   Media        defaults for pictures and music
  *   Schedules    tasks it runs on its own, and their results
  *   Connections  outside services and MCP servers
@@ -31,6 +33,7 @@ const TABS = [
   { id: 'ai', label: 'AI' },
   { id: 'personality', label: 'Personality' },
   { id: 'voice', label: 'Voice' },
+  { id: 'camera', label: 'Camera' },
   { id: 'media', label: 'Media' },
   { id: 'schedules', label: 'Schedules' },
   { id: 'connections', label: 'Connections' },
@@ -463,6 +466,7 @@ export default function SettingsModal({ onClose, initialTab = 'ai', onOpenDoctor
             {tab === 'ai' && <AiTab />}
             {tab === 'personality' && <PersonalityTab />}
             {tab === 'voice' && <VoiceTab />}
+            {tab === 'camera' && <CameraTab />}
             {tab === 'media' && <MediaTab />}
             {tab === 'schedules' && <SchedulesTab />}
             {tab === 'connections' && <ConnectionsTab />}

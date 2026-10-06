@@ -296,12 +296,20 @@ export function textOf(message) {
  *   { kind: 'image', path, mediaType, name }   sent to the model as a picture
  *   { kind: 'document', path, name, text }     its extracted text goes along
  *   { kind: 'file', path, name }               only its path is mentioned
+ *   { kind: 'note', text }                     a line of context (e.g. the camera failed)
+ * An image with `camera: { label }` is a live camera picture taken as the
+ * message was sent; the model is told so.
  * Pictures are kept as paths; the adapters read them when sending. */
 export function userMessage(text, attachments = []) {
   const content = [{ type: 'text', text }];
   for (const a of attachments || []) {
+    if (a?.kind === 'note' && a.text) {
+      content.push({ type: 'text', text: a.text });
+      continue;
+    }
     if (!a?.path) continue;
     if (a.kind === 'image') {
+      if (a.camera) content.push({ type: 'text', text: `[Live camera${a.camera.label ? ` (${a.camera.label})` : ''}: this picture was taken just now, as the user sent the message. It shows what is in front of the camera.]` });
       content.push({ type: 'image', path: a.path, mediaType: a.mediaType, name: a.name });
     } else if (a.kind === 'document' && typeof a.text === 'string') {
       content.push({ type: 'text', text: `[Attached document "${a.name}", saved at ${a.path}]

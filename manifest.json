@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.11.1",
- "build": "2ed89a38f287",
- "commit": "eaf50c849a57",
- "date": "2026-10-05T20:01:40-04:00",
+ "version": "0.12.0",
+ "build": "31a526504d29",
+ "commit": "eb503379fef6",
+ "date": "2026-10-05T21:23:01-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "dec9a1087ff39605e9c833e40c756111c73fcf962fdb03998df0682681790725",
+   "h": "1a63d3c8be9055a8e84e003b9d31de44b2d9a30c9607542af0e302e6d7bd67d7",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "c955b675916510d70ab9d0043af2fc2fc37b1635df1b7251569cf81e6ff69df5",
+   "h": "947fb1a8d2d990684ee552abe0b373958e143553a98df3683b3cbcad02661228",
    "s": 121
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "ac73e980dccd47f00a4f0c52374b41618099784c682fe9eb69a0afa4ed5495d8",
+   "h": "ce1bcb24f5fbffd71dbb2a23caf8eeee7d2f05a4c2ea1652311fd4b47ad6d094",
    "s": 219233
   },
   {
    "p": "package.json",
-   "h": "199fe40827585ee396b5a206e00c0d66d74f160b604d000a28847d1e1eb6596a",
+   "h": "9a8485ca8b818c6c94d1d523ddce52137966dfd247feadbb1594d966788a0737",
    "s": 1269
   },
   {
@@ -65,9 +65,9 @@
    "s": 38974
   },
   {
-   "p": "public/videos/gwn-agent-harness.mp4",
-   "h": "77d4fd9d82366b7ce0df8b700565a6f07e2c60f46bf4806c657fde7fb3fc618a",
-   "s": 3545685
+   "p": "public/videos/omnione-intro.mp4",
+   "h": "b06e52dd012bed556e8cb1b4ed7672f62125b05ff253ab0610a645e2d9a08188",
+   "s": 334610
   },
   {
    "p": "server/adapters.js",
@@ -130,6 +130,11 @@
    "s": 3299
   },
   {
+   "p": "server/camera.js",
+   "h": "8e54ee02226b694a64e5bab6375da35f424401d6fe5c5dfcbe46fd6e08b33287",
+   "s": 10839
+  },
+  {
    "p": "server/checkpoints.js",
    "h": "489c7c6b5edbcb1b2addceb4b6fc4dfc7d11c8f9a9e734e9b50bd95bfae0dbfa",
    "s": 4853
@@ -166,8 +171,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "d7c8cca21801cf6d9fe02a175b83e16e974353cfc3fd9e1d8d35412f7590e5b4",
-   "s": 62626
+   "h": "bf6de74c6b2abd6ec2cccb32108ca2559214b00983f21a3e50c74d46cf7be09f",
+   "s": 64331
   },
   {
    "p": "server/listen.js",
@@ -246,8 +251,8 @@
   },
   {
    "p": "server/prefs.js",
-   "h": "3162abf49d29d6dfbb55b09ec0fee1a19d167a6cb98473104e7b0f8fac05c740",
-   "s": 3119
+   "h": "83ae893ba2088766d5533e61701be97bf5445b56592f8eaf22928e6c3da0aef8",
+   "s": 3484
   },
   {
    "p": "server/projects.js",
@@ -286,8 +291,8 @@
   },
   {
    "p": "server/sessions.js",
-   "h": "e1774dd704d0659ea7452e5eb10f12279e22b845d3ed7a49f21fb54d3249edac",
-   "s": 12507
+   "h": "f61f378d50f85b73d182a54b85ebd60d4540026950a06ea8b1036877471d8b1a",
+   "s": 13065
   },
   {
    "p": "server/skillDrafts.js",
@@ -333,6 +338,11 @@
    "p": "server/tools/boards.js",
    "h": "8472c7e3fc2cb767884f03e161722f9ee9e6043a53590bb4557b5e07aeaedfab",
    "s": 27760
+  },
+  {
+   "p": "server/tools/camera.js",
+   "h": "95a2b69ffcfa9db1641bc4518398ea812afe562809c76ef7ed20249ce74508dd",
+   "s": 1380
   },
   {
    "p": "server/tools/computer.js",
@@ -391,8 +401,8 @@
   },
   {
    "p": "server/tools/register.js",
-   "h": "a50eb2db991ac05b82eaeee668be9cd82c3e761902c6806f8ac9e2f8f613767c",
-   "s": 798
+   "h": "73cf88793c0fc202881557a00cc073bc7c7e908a69337fddd9067d36278aecd8",
+   "s": 821
   },
   {
    "p": "server/tools/schedules.js",
@@ -951,13 +961,13 @@
   },
   {
    "p": "src/components/AiPanel.css",
-   "h": "dc5c215f23288026e119f59e4a95570b32896330a6f606a33e7267ed73d134c2",
-   "s": 11596
+   "h": "0c94a6d541698ccb935935fed4715f9f62a8ff357ffddb23398b7fec2836f29b",
+   "s": 13491
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "8f292775353ae4874f9690f7d9b09fd246f7a2e5e3b3a4a55ea8c4c0540a59e3",
-   "s": 43113
+   "h": "96bb1d35665cd60f9560c8fd7901e7f4b8a6e1a9ce9099fbec323b3c77db7cb9",
+   "s": 44978
   },
   {
    "p": "src/components/AppShell.css",
@@ -1081,13 +1091,13 @@
   },
   {
    "p": "src/components/SettingsModal.css",
-   "h": "7774b98365c891f151f7c900b88d4635e51ef8b719b805dca48fc61671cbd2e8",
-   "s": 16272
+   "h": "c52b09a119b851df6f33e1a06c20240953d7acb0a869f053dcef39d5fec7123f",
+   "s": 16400
   },
   {
    "p": "src/components/SettingsModal.jsx",
-   "h": "2ddde7c3899a78421db9b27f371913e7ec407d1a92f6aa779d36c368b9af12c3",
-   "s": 20814
+   "h": "7d25a0d03abb9245b596b8ea278d3ae6933d674b94e7852ad45a5828f1c1a000",
+   "s": 21027
   },
   {
    "p": "src/components/SkillsModal.css",
@@ -1101,13 +1111,13 @@
   },
   {
    "p": "src/components/Splash.css",
-   "h": "6990bd7e44bb82545071cdc8564ae102c81c277b23f4cdd37583505ef1fd1bd7",
-   "s": 5825
+   "h": "547acab96674e7fc5ddbe0a0f030b214f6238eaddecca7f5f06dafe64743fce7",
+   "s": 5827
   },
   {
    "p": "src/components/Splash.jsx",
-   "h": "179990a5c1183ef0d905f32b8d90dec875b3982b1dc5023fed40ef2f229492d4",
-   "s": 3390
+   "h": "f2a75dca1ed811bd287ce02e3da38ec76b918d9702be3d9646cc94b2c04ad3c8",
+   "s": 3480
   },
   {
    "p": "src/components/account/AccountBar.css",
@@ -1128,6 +1138,11 @@
    "p": "src/components/doctor/DoctorView.jsx",
    "h": "1ddfddefcee6504cf9a443cb17db21eaaf90cdad1e0a15fdc1d352bc96716cfc",
    "s": 8415
+  },
+  {
+   "p": "src/components/settings/CameraTab.jsx",
+   "h": "181d234ac903358fc88a470658285ff17bb031693d0b6286d04d646d37e5290f",
+   "s": 7141
   },
   {
    "p": "src/components/settings/ConnectionsTab.jsx",
@@ -1260,6 +1275,11 @@
    "s": 1985
   },
   {
+   "p": "src/utils/camera.js",
+   "h": "dce781766aa36a4c11466b3e8a1810475670b1e2703a7321acbbeef76123aaeb",
+   "s": 2915
+  },
+  {
    "p": "src/utils/gameFiles.js",
    "h": "d33e7a1382d66887eb5ef192ea8def4168e71cf9a961cf290ece41d7631fe282",
    "s": 11272
@@ -1296,13 +1316,13 @@
   },
   {
    "p": "src/widgets/PresenceWidget.jsx",
-   "h": "24abb1bf193ddef0f47c554c58813ac73e56fc063a5221aabad305cf890204cd",
-   "s": 12049
+   "h": "309237a3d2d5c43795bff21a9caed9a5e4d6baebc60b2e20b1b4ab97fc779c7c",
+   "s": 12754
   },
   {
    "p": "src/widgets/Widget.css",
-   "h": "ad8a7917581524c7671f263475afc6250f3646803864a0b8fb37f748442d654a",
-   "s": 8822
+   "h": "41abc1d78d8e3276940b279fa1b6321d8542a4080106f81cc7701395f5226bae",
+   "s": 9109
   },
   {
    "p": "src/widgets/WidgetPage.jsx",

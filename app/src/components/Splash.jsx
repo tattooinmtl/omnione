@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NeuralBackdrop from '../three/NeuralBackdrop.jsx';
+import { version } from '../../package.json';
 import './Splash.css';
 
-const VIDEO_SRC = '/videos/gwn-agent-harness.mp4';
+// OmniOne's intro, the same one the website shows (a 720p copy).
+const VIDEO_SRC = '/videos/omnione-intro.mp4';
 
 export default function Splash() {
   const navigate = useNavigate();
@@ -98,8 +100,8 @@ export default function Splash() {
       />
 
       <div className="splash__footer">
-        <span>v0.2.0 &middot; splash</span>
-        <span>REACT + VITE + THREE.JS</span>
+        <span>v{version}</span>
+        <span>HOME OF OMI-ONE</span>
       </div>
     </div>
   );

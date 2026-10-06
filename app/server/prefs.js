@@ -38,6 +38,13 @@ export const DEFAULTS = {
     musicModel: 'music-3.0',
     monthlyCapUsd: null,        // null = no cap; only a reminder, MiniMax bills the key
   },
+  camera: {
+    source: 'url',              // 'url' (an ESP32 or any picture address) or 'webcam'
+    url: '',                    // e.g. http://192.168.40.13/capture
+    device: '',                 // webcam name for ffmpeg (DirectShow)
+    label: '',
+    esp32Size: 8,               // ESP32 picture size when turned on (8 = 400×296, see camera.js)
+  },
   notifications: {
     desktop: true,              // Windows notifications for finished schedules and approvals
     sound: false,

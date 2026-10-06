@@ -4,6 +4,7 @@ import CommandPalette, { parseCommand } from './CommandPalette.jsx';
 import { MAIN_ORIGIN } from '../widgets/liveFeed.js';
 import ApprovalModal from './ApprovalModal.jsx';
 import { uploadAttachments, ACCEPT } from '../utils/attachments.js';
+import { useCamera, useCameraPreview } from '../utils/camera.js';
 import ProjectBar from './ProjectBar.jsx';
 import { useProviderTokenBudget, fetchSettings } from '../hooks/useProviderTokenBudget';
 import './AiPanel.css';
@@ -58,6 +59,13 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   const [attached, setAttached] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  // The live camera: while it's on, the server adds a picture to each message.
+  const camera = useCamera();
+  const cameraOn = Boolean(camera.state?.on);
+  const preview = useCameraPreview(cameraOn);
+  useEffect(() => {
+    if (camera.error) api.toast && api.toast(camera.error, 'error');
+  }, [camera.error]);
   // Settings → AI → Show thinking. Re-read when the window regains focus,
   // which is when someone comes back from Settings.
   const [showThinking, setShowThinking] = useState(true);
@@ -789,6 +797,16 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
           </div>
         )}
 
+        {cameraOn && (
+          <div className="ai-panel__cam" role="status">
+            {preview.src ? <img src={preview.src} alt="Live camera" /> : <span className="ai-panel__cam-wait">{preview.error || 'Connecting…'}</span>}
+            <div>
+              <b><span className="ai-panel__cam-dot" aria-hidden="true" /> Camera on</b>
+              <span>{camera.state?.label || 'Camera'}: each message you send takes one picture.</span>
+            </div>
+            <button type="button" onClick={camera.toggle} aria-label="Turn the camera off" title="Turn the camera off">×</button>
+          </div>
+        )}
         {attached.length > 0 && <FileChips files={attached} onRemove={removeFile} />}
 
         <div
@@ -815,6 +833,17 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
               hidden
               onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
             />
+            <button
+              type="button"
+              className={`ai-panel__attach ai-panel__camera${cameraOn ? ' is-on' : ''}`}
+              onClick={camera.toggle}
+              aria-pressed={cameraOn}
+              aria-label={cameraOn ? 'Turn the camera off' : 'Turn the camera on'}
+              title={camera.state?.configured ? (cameraOn ? 'Camera on: each message takes a picture. Click to turn off.' : 'Turn the live camera on') : 'Choose a camera in Settings → Camera'}
+            >
+              <svg className="ai-panel__camera-icon" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 8.5h4l2-2.5h6l2 2.5h4v10H3z" /><circle cx="12" cy="13" r="3.4" /></svg>
+              {cameraOn && <span className="ai-panel__cam-dot ai-panel__cam-dot--badge" aria-hidden="true" />}
+            </button>
             <button
               type="button"
               className="ai-panel__attach"

@@ -25,3 +25,4 @@ import './vision.js';
 import './create.js';
 import './schedules.js';
 import './vercel.js';
+import './camera.js';

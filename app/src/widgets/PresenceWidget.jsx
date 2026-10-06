@@ -7,6 +7,7 @@ import { chatText } from '../components/PresenceChat.jsx';
 import { Preview } from '../components/ApprovalModal.jsx';
 import { parseCommand } from '../components/CommandPalette.jsx';
 import { runPrompt, answerApproval } from './runPrompt.js';
+import { useCamera } from '../utils/camera.js';
 
 /* The Presence widget: Omi-One's face in a small floating window, always
  * listening.
@@ -48,6 +49,9 @@ export default function PresenceWidget({ origin }) {
   const [voiceOn, setVoiceOn] = useState(() => readLS(LS_VOICE, '1') !== '0');
   const [listen, setListen] = useState({ state: 'off' });
   const [listenTry, setListenTry] = useState(0);
+  // The live camera: when on, the server adds a picture to each question.
+  const camera = useCamera();
+  const cameraOn = Boolean(camera.state?.on);
   const [level, setLevel] = useState(0);
   const [approval, setApproval] = useState(null);
   const [typed, setTyped] = useState('');
@@ -243,6 +247,15 @@ export default function PresenceWidget({ origin }) {
         <form className="wpres__type" onSubmit={submitTyped}>
           <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="…or type to Omi-One" aria-label="Type to Omi-One" />
           <button type="button" className={`wpres__small ${voiceOn ? 'is-on' : ''}`} onClick={toggleVoice} title={voiceOn ? 'Voice on' : 'Voice off'}>{voiceOn ? '🔊' : '🔇'}</button>
+          <button
+            type="button"
+            className={`wpres__small wpres__cam ${cameraOn ? 'is-on' : ''}`}
+            onClick={camera.toggle}
+            aria-pressed={cameraOn}
+            title={camera.error || (camera.state?.configured ? (cameraOn ? 'Camera on: each question takes a picture' : 'Turn the camera on') : 'Choose a camera in Settings → Camera')}
+          >
+            {cameraOn && <i className="wpres__cam-dot" aria-hidden="true" />}CAM
+          </button>
           <button type="button" className="wpres__small" onClick={stopRun} title="Stop">◼</button>
         </form>
       </div>
