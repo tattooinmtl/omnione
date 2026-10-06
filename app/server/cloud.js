@@ -290,3 +290,41 @@ export async function syncUsage(entries) {
   save();
   return r;
 }
+
+// --- for the website chat bridge (webchat.js) ---------------------------------------
+
+/* Any API route, with this account's token. */
+export function cloudCall(method, route, { body, signal } = {}) {
+  return api(method, route, { body, token: requireToken(), signal });
+}
+
+/* Download a file from an API route; resolves to { buf, name, type }. */
+export async function cloudDownload(route, { signal, maxBytes = 30 * 1024 * 1024 } = {}) {
+  const res = await fetch(`${siteUrl()}/api/${route}`, {
+    headers: { Authorization: `Bearer ${requireToken()}`, 'User-Agent': `OmniOne/${appVersion() || 'dev'}` },
+    signal: signal || AbortSignal.timeout(120_000),
+  });
+  if (!res.ok) throw new CloudError(`http_${res.status}`, `The website answered ${res.status} for a file.`, res.status);
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length > maxBytes) throw new CloudError('too_large', 'That file is too large.');
+  const cd = res.headers.get('content-disposition') || '';
+  const name = (/filename="([^"]+)"/.exec(cd) || [])[1] || 'file';
+  return { buf, name, type: res.headers.get('content-type') || '' };
+}
+
+/* Upload a file (multipart) to an API route, with extra form fields. */
+export async function cloudUpload(route, { buf, name, type = 'application/octet-stream', fields = {} }, { signal } = {}) {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) fd.append(k, String(v));
+  fd.append('file', new Blob([buf], { type }), name);
+  const res = await fetch(`${siteUrl()}/api/${route}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${requireToken()}`, 'User-Agent': `OmniOne/${appVersion() || 'dev'}` },
+    body: fd,
+    signal: signal || AbortSignal.timeout(180_000),
+  });
+  let json = null;
+  try { json = await res.json(); } catch { /* not JSON */ }
+  if (!res.ok || !json || json.ok === false) throw new CloudError(json?.error || `http_${res.status}`, json?.message || `The website answered ${res.status}.`, res.status);
+  return json;
+}

@@ -244,3 +244,16 @@ export async function findNetworkCameras({ concurrency = 48, timeoutMs = 900 } =
 }
 
 export function _resetCameraForTest() { on = false; lastError = null; lastShotAt = null; }
+
+/* The attachment the live camera adds to a message: a picture while it's on,
+ * a note if it failed, nothing while it's off. Used by the chat and the
+ * website chat bridge. */
+export async function cameraAttachment() {
+  if (!on) return null;
+  try {
+    const shot = await takePicture();
+    return { kind: 'image', path: shot.path, mediaType: 'image/jpeg', name: shot.name, camera: { label: getPrefs().camera.label } };
+  } catch (e) {
+    return { kind: 'note', text: `[The live camera is on but didn't give a picture: ${e.message}]` };
+  }
+}

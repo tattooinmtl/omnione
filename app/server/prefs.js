@@ -45,6 +45,12 @@ export const DEFAULTS = {
     label: '',
     esp32Size: 8,               // ESP32 picture size when turned on (8 = 400×296, see camera.js)
   },
+  webchat: {
+    enabled: false,             // the website chat room (switched on here, on the website too)
+    pinSet: false,              // a PIN for phone approvals is set on the website (only its hash is there)
+    lastId: 0,                  // last phone message answered
+    sessionId: '',              // the conversation the website chat continues
+  },
   notifications: {
     desktop: true,              // Windows notifications for finished schedules and approvals
     sound: false,

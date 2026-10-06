@@ -105,7 +105,8 @@ import { synthesizeSpeech } from './tools/media.js';
 import { speakingVoice, allPersonalities, sanitizePersonality, PRESETS } from './personality.js';
 import { getPrefs, setPrefs } from './prefs.js';
 import { cloneVoice } from './tools/create.js';
-import { cameraState, setCamera, takePicture, listWebcams, findNetworkCameras, CameraError, ESP32_SIZES } from './camera.js';
+import { webchatStatus, setWebchat, startWebchat } from './webchat.js';
+import { cameraState, setCamera, takePicture, listWebcams, findNetworkCameras, CameraError, ESP32_SIZES, cameraAttachment } from './camera.js';
 import { connectVercel, disconnectVercel, vercelStatus, setVercelTeam, listTeams as listVercelTeams, VercelError } from './vercel.js';
 import { listSchedules, addSchedule, updateSchedule, removeSchedule, runSchedule, startSchedules, getSchedule } from './schedules.js';
 import { publicAccount, startConnect, pollConnect, cancelConnect, refreshAccount, disconnect, syncUsage, CloudError } from './cloud.js';
@@ -706,14 +707,8 @@ app.post('/api/generate', async (req, res) => {
   let attachments = [];
   try { attachments = await resolveAttachments(req.body?.attachments); } catch { attachments = []; }
   // The live camera: while it's on, every message takes one picture with it.
-  if (cameraState().on) {
-    try {
-      const shot = await takePicture();
-      attachments.push({ kind: 'image', path: shot.path, mediaType: 'image/jpeg', name: shot.name, camera: { label: cameraState().label } });
-    } catch (e) {
-      attachments.push({ kind: 'note', text: `[The live camera is on but didn't give a picture: ${e.message}]` });
-    }
-  }
+  const cam = await cameraAttachment();
+  if (cam) attachments.push(cam);
   // A message can be only an attachment: "what's in this picture?" is implied.
   if ((!prompt || typeof prompt !== 'string' || !prompt.trim()) && attachments.length) {
     prompt = 'Have a look at what I attached.';
@@ -1239,6 +1234,20 @@ app.delete('/api/connections/vercel', (_req, res) => {
   res.json(vercelStatus());
 });
 
+// --- website chat ---------------------------------------------------------------------
+// The account's chat room on the website: on/off and the approval PIN. The PIN
+// goes straight to the website, which keeps only its hash.
+
+app.get('/api/connections/webchat', (_req, res) => res.json(webchatStatus()));
+app.post('/api/connections/webchat', async (req, res) => {
+  try {
+    const { enabled, pin } = req.body || {};
+    res.json(await setWebchat({ enabled, pin }));
+  } catch (e) {
+    res.status(e instanceof CloudError ? (e.code === 'not_connected' ? 409 : 400) : 500).json({ error: e.message });
+  }
+});
+
 // --- live camera --------------------------------------------------------------------
 
 const cameraFail = (res, e) => res.status(e instanceof CameraError ? 400 : 500).json({ error: e.message });
@@ -1502,6 +1511,7 @@ if (isMain) {
   // The heartbeat: the agent's own time between conversations.
   if (startHeartbeat()) console.log('[omnione] heartbeat: on (see /api/mind; GWN_HEARTBEAT=0 disables)');
   if (startSchedules()) console.log('[omnione] scheduled tasks: on (GWN_SCHEDULES=0 disables)');
+  if (startWebchat()) console.log('[omnione] website chat: on (GWN_WEBCHAT=0 disables)');
 
   // Usage totals to the website profile every 10 minutes, when connected.
   const syncTimer = setInterval(syncUsageNow, 10 * 60 * 1000);

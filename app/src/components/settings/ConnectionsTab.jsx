@@ -72,6 +72,8 @@ export default function ConnectionsTab() {
 
   return (
     <>
+      <WebchatCard />
+
       <VercelCard />
 
       <Section
@@ -229,6 +231,73 @@ function VercelCard() {
             </div>
           </label>
         </form>
+      )}
+      <Msg msg={msg} />
+    </Section>
+  );
+}
+
+/* Website chat: Omi-One answers in your chat room on the website, so you can
+ * talk to it from your phone. */
+function WebchatCard() {
+  const [st, setSt] = useState(null);
+  const [pin, setPin] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState({ text: '', error: false });
+
+  const load = () => api('/api/connections/webchat').then(setSt).catch((e) => setMsg({ text: e.message, error: true }));
+  useEffect(() => { load(); const t = setInterval(load, 10000); return () => clearInterval(t); }, []);
+
+  const change = async (body, okText) => {
+    setBusy(true);
+    try {
+      setSt(await api('/api/connections/webchat', { method: 'POST', body }));
+      setMsg({ text: okText, error: false });
+      setPin('');
+    } catch (e) { setMsg({ text: e.message, error: true }); } finally { setBusy(false); }
+  };
+
+  if (!st) return null;
+  const ago = st.lastCheck ? Math.round((Date.now() - st.lastCheck) / 1000) : null;
+
+  return (
+    <Section
+      title="Website chat"
+      lead="Talk to Omi-One from your phone: sign in on the OmniOne website and open Chat. Messages, photos, videos and files come here, Omi-One answers on this PC and the reply appears on your phone. This PC has to be on with OmniOne open."
+    >
+      {!st.connected ? (
+        <p className="settings-modal__note">Connect OmniOne to your account first (account menu, bottom left).</p>
+      ) : (
+        <div className="settings-form">
+          <Switch
+            id="webchat-on"
+            on={st.enabled}
+            onChange={(on) => change({ enabled: on }, on ? 'Website chat on. Open the chat on your phone.' : 'Website chat off. The room is closed until you switch it on again.')}
+            label={st.enabled ? 'On' : 'Off'}
+            hint={st.enabled
+              ? `${st.lastError ? `Problem: ${st.lastError}` : ago != null ? `Checked the room ${ago} s ago` : 'Starting…'}${st.phoneActive ? ' · the chat is open on a phone' : ''}${st.busy ? ' · answering now' : ''}`
+              : 'Nothing goes in or out while it is off.'}
+            disabled={busy}
+          />
+          {st.enabled && (
+            <p className="settings-modal__note">
+              Open it on your phone: <b>{st.chatUrl.replace(/^https?:\/\//, '')}</b> (<a href={st.chatUrl} target="_blank" rel="noreferrer">open</a>), signed in with your account.
+            </p>
+          )}
+          <form onSubmit={(e) => { e.preventDefault(); change({ pin }, 'PIN saved. You can now approve commands from the phone.'); }}>
+            <label>
+              <span>Approval PIN for the phone {st.pinSet ? '(set)' : '(not set)'}</span>
+              <div className="settings-modal__key-row">
+                <input id="webchat-pin" type="password" inputMode="numeric" autoComplete="new-password" maxLength={8} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} placeholder="4 to 8 digits" />
+                <button type="submit" className="settings-modal__save" disabled={busy || pin.length < 4}>{st.pinSet ? 'Change PIN' : 'Set PIN'}</button>
+                {st.pinSet && <button type="button" className="settings-modal__ghost" onClick={() => change({ pin: '' }, 'PIN removed: approvals from the phone are off; answer them on this PC.')} disabled={busy}>Remove</button>}
+              </div>
+            </label>
+          </form>
+          <p className="settings-modal__note">
+            When Omi-One needs permission (a command, a paid tool, publishing) the phone shows it; allowing needs this PIN, denying doesn't. Five wrong tries lock phone approvals for 15 minutes. You can always answer on this PC instead. The PIN is stored on the website only as a hash.
+          </p>
+        </div>
       )}
       <Msg msg={msg} />
     </Section>

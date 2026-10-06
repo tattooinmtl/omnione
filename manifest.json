@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.12.0",
- "build": "31a526504d29",
- "commit": "eb503379fef6",
- "date": "2026-10-05T21:23:01-04:00",
+ "version": "0.13.0",
+ "build": "dc47fbfbb634",
+ "commit": "d90823213dd3",
+ "date": "2026-10-05T21:50:29-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "1a63d3c8be9055a8e84e003b9d31de44b2d9a30c9607542af0e302e6d7bd67d7",
+   "h": "6c69917e0436ff52b888133a3a6136a987e5d58a9e9c5d3c78a264e2aa96bbbb",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "947fb1a8d2d990684ee552abe0b373958e143553a98df3683b3cbcad02661228",
+   "h": "d786b84e501441b6b2066a8d7c3be39b011165ba246ebbae0f688ae7401580b2",
    "s": 121
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "ce1bcb24f5fbffd71dbb2a23caf8eeee7d2f05a4c2ea1652311fd4b47ad6d094",
+   "h": "d3e8e90629fe29f09eb524d4ab6aa93a578980f47086f5e1cdb5361562d8a6a2",
    "s": 219233
   },
   {
    "p": "package.json",
-   "h": "9a8485ca8b818c6c94d1d523ddce52137966dfd247feadbb1594d966788a0737",
+   "h": "0edc077fcc39ff672fa881ae3bd3ac9f31ec222922bda3c4e5226793b7bace0a",
    "s": 1269
   },
   {
@@ -131,8 +131,8 @@
   },
   {
    "p": "server/camera.js",
-   "h": "8e54ee02226b694a64e5bab6375da35f424401d6fe5c5dfcbe46fd6e08b33287",
-   "s": 10839
+   "h": "8944147cc4f2014f304db10d90d752ad3b036c32c6710d21a33f1c91cfa9721d",
+   "s": 11401
   },
   {
    "p": "server/checkpoints.js",
@@ -141,8 +141,8 @@
   },
   {
    "p": "server/cloud.js",
-   "h": "ffc28e5c115038ab600b83bc694460906c62399e0aca51764b60a26570d77a48",
-   "s": 10443
+   "h": "3be9d5d6762ff05709bb73c5d6ab6ee76b314989d74b9f3b48c5958d084545fd",
+   "s": 12488
   },
   {
    "p": "server/desktop.js",
@@ -171,8 +171,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "bf6de74c6b2abd6ec2cccb32108ca2559214b00983f21a3e50c74d46cf7be09f",
-   "s": 64331
+   "h": "f7161adbb9ea0915a3aa0ae6384de12faf3ef71e5923554fa0667a2bd4f64760",
+   "s": 64848
   },
   {
    "p": "server/listen.js",
@@ -251,8 +251,8 @@
   },
   {
    "p": "server/prefs.js",
-   "h": "83ae893ba2088766d5533e61701be97bf5445b56592f8eaf22928e6c3da0aef8",
-   "s": 3484
+   "h": "a45cc862cce7dd386352ac3b40e08fe1d08a4991263f279ce7694f83c0fe5f94",
+   "s": 3854
   },
   {
    "p": "server/projects.js",
@@ -448,6 +448,11 @@
    "p": "server/vercel.js",
    "h": "7f7fb7c97ca5065c49707495a4b31cad85b3d3d11f33088fb21de20530125c1a",
    "s": 13905
+  },
+  {
+   "p": "server/webchat.js",
+   "h": "a66e8d0770f049aa55a8a25cc40bb3f051182e25530ad029b3f72fceac0c63da",
+   "s": 12734
   },
   {
    "p": "server/workspace.js",
@@ -1146,8 +1151,8 @@
   },
   {
    "p": "src/components/settings/ConnectionsTab.jsx",
-   "h": "3563105d13c2870e81b9832f967ba622f336ef6311190f661e2ffa6686cd8fe7",
-   "s": 12328
+   "h": "329159975ccaee21c15cfa772924b536ca275212be30f0144693e8b51a54754d",
+   "s": 16194
   },
   {
    "p": "src/components/settings/MediaTab.jsx",
