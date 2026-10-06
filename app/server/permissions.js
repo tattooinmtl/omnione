@@ -24,6 +24,7 @@
 // denial rather than quietly proceeding.
 
 import crypto from 'node:crypto';
+import { agentSettings } from './agentConfig.js';
 
 export const MODES = ['plan', 'default', 'acceptEdits', 'bypass', 'autonomous'];
 export const DEFAULT_MODE = 'default';
@@ -34,7 +35,8 @@ const sessionAllows = new Map(); // sessionId -> Set of "allow for the rest of t
 const pending = new Map();      // approvalId -> { resolve, timer, request }
 
 export function getMode(sessionId) {
-  return modes.get(sessionId) || DEFAULT_MODE;
+  // Settings → Agent → default mode for new chats (never bypass or autonomous).
+  return modes.get(sessionId) || agentSettings().defaultMode || DEFAULT_MODE;
 }
 
 export function setMode(sessionId, mode) {
@@ -141,7 +143,7 @@ export function requestApproval({ sessionId, tool, args, preview }) {
   const timer = setTimeout(() => {
     pending.delete(id);
     resolve({ approved: false, reason: 'No answer within 5 minutes — treated as denied.' });
-  }, APPROVAL_TIMEOUT_MS);
+  }, agentSettings().approvalMs || APPROVAL_TIMEOUT_MS);
   timer.unref?.();
 
   pending.set(id, { resolve, timer, request });

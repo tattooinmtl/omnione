@@ -6,6 +6,7 @@ import {
   fmtTok,
 } from '../hooks/useProviderTokenBudget.js';
 import PersonalityTab from './settings/PersonalityTab.jsx';
+import AgentTab from './settings/AgentTab.jsx';
 import VoiceTab from './settings/VoiceTab.jsx';
 import MediaTab from './settings/MediaTab.jsx';
 import CameraTab from './settings/CameraTab.jsx';
@@ -17,6 +18,8 @@ import './SettingsModal.css';
 
 /* Settings, one tab per subject, listed down the side:
  *   AI           provider, model, API key, thinking, creativity
+ *   Agent        instructions (like CLAUDE.md), project files, /commands,
+ *                heartbeat, how it works, performance
  *   Personality  the role Omi-One plays, and custom ones
  *   Voice        how it sounds, the wake word, cloning a voice
  *   Camera       the live camera (ESP32 or webcam), test picture, on/off
@@ -31,6 +34,7 @@ import './SettingsModal.css';
 
 const TABS = [
   { id: 'ai', label: 'AI' },
+  { id: 'agent', label: 'Agent' },
   { id: 'personality', label: 'Personality' },
   { id: 'voice', label: 'Voice' },
   { id: 'camera', label: 'Camera' },
@@ -464,6 +468,7 @@ export default function SettingsModal({ onClose, initialTab = 'ai', onOpenDoctor
           </nav>
           <div className="settings-modal__body" role="tabpanel" aria-labelledby={`settings-tab-${tab}`}>
             {tab === 'ai' && <AiTab />}
+            {tab === 'agent' && <AgentTab />}
             {tab === 'personality' && <PersonalityTab />}
             {tab === 'voice' && <VoiceTab />}
             {tab === 'camera' && <CameraTab />}

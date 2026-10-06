@@ -19,6 +19,7 @@
 //    analysis costs a model call; a two-turn chat has nothing to learn from.
 
 import { runOpenAI, runAnthropic } from './adapters.js';
+import { agentSettings } from './agentConfig.js';
 import { getSession } from './sessions.js';
 import { getSkills } from './skills.js';
 import { saveDraft, getRejections, listDrafts } from './skillDrafts.js';
@@ -48,7 +49,7 @@ export function isWorthReflecting(sessionId) {
     if (m.role !== 'assistant') continue;
     toolCalls += (m.content || []).filter((b) => b.type === 'tool_use').length;
   }
-  if (toolCalls < MIN_TOOL_CALLS_TO_REFLECT) {
+  if (toolCalls < (agentSettings().reflectMinTools || MIN_TOOL_CALLS_TO_REFLECT)) {
     return { worth: false, reason: `only ${toolCalls} tool calls`, toolCalls };
   }
   return { worth: true, toolCalls };

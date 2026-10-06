@@ -19,6 +19,7 @@ import { runOpenAI, runAnthropic, runStub, ContextOverflowError } from './adapte
 import { buildSystemPrompt } from './prompts.js';
 import { modelSeesImages } from './attachments.js';
 import { getPrefs } from './prefs.js';
+import { agentSettings, instructionsPrompt } from './agentConfig.js';
 import { parallelLimit } from './agentSlots.js';
 import { getAgent } from './subagent.js';
 import { executeTool, formatToolResult, listTools, syncMcpTools, getTool } from './toolRegistry.js';
@@ -111,6 +112,12 @@ export async function* runAgent({
     }
     yield { type: 'mood', mood: safeMood() };
   }
+  try {
+    const extra = instructionsPrompt();
+    if (extra) system += `\n\n${extra}`;
+  } catch (e) {
+    yield { type: 'step', step: { id: 'instructions', label: 'Instructions unavailable', status: 'error', detail: e.message } };
+  }
   const contextLimit = Number(provider.maxContextTokens) || 0;
   const summarize = (dropped) => summarizeDropped({ dropped, runAdapter, provider, model, apiKey, signal });
   // Per-run bookkeeping for the stuck detector and the completion check.
@@ -155,7 +162,7 @@ export async function* runAgent({
     let turnText = '';
 
     try {
-      const stream = runAdapter({ system, messages, tools, model, apiKey, baseUrl: provider.baseUrl, signal, images, temperature });
+      const stream = runAdapter({ system, messages, tools, model, apiKey, baseUrl: provider.baseUrl, signal, images, temperature, maxTokens: agentSettings().maxOutputTokens || undefined });
       for await (const ev of stream) {
         switch (ev.type) {
           case 'delta':
@@ -221,7 +228,7 @@ export async function* runAgent({
       recordUsage({ provider: provider.id, model, usage, kind });
       yield { type: 'usage', iteration, usage };
       const used = (usage.inputTokens || 0) + (usage.outputTokens || 0);
-      if (contextLimit && used > contextLimit * PROACTIVE_COMPACT_AT) compactNext = true;
+      if (contextLimit && used > contextLimit * (agentSettings().compactAt || PROACTIVE_COMPACT_AT)) compactNext = true;
     }
 
     const toolUses = (assistant.content || []).filter((b) => b.type === 'tool_use');
@@ -316,7 +323,7 @@ export async function* runAgent({
       const sig = `${call.name}:${stableJson(call.input)}`;
       const n = (callCounts.get(sig) || 0) + 1;
       callCounts.set(sig, n);
-      if (n >= STUCK_REPEAT_THRESHOLD && r) {
+      if (n >= (agentSettings().stuckRepeat || STUCK_REPEAT_THRESHOLD) && r) {
         r.text += `\n\n[harness] This is call #${n} of ${call.name} with identical arguments in this run. Repeating it will not change the outcome. Step back: re-read the error, check your assumptions, and try a genuinely different approach — or stop and explain what is blocking you.`;
         appendEvent(sessionId, { type: 'stuck', tool: call.name, count: n });
         yield { type: 'stuck', tool: call.name, count: n };

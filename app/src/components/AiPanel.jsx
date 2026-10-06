@@ -70,8 +70,15 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   // Settings → AI → Show thinking. Re-read when the window regains focus,
   // which is when someone comes back from Settings.
   const [showThinking, setShowThinking] = useState(true);
+  // Settings → Agent → Custom commands (/name in this box).
+  const [customCommands, setCustomCommands] = useState([]);
+  const customRef = useRef(customCommands);
+  customRef.current = customCommands;
   useEffect(() => {
-    const read = () => fetch('/api/prefs').then((r) => r.json()).then((p) => setShowThinking(p?.ai?.thinking !== false)).catch(() => {});
+    const read = () => fetch('/api/prefs').then((r) => r.json()).then((p) => {
+      setShowThinking(p?.ai?.thinking !== false);
+      setCustomCommands(Array.isArray(p?.agent?.commands) ? p.agent.commands : []);
+    }).catch(() => {});
     read();
     window.addEventListener('focus', read);
     window.addEventListener('gwn:prefs-changed', read);
@@ -525,7 +532,19 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       return true;
     }
     // Slash commands run here and never reach the agent.
-    const command = parseCommand(text);
+    const command = parseCommand(text, customRef.current);
+    if (command?.kind === 'custom') {
+      // Sent as a normal message: the history shows what was typed.
+      setHistory((h) => [...h, { role: 'user', text }]);
+      setActiveSkill(null);
+      if (generatingRef.current) {
+        interruptRef.current = command.prompt;
+        if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
+        return true;
+      }
+      onGenerateRef.current(command.prompt);
+      return true;
+    }
     if (command) {
       if (command.kind === 'unknown') {
         api.toast && api.toast(`Unknown command /${command.name}. Type / to see the commands.`, 'error');
@@ -611,7 +630,9 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   const onChange = (e) => {
     const v = e.target.value;
     setPrompt(v);
-    setPaletteOpen(v.startsWith('/') && !/^\/btw\s/i.test(v));
+    // Open while choosing a command; closed once its text is being typed
+    // ("/review src/app.js"), so Enter sends it. /run keeps it to pick a skill.
+    setPaletteOpen(v.startsWith('/') && !/^\/(?!run\s)[\w-]+\s/i.test(v));
   };
 
   const onKey = (e) => {
@@ -642,6 +663,13 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     // unless the command is a no-arg one with a `run` action, in which
     // case we run it.
     const trigger = cmd.trigger;
+    if (cmd.custom) {
+      // Leave "/name " in the box so anything typed after it fills {input}.
+      setPaletteOpen(false);
+      setPrompt(`/${trigger} `);
+      setTimeout(() => taRef.current?.focus(), 30);
+      return;
+    }
     if (cmd.skill) {
       // /run <name> — strip the prefix and run
       const name = cmd.skill;
@@ -812,6 +840,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
             onSelect={onPaletteSelect}
             onClose={() => setPaletteOpen(false)}
             skills={skills}
+            custom={customCommands}
             api={paletteApi}
           />
           <div className="ai-panel__row">

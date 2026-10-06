@@ -19,6 +19,21 @@ export const DEFAULTS = {
     thinking: true,             // show the model's thinking in the chat
     parallelAgents: 4,          // subagents calling the model at once (MiniMax allows 4)
   },
+  agent: {
+    instructions: '',           // Settings → Agent: read at the start of every message, like a CLAUDE.md
+    readProjectFiles: true,     // also read AGENTS.md / CLAUDE.md / OMNI.md from the project folder
+    commands: [],               // [{ name, description, prompt }] → /name in the chat
+    defaultMode: 'default',     // new chats: default (ask before changes) | acceptEdits | plan
+    approvalMinutes: 5,         // how long an approval waits before it counts as "no"
+    autoReflect: true,          // propose skills from big tasks
+    reflectMinTools: 6,
+    stuckRepeat: 3,             // same call this many times → "step back"
+    compactAt: 80,              // % of the context window that triggers summarising
+    maxOutputTokens: 0,         // 0 = the provider's default
+    retries: 3,                 // when the provider is overloaded
+    imagesKept: 8,              // pictures re-sent to the model
+    subagentSteps: 15,
+  },
   personality: {
     active: 'omi-one',          // a preset id or a custom one
     custom: [],                 // [{ id, name, tagline, tone, backstory, style, language, voiceId, faceColor, emoji, humor }]

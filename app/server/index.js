@@ -105,6 +105,7 @@ import { synthesizeSpeech } from './tools/media.js';
 import { speakingVoice, allPersonalities, sanitizePersonality, PRESETS } from './personality.js';
 import { getPrefs, setPrefs } from './prefs.js';
 import { cloneVoice } from './tools/create.js';
+import { agentSettings, projectInstructionFiles, sanitizeCommands, MAX_INSTRUCTIONS, PROJECT_FILES } from './agentConfig.js';
 import { webchatStatus, setWebchat, startWebchat } from './webchat.js';
 import { cameraState, setCamera, takePicture, listWebcams, findNetworkCameras, CameraError, ESP32_SIZES, cameraAttachment } from './camera.js';
 import { connectVercel, disconnectVercel, vercelStatus, setVercelTeam, listTeams as listVercelTeams, VercelError } from './vercel.js';
@@ -845,7 +846,7 @@ app.post('/api/generate', async (req, res) => {
   // nothing to teach. Costs one extra model call on a substantial session.
   // Set GWN_AUTO_REFLECT=0 to turn it off; output is inert either way, since
   // drafts are not loadable until a human approves them.
-  if (process.env.GWN_AUTO_REFLECT !== '0' && !ac.signal.aborted) {
+  if (process.env.GWN_AUTO_REFLECT !== '0' && agentSettings().autoReflect && !ac.signal.aborted) {
     const verdict = isWorthReflecting(sessionId);
     if (verdict.worth) {
       reflectOnSession({
@@ -1281,6 +1282,31 @@ app.post('/api/connections/vercel/team', (req, res) => {
 app.delete('/api/connections/vercel', (_req, res) => {
   disconnectVercel();
   res.json(vercelStatus());
+});
+
+// --- Settings → Agent -------------------------------------------------------------------
+// Instructions, project instruction files, custom commands and tuning values.
+
+app.get('/api/agent', (_req, res) => {
+  res.json({
+    agent: getPrefs().agent,
+    effective: agentSettings(),
+    projectFiles: projectInstructionFiles().map(({ name, bytes }) => ({ name, bytes })),
+    projectFileNames: PROJECT_FILES,
+    maxInstructions: MAX_INSTRUCTIONS,
+  });
+});
+app.post('/api/agent', (req, res) => {
+  const patch = { ...(req.body || {}) };
+  if ('instructions' in patch) {
+    const t = String(patch.instructions ?? '');
+    if (t.length > MAX_INSTRUCTIONS) return res.status(400).json({ error: `Instructions can be up to ${MAX_INSTRUCTIONS.toLocaleString()} characters.` });
+    patch.instructions = t;
+  }
+  if ('commands' in patch) patch.commands = sanitizeCommands(patch.commands);
+  const next = setPrefs({ agent: patch });
+  publishLive({ type: 'prefs' }, 'settings');
+  res.json({ agent: next.agent, effective: agentSettings(), projectFiles: projectInstructionFiles().map(({ name, bytes }) => ({ name, bytes })) });
 });
 
 // --- website chat ---------------------------------------------------------------------

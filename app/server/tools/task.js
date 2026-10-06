@@ -13,6 +13,7 @@ import { createSession, deleteSession, textOf } from '../sessions.js';
 import { getAgents, getAgent, toolsForAgent, DEFAULT_SUBAGENT_ITERATIONS } from '../subagent.js';
 import { getWorkspaceRoot } from '../workspace.js';
 import { acquireSlot } from '../agentSlots.js';
+import { agentSettings } from '../agentConfig.js';
 
 const MAX_SUMMARY_CHARS = 12_000;
 
@@ -66,7 +67,7 @@ registerTool({
     const tools = toolsForAgent(agent, listTools());
     const cap = Number(maxIterations) > 0
       ? Math.min(Number(maxIterations), 40)
-      : DEFAULT_SUBAGENT_ITERATIONS;
+      : (agentSettings().subagentSteps || DEFAULT_SUBAGENT_ITERATIONS);
 
     const childId = createSession({
       title: `[${agent.name}] ${String(prompt).slice(0, 100)}`,

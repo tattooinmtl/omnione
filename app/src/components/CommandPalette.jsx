@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import './CommandPalette.css';
 
 /* Slash command palette. Shown when the user types `/` at the start of
@@ -31,14 +31,26 @@ export const STATIC_COMMANDS = [
  *   { kind: 'unknown', name }    — looks like a command, but there is no such command
  * Every chat box runs this before anything reaches the agent, so a command
  * is never sent to Omi-One as a task. (/btw is handled by its caller.) */
-export function parseCommand(text) {
-  const m = String(text || '').trim().match(/^\/([a-z][\w-]*)(?:\s+([\s\S]*))?$/i);
+export function parseCommand(text, custom = []) {
+  const m = String(text || '').trim().match(/^\/([a-z0-9][\w-]*)(?:\s+([\s\S]*))?$/i);
   if (!m) return null;
   const name = m[1].toLowerCase();
   const arg = (m[2] || '').trim();
   if (name === 'run') return { kind: 'skill', name: arg };
   const cmd = STATIC_COMMANDS.find((c) => c.trigger === name);
-  return cmd ? { kind: 'static', cmd, arg } : { kind: 'unknown', name };
+  if (cmd) return { kind: 'static', cmd, arg };
+  // The user's own commands (Settings → Agent → Custom commands).
+  const mine = custom.find((c) => c.name === name);
+  if (mine) return { kind: 'custom', cmd: mine, arg, prompt: expandCommand(mine, arg) };
+  return { kind: 'unknown', name };
+}
+
+/* A custom command's prompt with what was typed after it: in place of
+ * {input}, or added at the end. */
+export function expandCommand(cmd, arg) {
+  const p = String(cmd.prompt || '');
+  if (p.includes('{input}')) return p.split('{input}').join(arg || '').trim();
+  return arg ? `${p}\n\n${arg}` : p;
 }
 
 function filterCommands(commands, query) {
@@ -59,21 +71,26 @@ function filterCommands(commands, query) {
 }
 
 export default function CommandPalette({
-  open, query, onSelect, onClose, skills = [], api,
+  open, query, onSelect, onClose, skills = [], custom = [], api,
 }) {
   const [cursor, setCursor] = useState(0);
   const listRef = useRef(null);
 
   // Build the full command list: static + per-skill `/run <name>` entry
-  const commands = useRef([
+  const commands = useMemo(() => [
     ...STATIC_COMMANDS,
+    ...custom.map((c) => ({
+      trigger: c.name,
+      description: `${c.description || c.prompt.slice(0, 80)} · your command`,
+      custom: c,
+    })),
     ...skills.map((s) => ({
       trigger: `run ${s.name}`,
       description: s.description || `Run the "${s.name}" skill`,
       skill: s.name,
       run: (a) => a.runSkill(s.name),
     })),
-  ]).current;
+  ], [skills, custom]);
 
   const filtered = filterCommands(commands, query);
   const safe = filtered.length === 0 ? [] : filtered;

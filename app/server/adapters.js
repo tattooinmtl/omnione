@@ -20,6 +20,7 @@
 import { toOpenAITools, toAnthropicTools } from './toolRegistry.js';
 import { pickStubTemplate } from './stubTemplates.js';
 import { readImage } from './attachments.js';
+import { agentSettings } from './agentConfig.js';
 
 /* Pictures re-sent on every turn cost tokens each time, so only the newest
  * few go as pictures; older ones become a line saying where they are. */
@@ -40,7 +41,7 @@ export class ContextOverflowError extends Error {
 /* POST with exponential backoff on the statuses that are worth retrying.
  * An overloaded provider is the single most common way a long agent run dies
  * halfway, and a bare fetch gives up on the first 429. */
-async function fetchWithRetry(url, init, { signal, maxRetries = MAX_RETRIES } = {}) {
+async function fetchWithRetry(url, init, { signal, maxRetries = agentSettings().retries ?? MAX_RETRIES } = {}) {
   let lastErr;
   for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
@@ -191,7 +192,7 @@ function imagePicker(messages, enabled) {
       if (b.type === 'tool_result') for (const i of b.images || []) all.push(i);
     }
   }
-  for (const b of all.slice(-MAX_IMAGES_SENT)) send.add(b);
+  for (const b of all.slice(-(agentSettings().imagesKept || MAX_IMAGES_SENT))) send.add(b);
   return { send, enabled };
 }
 

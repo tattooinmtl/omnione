@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.13.1",
- "build": "e296c47743f1",
- "commit": "eebdd4ab8f11",
- "date": "2026-10-05T22:43:19-04:00",
+ "version": "0.14.0",
+ "build": "83763c1d66cc",
+ "commit": "4e163cb8af3f",
+ "date": "2026-10-05T23:09:45-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "80656170ed9dec111a282184fa0eccf4f5a2795aedcb4e58e037710525d3f2af",
+   "h": "ebbacfd33ae04d33c9618f9f9e2243f66a63a4a288ec8069326fe35c105bbd91",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "03658d083ce3b69390b9d7e4232e72ecf711779b153a77e03a43dd367122073f",
+   "h": "62a341ef4d700ebf04331ea5e7bc01b993013b2136cd0fa753be1fc27d7dc1f8",
    "s": 121
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "26ff5deb686e9b0110bee882c97b52816a5bf805e70815c823ddeb5d480d9421",
+   "h": "9381668e0b44e57b620bb4f25baac4db2f0bfa96487a5fdfe585895c0fcb3825",
    "s": 219233
   },
   {
    "p": "package.json",
-   "h": "8fd8b3b4ed7b3896783b20eb36b3e40509863e99d9d81f193f72de6fe2d7bc57",
+   "h": "7f619ba79ecf880ee6e9426f3797d6b73b29817193a47577e2f68e44842c19ae",
    "s": 1269
   },
   {
@@ -71,13 +71,18 @@
   },
   {
    "p": "server/adapters.js",
-   "h": "7e1869cacc90549488165ca20b4d7d627a27433ef4414198446e293b05ac8747",
-   "s": 20812
+   "h": "5852f3bacab839ea1bdd23e4de1ea77df6a64635157a6e535f565f1143b92f3c",
+   "s": 20922
   },
   {
    "p": "server/agent.js",
-   "h": "769ab629d1688b88ff31de091a31bd6c337ad122968eacdef2911626df6aaa57",
-   "s": 29656
+   "h": "7f9626ee946c411b4751e3e8d7d59fdc64f3b182d0c03d4bd1ba9d0ded4c1282",
+   "s": 30092
+  },
+  {
+   "p": "server/agentConfig.js",
+   "h": "02d8dd1ec149851afea1e06af100b3f4594cbcaeef1578134eabb381fc791565",
+   "s": 3691
   },
   {
    "p": "server/agentSlots.js",
@@ -171,8 +176,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "0a2222ea11123a306766df8e9601633c10806adfb7d200fd8d96d29eee01ee27",
-   "s": 67762
+   "h": "8da6da5c267b12f9c68c94047ac68229e382a96adbca26db821b8e557ac52cfc",
+   "s": 69075
   },
   {
    "p": "server/listen.js",
@@ -241,8 +246,8 @@
   },
   {
    "p": "server/permissions.js",
-   "h": "b44667b015d502681df36c4f08dbd058ad3017162c48089e093a39368377308c",
-   "s": 7391
+   "h": "22a9e1cbf0b8238e4e2f63d640070af553f7a37f0e217b135b41cdb32db6c327",
+   "s": 7589
   },
   {
    "p": "server/personality.js",
@@ -251,8 +256,8 @@
   },
   {
    "p": "server/prefs.js",
-   "h": "a45cc862cce7dd386352ac3b40e08fe1d08a4991263f279ce7694f83c0fe5f94",
-   "s": 3854
+   "h": "0c3d862849c9919c51d544e680ca9222210a09d84aaca644c05c39e00fbb701c",
+   "s": 4834
   },
   {
    "p": "server/projects.js",
@@ -271,8 +276,8 @@
   },
   {
    "p": "server/reflection.js",
-   "h": "cc037d69f08ff046636b7f632668ff490a3cbd27d072bd9d990cc75a54d7e975",
-   "s": 8489
+   "h": "9dce1d5957c5e1c78a32ec38f47327987e71db82cd56dfbee5dd2260deb07d29",
+   "s": 8577
   },
   {
    "p": "server/schedules.js",
@@ -421,8 +426,8 @@
   },
   {
    "p": "server/tools/task.js",
-   "h": "c2a30cb68ee45ca6a5f20cc50be88ffd09c2737556928e602b4a0855d119cc61",
-   "s": 6428
+   "h": "72bc02e61801e27d48119ef55b33f5718308ab1f6ac4ced893221d8d3fac1d7c",
+   "s": 6515
   },
   {
    "p": "server/tools/todo.js",
@@ -971,8 +976,8 @@
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "499087bb9d4a0a773a82cb3e93031bf60914c6e289723d911dec181b8539364b",
-   "s": 44782
+   "h": "ae3132ff9b00c31e5d9fc277511c6f38dac31661d40a2462b969886f7a1824dc",
+   "s": 46030
   },
   {
    "p": "src/components/AppShell.css",
@@ -1011,8 +1016,8 @@
   },
   {
    "p": "src/components/CommandPalette.jsx",
-   "h": "eb641e0166009792207778780c950e70437ab271b70b7dd4eacad49f4ba98036",
-   "s": 7126
+   "h": "fff87922657098221ecfab24f8f6d9f0b1f9f320bd8735d5dea3c8dae88369f9",
+   "s": 7884
   },
   {
    "p": "src/components/ContextMenu.css",
@@ -1101,8 +1106,8 @@
   },
   {
    "p": "src/components/SettingsModal.jsx",
-   "h": "7d25a0d03abb9245b596b8ea278d3ae6933d674b94e7852ad45a5828f1c1a000",
-   "s": 21027
+   "h": "e3ff78a28a034c0929b26c34d1edc083135c58eefcc2caf688d53f4445f65e5e",
+   "s": 21291
   },
   {
    "p": "src/components/SkillsModal.css",
@@ -1143,6 +1148,11 @@
    "p": "src/components/doctor/DoctorView.jsx",
    "h": "1ddfddefcee6504cf9a443cb17db21eaaf90cdad1e0a15fdc1d352bc96716cfc",
    "s": 8415
+  },
+  {
+   "p": "src/components/settings/AgentTab.jsx",
+   "h": "4b16cbd74e533b2c0e1ab1cac3c97f7659cbb75009738d8be0622ae15223ea80",
+   "s": 14682
   },
   {
    "p": "src/components/settings/CameraTab.jsx",
