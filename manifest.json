@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.11.0",
- "build": "e493362c0cac",
- "commit": "796f66e5b2e2",
- "date": "2026-10-05T19:13:46-04:00",
+ "version": "0.11.1",
+ "build": "2ed89a38f287",
+ "commit": "eaf50c849a57",
+ "date": "2026-10-05T20:01:40-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "d27ca02bb054fb4987b1e558809d2306eaa2f58f5245014306e18a601b239a13",
+   "h": "dec9a1087ff39605e9c833e40c756111c73fcf962fdb03998df0682681790725",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "3b93a250586e3c3a5c7a7f316311262d0013cfff8c4e7606b66e83b635625f93",
+   "h": "c955b675916510d70ab9d0043af2fc2fc37b1635df1b7251569cf81e6ff69df5",
    "s": 121
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "bec336ff9615f498ce375912bd64ba791cca04a73ae6f1c8fe289082e9da855b",
+   "h": "ac73e980dccd47f00a4f0c52374b41618099784c682fe9eb69a0afa4ed5495d8",
    "s": 219233
   },
   {
    "p": "package.json",
-   "h": "0fdc161201beaa920d5a577ee47d1f5e9d96a9ec442dcae9b4af17127e352df8",
+   "h": "199fe40827585ee396b5a206e00c0d66d74f160b604d000a28847d1e1eb6596a",
    "s": 1269
   },
   {
@@ -166,8 +166,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "061381be534e4960f7e25a0c41b86e266d9dc0f3106ee3e3f891042790342110",
-   "s": 62443
+   "h": "d7c8cca21801cf6d9fe02a175b83e16e974353cfc3fd9e1d8d35412f7590e5b4",
+   "s": 62626
   },
   {
    "p": "server/listen.js",
@@ -436,8 +436,8 @@
   },
   {
    "p": "server/vercel.js",
-   "h": "e6a551b4e0db9e9030a41a8130a6b3bbd2e9b277b0ca528e99e01c24765c7457",
-   "s": 12876
+   "h": "7f7fb7c97ca5065c49707495a4b31cad85b3d3d11f33088fb21de20530125c1a",
+   "s": 13905
   },
   {
    "p": "server/workspace.js",
@@ -621,13 +621,13 @@
   },
   {
    "p": "skills/blender-autonomous-modeling/SKILL.md",
-   "h": "b8eb27ff52d9f3128185364eab9cf3f27a7abf1df540df3344d50ebfca9e3de4",
-   "s": 5579
+   "h": "20be5b3b351c1be883730b3ec390e3ab8e186dc54c075ef6b035203bbc389e67",
+   "s": 5692
   },
   {
    "p": "skills/blender-basics/SKILL.md",
-   "h": "c60bac645b97b4ec13e9421d12a32d5fdeaefd7377de143f2f0e9ba4f7f21997",
-   "s": 5154
+   "h": "489797f65fbdadaef1a3f29be3e37bef06603c6a17cc2cb110ed5bc21948df61",
+   "s": 5368
   },
   {
    "p": "skills/blender-camera-moves/SKILL.md",
@@ -636,8 +636,8 @@
   },
   {
    "p": "skills/blender-hd-render/SKILL.md",
-   "h": "51ea96e2529028bcb2ec8b439f06b5d9ef801856c14a6cd748f8c6011166bc09",
-   "s": 4945
+   "h": "2faecf7539b34d9fcc9b7242a45f8d99ea52ffc12956f8d6d04050210a06ca4a",
+   "s": 5108
   },
   {
    "p": "skills/blender-pbr-materials/SKILL.md",
@@ -646,13 +646,13 @@
   },
   {
    "p": "skills/blender-product-shot/SKILL.md",
-   "h": "61071ff22f294e6e4250b78443deaa35fb84a63d96bd97a6e544447e3d703d91",
-   "s": 3785
+   "h": "7431ada2efae1670a8dface2d2a304aaaaff839b59ea2d3408ed8d00c19d399e",
+   "s": 4540
   },
   {
    "p": "skills/blender-studio-lighting/SKILL.md",
-   "h": "7440a4f2c809e0646a67236427082431fb8138a545d6a93e5aaa23ef2ce610fa",
-   "s": 6332
+   "h": "8654380d6e7c7218d37936a679ff9eb8a445d0779eaa3ca3060cf8c816f51c3e",
+   "s": 6461
   },
   {
    "p": "skills/brainstorming/SKILL.md",
@@ -936,8 +936,8 @@
   },
   {
    "p": "skills/vercel-deploy/SKILL.md",
-   "h": "64f8ff9ac6a913a584d2deb791e625773e17a672651848868c3088a36cde6446",
-   "s": 2998
+   "h": "d5e617a1ece824e3b3b66da1573572f9754a0c9337b868ca95b98ce5fac0423d",
+   "s": 3253
   },
   {
    "p": "skills/web-coding/SKILL.md",

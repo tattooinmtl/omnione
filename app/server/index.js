@@ -251,6 +251,8 @@ app.get('/api/tools', async (_req, res) => {
 app.post('/api/tools/run', async (req, res) => {
   const { name, args } = req.body || {};
   if (!name) return res.status(400).json({ error: 'name is required' });
+  // MCP tools are loaded when a chat run starts; load them here too.
+  if (String(name).startsWith('mcp__')) { try { await syncMcpTools(); } catch { /* reported by the call */ } }
   const r = await executeTool(name, args || {});
   res.json(r);
 });

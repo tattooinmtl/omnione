@@ -145,6 +145,9 @@ bpy.ops.mesh.primitive_plane_add(size=40, location=(0, 0, z))
 floor = bpy.context.active_object
 floor.name = 'Floor'
 floor.is_shadow_catcher = True
+# Otherwise chrome and gloss reflect it as a flat white area.
+floor.visible_glossy = False
+floor.visible_transmission = False
 {'floor_z': round(z, 4)}
 ```
 

@@ -22,8 +22,11 @@ a token at vercel.com/account/tokens (free), paste it, Connect. Don't ask for th
    after the site (lowercase, dashes). Never deploy the whole workspace root by accident.
 3. **Watch the build**: `vercel_status` every 15-30 seconds until `READY` or `ERROR`. Small
    static sites take seconds; framework builds 30 s to a few minutes.
-4. **READY**: give the user the preview URL. Offer to look at it with `browser_open` or
-   `computer_browse` before going live.
+4. **READY**: give the user the URL. Preview links are protected by Vercel: they open for
+   the user while signed in to Vercel, and redirect to a login for anyone else (and for
+   `browser_open`). Production addresses (`<project>.vercel.app`, in `vercel_status` aliases)
+   are public.
+   If the result has a `warning` that Vercel put it on production, tell the user it is live.
 5. **Production only when the user says so**: either `vercel_promote` the READY preview
    (no rebuild, instant) or `vercel_deploy` with `target: "production"`.
 

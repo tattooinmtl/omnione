@@ -49,10 +49,21 @@ obj.location = (0, 0, obj.dimensions.z / 2)
 
 Skip the bevel on organic or already-detailed scanned models (it would do nothing useful).
 
+Curved low-poly meshes (primitives, simple game models) show facets on their silhouette in a
+close-up. Add a Subdivision Surface modifier: `sub = obj.modifiers.new('Subdivision', 'SUBSURF')`,
+`sub.levels = 2`, `sub.render_levels = 3`. Tested on a UV sphere: it removes the faceted edge.
+
 ## 3. Floor
 
 Shadow-catcher floor from `blender-studio-lighting` (for a transparent PNG to place on any
 background), or a visible backdrop with the `studio_backdrop` material for a studio look.
+
+A shadow catcher still shows up in reflections as a flat white area on chrome and gloss.
+Hide it from them: `floor.visible_glossy = False` and `floor.visible_transmission = False`.
+
+**Chrome and polished metal reflect their surroundings and nothing else.** Against a plain
+grey world they render as a dark, flat ball with a few light spots (tested). Give them an HDRI
+(`blender-studio-lighting`) or a visible studio backdrop and big softboxes to reflect.
 
 ## 4. Light, then look
 

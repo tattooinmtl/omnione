@@ -28,7 +28,7 @@ Don't try to start Blender yourself.
 | `get_addon_info` | Call first: version and tool list | no |
 | `scene_info` | Objects, lights, cameras, frame range, render engine | no |
 | `list_objects`, `get_object` | What's in the scene, one object's details | no |
-| `create_object` | Primitive: cube, sphere, plane, cylinder, cone, torus, empty, camera, light | yes |
+| `create_object` | `name`, `type` (`MESH`, `EMPTY`, `CAMERA`, `LIGHT`), `primitive` for meshes (`CUBE`, `UVSPHERE`, `ICOSPHERE`, `PLANE`, `CYLINDER`, `CONE`, `TORUS`, `MONKEY`, `CIRCLE`, `GRID`), `light_type` (`POINT`, `SUN`, `SPOT`, `AREA`), `location`, `rotation_euler`, `scale`, optional `assign_material` | yes |
 | `transform_object` | Location / rotation (radians) / scale | yes |
 | `delete_object` | Delete by name (the only way to delete: see the rules below) | yes |
 | `set_material`, `set_texture` | Principled BSDF material, image textures | yes |

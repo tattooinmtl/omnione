@@ -225,20 +225,26 @@ export async function deployFolder(root, { project, target = 'preview', framewor
   const files = collectFiles(root);
   if (!files.length) throw new VercelError('That folder has nothing to deploy.');
 
+  // Vercel puts the first deployment of a project it creates on production,
+  // whatever target was asked for. Creating the project first keeps a preview
+  // a preview.
   const exists = await projectExists(name, signal);
+  if (!exists) {
+    const fw = framework === undefined ? detectFramework(root) : framework;
+    await call('POST', '/v11/projects', { body: { name, framework: fw }, signal });
+  }
   const body = {
     name,
-    project: exists ? name : undefined,
+    project: name,
     files: files.map(({ file, sha, size }) => ({ file, sha, size })),
     ...(target === 'production' ? { target: 'production' } : {}),
-    ...(exists ? {} : { projectSettings: { framework: framework === undefined ? detectFramework(root) : framework } }),
   };
 
   let uploaded = 0;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const d = await call('POST', '/v13/deployments', { body, query: { skipAutoDetectionConfirmation: 1 }, signal, timeoutMs: 120_000 });
-      return { ...shortDeployment(d), state: d.readyState, newProject: !exists, files: files.length, uploaded };
+      return describeDeploy(d, { asked: target, newProject: !exists, files: files.length, uploaded });
     } catch (e) {
       if (e.code !== 'missing_files' || !Array.isArray(e.missing)) throw e;
       const want = new Set(e.missing);
@@ -256,6 +262,20 @@ export async function deployFolder(root, { project, target = 'preview', framewor
     }
   }
   throw new VercelError('Vercel kept asking for files after uploading them.');
+}
+
+/* What to tell the user about a new deployment: which links work for whom. */
+function describeDeploy(d, { asked, ...extra }) {
+  const out = { ...shortDeployment(d), state: d.readyState, ...extra };
+  const actual = d.target === 'production' ? 'production' : 'preview';
+  out.target = actual;
+  if (asked !== 'production' && actual === 'production') {
+    out.warning = 'Vercel put this deployment on production although a preview was asked for. Tell the user it is live.';
+  }
+  out.links = actual === 'production'
+    ? 'Live once READY at the project production address (vercel_status shows it under aliases). The deployment link itself may ask for a Vercel login.'
+    : 'Preview links are protected by Vercel: the user opens them while signed in to Vercel. Give the user this url.';
+  return out;
 }
 
 export async function redeploy(deploymentId, { target } = {}, { signal } = {}) {

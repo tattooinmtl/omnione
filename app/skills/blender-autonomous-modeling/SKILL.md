@@ -29,8 +29,9 @@ These are the tools the Blender MCP add-on actually has (as `mcp__blender__<name
 - `scene_info()` and `get_addon_info()` — current scene state: objects, active object, render
   engine, frame range; the add-on's version and tools.
 - `list_objects()`, `get_object(name)` — what exists, one object's mesh, modifiers, materials.
-- `create_object(type, name, location, rotation, scale)` — add primitives: cube, sphere,
-  plane, cylinder, cone, torus, empty, camera, light.
+- `create_object(name, type, primitive, location, rotation_euler, scale)` — `type` is `MESH`,
+  `EMPTY`, `CAMERA` or `LIGHT`; for meshes `primitive` is `CUBE`, `UVSPHERE`, `ICOSPHERE`, `PLANE`,
+  `CYLINDER`, `CONE`, `TORUS`, `MONKEY`, `CIRCLE` or `GRID`.
 - `add_modifier(object, type, ...)` / `remove_modifier` — subdivision, mirror, solidify,
   array, bevel.
 - `set_material(object, ...)` — create or assign a Principled BSDF material

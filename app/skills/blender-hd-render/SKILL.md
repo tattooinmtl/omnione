@@ -127,6 +127,7 @@ r.image_settings.color_mode = 'RGBA'
 | Highlights clip to white | `vs.exposure = -0.5`, or lower the key light |
 | Glass looks black | Raise `transmission_bounces` to 16+, check the glass material's IOR |
 | Too slow | Preview at 25-50% first; adaptive threshold 0.02; GPU on |
+| The preset reports `device: 'CPU'` | No GPU Cycles can use was found (or its driver is missing): it still works, just slower. Keep samples lower for previews |
 
 ## Final render
 
