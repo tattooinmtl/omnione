@@ -8,6 +8,7 @@
 // With `mind`, what Omi-One does on its own time (/api/mind/events) is fed
 // in the same way, and its mood is reported.
 
+import { subscribeStream } from '../utils/stream.js';
 const rand = () => Math.random().toString(36).slice(2, 8);
 
 export function makeOrigin(kind) {
@@ -22,32 +23,20 @@ function dispatch(ev) {
 }
 
 export function startLiveFeed({ origin, mind = false, onMood } = {}) {
-  const sources = [];
-  const open = (url, onMessage) => {
-    try {
-      const es = new EventSource(url);
-      es.onmessage = (m) => {
-        let ev;
-        try { ev = JSON.parse(m.data); } catch { return; }
-        onMessage(ev);
-      };
-      sources.push(es);
-    } catch { /* no SSE in this environment */ }
-  };
-
-  open('/api/live', (ev) => {
+  // Through this window's one shared stream (utils/stream.js).
+  const offs = [subscribeStream('live', (ev) => {
     if (!ev || ev.type === 'hello' || ev.type === 'ping') return;
     if (origin && ev.origin === origin) return;
     dispatch(ev);
-  });
+  })];
 
   if (mind) {
-    open('/api/mind/events', (ev) => {
+    offs.push(subscribeStream('mind', (ev) => {
       if (ev?.mood) onMood?.(ev.mood);
       if (!ev || ev.type === 'hello' || ev.type === 'ping') return;
       dispatch(ev.type === 'tool_result' || ev.type === 'tool_call' ? { ...ev, heartbeat: true } : ev);
-    });
+    }));
   }
 
-  return () => sources.forEach((es) => es.close());
+  return () => offs.forEach((off) => off());
 }

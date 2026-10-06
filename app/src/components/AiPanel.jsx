@@ -8,6 +8,7 @@ import { useCamera, useCameraPreview } from '../utils/camera.js';
 import ProjectBar from './ProjectBar.jsx';
 import { useProviderTokenBudget, fetchSettings } from '../hooks/useProviderTokenBudget';
 import './AiPanel.css';
+import { subscribeStream } from '../utils/stream.js';
 
 const SUGGESTIONS = [
   '🎮 Make a neon asteroid shooter',
@@ -127,19 +128,9 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     } catch { /* ignore */ }
   }, []);
   useEffect(() => { refreshSkills(); }, [refreshSkills]);
-  useEffect(() => {
-    let es;
-    try {
-      es = new EventSource('/api/skills/events');
-      es.onmessage = (e) => {
-        try {
-          const ev = JSON.parse(e.data);
-          if (ev.type === 'changed' || ev.type === 'hello') refreshSkills();
-        } catch { /* ignore */ }
-      };
-    } catch { /* ignore */ }
-    return () => { if (es) es.close(); };
-  }, [refreshSkills]);
+  useEffect(() => subscribeStream('skills', (ev) => {
+    if (ev.type === 'changed' || ev.type === 'hello') refreshSkills();
+  }), [refreshSkills]);
 
   // The SkillsModal's RUN button dispatches this; we prefilled the prompt
   // the same way the /run <name> command does. Use a ref so the listener

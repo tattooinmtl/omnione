@@ -8,6 +8,7 @@ import { Preview } from '../components/ApprovalModal.jsx';
 import { parseCommand } from '../components/CommandPalette.jsx';
 import { runPrompt, answerApproval } from './runPrompt.js';
 import { useCamera } from '../utils/camera.js';
+import { subscribeStream } from '../utils/stream.js';
 
 /* The Presence widget: Omi-One's face in a small floating window, always
  * listening.
@@ -48,7 +49,6 @@ export default function PresenceWidget({ origin }) {
   const [muted, setMuted] = useState(() => readLS(LS_MUTE, '0') === '1');
   const [voiceOn, setVoiceOn] = useState(() => readLS(LS_VOICE, '1') !== '0');
   const [listen, setListen] = useState({ state: 'off' });
-  const [listenTry, setListenTry] = useState(0);
   // The live camera: when on, the server adds a picture to each question.
   const camera = useCamera();
   const cameraOn = Boolean(camera.state?.on);
@@ -135,21 +135,14 @@ export default function PresenceWidget({ origin }) {
     r.done.finally(() => { if (run.current === r) run.current = null; });
   }, [origin]);
 
-  // Always listening (unless muted): Windows' recognizer, wake word "Omi-One".
+  // Always listening (unless muted): Windows' recognizer, wake word "Omi-One",
+  // through this window's shared stream (utils/stream.js). The server re-opens
+  // the stream when the wake word is switched on or off in Settings → Voice.
   useEffect(() => {
     if (muted) { setListen({ state: 'muted' }); setLevel(0); return undefined; }
-    let es;
-    let retry = 0;
-    try { es = new EventSource('/api/listen'); } catch { setListen({ state: 'error', error: { message: 'No live connection to OmniOne.' } }); return undefined; }
-    es.onmessage = (m) => {
-      let ev;
-      try { ev = JSON.parse(m.data); } catch { return; }
-      if (ev.type === 'state' && ev.state === 'off' && ev.reason) {
-        // Turned off in Settings → Voice: stop reconnecting, look again in a minute.
-        es.close();
-        setListen(ev);
-        retry = setTimeout(() => setListenTry((n) => n + 1), 60_000);
-      } else if (ev.type === 'state') setListen(ev);
+    return subscribeStream('listen', (ev) => {
+      if (ev.type === 'stream_error') setListen((st) => (st.state === 'error' ? st : { state: 'reconnecting' }));
+      else if (ev.type === 'state') setListen(ev);
       else if (ev.type === 'level') setLevel(ev.v / 100);
       else if (ev.type === 'error') setListen({ state: 'error', error: ev });
       else if (ev.type === 'speech') engine.current?.gesture('lookAtUser');
@@ -159,10 +152,8 @@ export default function PresenceWidget({ origin }) {
         if (!ev.text) { setCaption('Yes? Say "Omi-One" and then your question.'); return; }
         ask(ev.text);
       }
-    };
-    es.onerror = () => setListen((s) => (s.state === 'error' ? s : { state: 'reconnecting' }));
-    return () => { es.close(); clearTimeout(retry); };
-  }, [muted, ask, listenTry]);
+    });
+  }, [muted, ask]);
 
   const toggleMute = () => {
     const next = !muted;

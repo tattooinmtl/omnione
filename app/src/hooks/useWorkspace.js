@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { subscribeStream } from '../utils/stream.js';
 import {
   ws, isPlanFile, isUnder, reparent, baseName,
 } from '../utils/workspaceApi.js';
@@ -282,26 +283,20 @@ export default function useWorkspace({ toast } = {}) {
       const plan = list.find((e) => e.type === 'file' && isPlanFile(e.path));
       if (plan) openFile(plan.path, { activate: true });
     });
-    let es;
-    try {
-      es = new EventSource('/api/workspace/events');
-      es.onmessage = (m) => {
-        let ev;
-        try { ev = JSON.parse(m.data); } catch { return; }
-        if (ev.type === 'changed') onDiskChange(ev.paths);
-        else if (ev.type === 'root') {
-          // Another project folder: its files, not the old tabs.
-          setTabs((cur) => cur.filter(isDirty));
-          setActive(null);
-          onDiskChange([]);
-        }
-      };
-    } catch { /* no SSE: the list still refreshes after each answer */ }
+    const offStream = subscribeStream('workspace', (ev) => {
+      if (ev.type === 'changed') onDiskChange(ev.paths);
+      else if (ev.type === 'root') {
+        // Another project folder: its files, not the old tabs.
+        setTabs((cur) => cur.filter(isDirty));
+        setActive(null);
+        onDiskChange([]);
+      }
+    });
     const onResult = () => onDiskChange([]);
     window.addEventListener('gwn:generation-result', onResult);
     return () => {
       alive = false;
-      es?.close();
+      offStream();
       window.removeEventListener('gwn:generation-result', onResult);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps

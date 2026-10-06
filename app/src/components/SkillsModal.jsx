@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import './SkillsModal.css';
+import { subscribeStream } from '../utils/stream.js';
 
 const API_BASE = '';
 
@@ -29,20 +30,9 @@ export default function SkillsModal({ onClose, onRunSkill, onChange }) {
   useEffect(() => { onChange && onChange(skills); }, [skills, onChange]);
 
   // Live updates from the server (upload / delete / scan fire SSE)
-  useEffect(() => {
-    let es;
-    try {
-      es = new EventSource(`${API_BASE}/api/skills/events`);
-      es.onmessage = (e) => {
-        try {
-          const ev = JSON.parse(e.data);
-          if (ev.type === 'changed' || ev.type === 'hello') refresh();
-        } catch { /* ignore */ }
-      };
-      es.onerror = () => { /* let the browser auto-reconnect */ };
-    } catch { /* ignore */ }
-    return () => { if (es) es.close(); };
-  }, [refresh]);
+  useEffect(() => subscribeStream('skills', (ev) => {
+    if (ev.type === 'changed' || ev.type === 'hello') refresh();
+  }), [refresh]);
 
   const filtered = skills.filter((s) => {
     if (!filter) return true;

@@ -159,7 +159,7 @@ async function work() {
 function chatSession(provider, model) {
   const w = getPrefs().webchat;
   if (w.sessionId && sessionExists(w.sessionId)) return w.sessionId;
-  const id = createSession({ title: '📱 Website chat', provider: provider.id, model, workspaceRoot: getWorkspaceRoot() });
+  const id = createSession({ title: '📱 Website chat', provider: provider.id, model, workspaceRoot: getWorkspaceRoot(), sessionKind: 'webchat' });
   setPrefs({ webchat: { sessionId: id } });
   return id;
 }

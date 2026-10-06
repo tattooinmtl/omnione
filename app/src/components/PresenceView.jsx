@@ -8,6 +8,7 @@ import { EmotionRuntime, EMOTION_COLORS } from '../presence/emotionEngine.js';
 import { Voice, speakable, speechChunks } from '../presence/voice.js';
 import PresenceChat, { chatText } from './PresenceChat.jsx';
 import './PresenceView.css';
+import { subscribeStream } from '../utils/stream.js';
 
 /* Presence — the agent, embodied.
  *
@@ -250,21 +251,12 @@ export default function PresenceView({ onClose, toast }) {
   const routeToBrain = (ev) => brainRouter.current.handle(ev);
 
   // What it does on its own time.
-  useEffect(() => {
-    let es;
-    try {
-      es = new EventSource('/api/mind/events');
-      es.onmessage = (m) => {
-        let ev;
-        try { ev = JSON.parse(m.data); } catch { return; }
-        if (ev.mood) engine.current?.setMood(ev.mood);
-        if (ev.type === 'hello' || ev.type === 'ping') return;
-        window.dispatchEvent(new CustomEvent('gwn:agent-event', { detail: ev.type === 'tool_result' || ev.type === 'tool_call' ? { ...ev, heartbeat: true } : ev }));
-        if (ev.type === 'heartbeat_end') refresh();
-      };
-    } catch { /* no SSE; polling still works */ }
-    return () => es?.close();
-  }, [refresh]);
+  useEffect(() => subscribeStream('mind', (ev) => {
+    if (ev.mood) engine.current?.setMood(ev.mood);
+    if (ev.type === 'hello' || ev.type === 'ping') return;
+    window.dispatchEvent(new CustomEvent('gwn:agent-event', { detail: ev.type === 'tool_result' || ev.type === 'tool_call' ? { ...ev, heartbeat: true } : ev }));
+    if (ev.type === 'heartbeat_end') refresh();
+  }), [refresh]);
 
   useEffect(() => {
     refresh();

@@ -875,11 +875,16 @@ const sseClients = new Set();
  * callback above — which runs long after module init, but is written earlier
  * in the file — can call it. */
 function notifySkillsChanged() {
-  const payload = `data: ${JSON.stringify({ type: 'changed', count: getSkills().length, drafts: listDrafts().length })}\n\n`;
+  const ev = { type: 'changed', count: getSkills().length, drafts: listDrafts().length };
+  const payload = `data: ${JSON.stringify(ev)}\n\n`;
   for (const r of sseClients) {
     try { r.write(payload); } catch { /* client gone */ }
   }
+  for (const fn of skillsStreamSubs) {
+    try { fn(ev); } catch { /* client gone */ }
+  }
 }
+const skillsStreamSubs = new Set();
 
 app.get('/api/skills/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -1145,6 +1150,50 @@ app.get('/api/mind/events', (req, res) => {
   req.on('close', () => { off(); clearInterval(ping); });
 });
 
+// One stream per window for everything live (see src/utils/stream.js).
+//
+// A browser keeps at most 6 connections to one address, shared by every
+// OmniOne window (they run in one WebView2). With a separate stream per
+// feature, the main window and the widgets used all 6, and the next request
+// (a question, the voice) waited forever. Each window now opens just this
+// one, with the topics it needs; every event carries `ch` (its topic).
+//   live       every run's events (live.js)            mind   the heartbeat and mood
+//   skills     the skills folder changed               workspace  files changed
+//   listen     the wake-word recognizer (when it's on in Settings → Voice)
+const STREAM_TOPICS = new Set(['live', 'mind', 'skills', 'workspace', 'listen']);
+const streamListeners = new Set();
+app.get('/api/stream', (req, res) => {
+  const topics = new Set(String(req.query.topics || '').split(',').filter((t) => STREAM_TOPICS.has(t)));
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+  const send = (ch) => (ev) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify({ ...ev, ch })}\n\n`); };
+  const offs = [];
+  if (topics.has('live')) { send('live')({ type: 'hello' }); offs.push(subscribeLive(send('live'))); }
+  if (topics.has('mind')) {
+    send('mind')({ type: 'hello', mood: currentMood(), heartbeat: heartbeatStatus() });
+    offs.push(onHeartbeatEvent(send('mind')));
+  }
+  if (topics.has('skills')) {
+    const fn = send('skills');
+    fn({ type: 'hello', count: getSkills().length });
+    skillsStreamSubs.add(fn);
+    offs.push(() => skillsStreamSubs.delete(fn));
+  }
+  if (topics.has('workspace')) { send('workspace')({ type: 'hello', root: getWorkspaceRoot() }); offs.push(watchWorkspace(send('workspace'))); }
+  if (topics.has('listen')) {
+    streamListeners.add(res);
+    offs.push(() => streamListeners.delete(res));
+    if (getPrefs().voice.wakeWord) offs.push(speechListener().subscribe(send('listen')));
+    else send('listen')({ type: 'state', state: 'off', reason: 'The wake word is off (Settings → Voice).' });
+  }
+  const ping = setInterval(() => { if (!res.writableEnded) res.write(`data: ${JSON.stringify({ type: 'ping', ch: 'stream', mood: topics.has('mind') ? currentMood() : undefined })}\n\n`); }, 25_000);
+  ping.unref?.();
+  res.on('close', () => { clearInterval(ping); for (const off of offs) { try { off(); } catch { /* already gone */ } } });
+});
+
 // Every run's events, for every window (see live.js).
 app.get('/api/live', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -1282,6 +1331,8 @@ app.post('/api/prefs', (req, res) => {
     // The wake word just went off: close the open listening streams (their
     // windows reconnect and are told it is off).
     if (!next.voice.wakeWord) for (const r of listenStreams) r.end();
+    // Shared streams re-open and re-check the wake word either way.
+    for (const r of streamListeners) r.end();
     publishLive({ type: 'prefs' }, 'settings');
     res.json(next);
   } catch (e) { res.status(400).json({ error: e.message }); }

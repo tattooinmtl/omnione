@@ -21,6 +21,7 @@ import { ws, baseName } from '../utils/workspaceApi.js';
 import { pickPreviewPage, pageRefs } from '../utils/previewFiles.js';
 import './AppShell.css';
 import './HelpModal.css';
+import { subscribeStream } from '../utils/stream.js';
 
 /* OmniOne Agent Harness.
  *
@@ -136,12 +137,8 @@ export default function AppShell() {
     };
     refreshDrafts();
 
-    let es;
-    try {
-      es = new EventSource('/api/skills/events');
-      es.onmessage = () => refreshDrafts();
-    } catch { /* no SSE; the mount fetch still populated it */ }
-    return () => { cancelled = true; if (es) es.close(); };
+    const off = subscribeStream('skills', () => refreshDrafts());
+    return () => { cancelled = true; off(); };
   }, []);
 
   const showToast = useCallback((msg, kind = 'info') => {

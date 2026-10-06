@@ -3,6 +3,7 @@
 // refreshes while it's on. The pictures themselves are taken by the server.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { subscribeStream } from './stream.js';
 
 export async function cameraApi(method = 'GET', body) {
   const r = await fetch('/api/camera', {
@@ -23,17 +24,10 @@ export function useCamera() {
   useEffect(() => {
     let alive = true;
     cameraApi().then((s) => alive && setState(s)).catch(() => {});
-    let es;
-    try {
-      es = new EventSource('/api/live');
-      es.onmessage = (m) => {
-        try {
-          const ev = JSON.parse(m.data);
-          if (ev.type === 'camera') cameraApi().then((s) => alive && setState(s)).catch(() => {});
-        } catch { /* keep-alive */ }
-      };
-    } catch { /* no live channel: state still loads once */ }
-    return () => { alive = false; es?.close(); };
+    const off = subscribeStream('live', (ev) => {
+      if (ev.type === 'camera') cameraApi().then((s) => alive && setState(s)).catch(() => {});
+    });
+    return () => { alive = false; off(); };
   }, []);
 
   const toggle = useCallback(async () => {

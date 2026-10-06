@@ -233,7 +233,7 @@ export async function runSchedule(id, { reason = 'timer', runner } = {}) {
 
   running = t.id;
   const started = Date.now();
-  const sessionId = createSession({ title: `⏰ ${t.title}`, provider: provider.id, model, workspaceRoot: getWorkspaceRoot() });
+  const sessionId = createSession({ title: `⏰ ${t.title}`, provider: provider.id, model, workspaceRoot: getWorkspaceRoot(), sessionKind: 'schedule' });
   acquireSessionRun(sessionId);
   setMode(sessionId, 'autonomous');
   publishLive({ type: 'schedule_start', taskId: t.id, title: t.title, sessionId }, 'schedules');

@@ -185,7 +185,7 @@ export function findLatestSessionForProject(projectId) {
     if (!isValidSessionId(id)) continue;
     try {
       const meta = getMeta(id);
-      if (!meta || meta.sessionKind === 'subagent') continue;
+      if (!meta || !isUserConversation(meta)) continue;
       if (projectOfSession(meta) !== (projectId || null)) continue;
       const stat = fs.statSync(path.join(SESSIONS_DIR, f));
       if (stat.mtimeMs > bestMtime) { bestMtime = stat.mtimeMs; bestId = id; }
@@ -199,6 +199,15 @@ export function findLatestSessionForProject(projectId) {
  * to a project auto-continues its last conversation instead of starting a
  * new one, while an explicit "new chat" (no workspaceRoot match needed —
  * the client just stops sending the old id) is left alone. */
+/* Conversations the user is having here, as opposed to ones OmniOne keeps for
+ * itself: helpers (subagents), the website chat, the heartbeat, scheduled
+ * tasks. Older files have no kind, so their titles are checked too. */
+const OWN_KINDS = new Set(['subagent', 'webchat', 'heartbeat', 'schedule']);
+export function isUserConversation(meta) {
+  if (OWN_KINDS.has(meta.sessionKind)) return false;
+  return !/^(📱|💭|⏰) /u.test(String(meta.title || ''));
+}
+
 export function findLatestSessionForWorkspace(workspaceRoot) {
   if (!workspaceRoot) return null;
   ensureSessionsDir();
@@ -215,7 +224,7 @@ export function findLatestSessionForWorkspace(workspaceRoot) {
       if (!meta || meta.workspaceRoot !== workspaceRoot) continue;
       // Never resume into a subagent's transcript — that is not the
       // conversation the user was having.
-      if (meta.sessionKind === 'subagent') continue;
+      if (!isUserConversation(meta)) continue;
       const stat = fs.statSync(path.join(SESSIONS_DIR, f));
       if (stat.mtimeMs > bestMtime) { bestMtime = stat.mtimeMs; bestId = id; }
     } catch { continue; }

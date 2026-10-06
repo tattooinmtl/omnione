@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, Msg, Section, Switch, ago } from './shared.jsx';
+import { subscribeStream } from '../../utils/stream.js';
 
 const KINDS = [
   ['daily', 'Every day'],
@@ -28,17 +29,9 @@ export default function SchedulesTab() {
   useEffect(() => {
     load();
     // Runs finishing while this is open.
-    let es;
-    try {
-      es = new EventSource('/api/live');
-      es.onmessage = (m) => {
-        try {
-          const ev = JSON.parse(m.data);
-          if (['schedule_run', 'schedule_start', 'schedules_changed'].includes(ev.type)) load();
-        } catch { /* keep-alive */ }
-      };
-    } catch { /* no live channel */ }
-    return () => es?.close();
+    return subscribeStream('live', (ev) => {
+      if (['schedule_run', 'schedule_start', 'schedules_changed'].includes(ev.type)) load();
+    });
   }, []);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));

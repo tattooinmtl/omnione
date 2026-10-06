@@ -99,6 +99,7 @@ export async function beat({ force = false, reason = 'timer' } = {}) {
     provider: provider.id,
     model,
     workspaceRoot: getWorkspaceRoot(),
+    sessionKind: 'heartbeat',
   });
   acquireSessionRun(sessionId);
   setMode(sessionId, 'autonomous');
