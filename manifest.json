@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.14.0",
- "build": "83763c1d66cc",
- "commit": "4e163cb8af3f",
- "date": "2026-10-05T23:09:45-04:00",
+ "version": "0.15.0",
+ "build": "22a9ceadc6c4",
+ "commit": "5af893b9700c",
+ "date": "2026-10-11T09:37:15-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -21,8 +21,8 @@
   },
   {
    "p": "build.json",
-   "h": "62a341ef4d700ebf04331ea5e7bc01b993013b2136cd0fa753be1fc27d7dc1f8",
-   "s": 121
+   "h": "e855aeace7c2b603e596bf88b5e8190915f1f2b53de65be77dcdd979398d7e06",
+   "s": 120
   },
   {
    "p": "hooks/PostToolUse/audit-log.js",
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "9381668e0b44e57b620bb4f25baac4db2f0bfa96487a5fdfe585895c0fcb3825",
+   "h": "b0b60205abb8e7684af8091d18c6f1c07fe186fe2d9ac2bd18b59c264ec0b034",
    "s": 219233
   },
   {
    "p": "package.json",
-   "h": "7f619ba79ecf880ee6e9426f3797d6b73b29817193a47577e2f68e44842c19ae",
+   "h": "d7759090385b673eb5596a62364fc1f5457281b4e6ee5cfd6dd599351de26248",
    "s": 1269
   },
   {
@@ -126,8 +126,8 @@
   },
   {
    "p": "server/brain.js",
-   "h": "bf9c3973cfa7c5461653d4c4f25ccb2ca9555b807417e8b476e25d9b14e833dc",
-   "s": 6158
+   "h": "84b568fcdaba166aea25b1a5c97777e4a94bc0620256fc8a049488ae5206f53a",
+   "s": 8631
   },
   {
    "p": "server/btw.js",
@@ -176,8 +176,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "8da6da5c267b12f9c68c94047ac68229e382a96adbca26db821b8e557ac52cfc",
-   "s": 69075
+   "h": "4f9d1c9a6342d13b6df886063b39ed253155420d413b5f82022850506fe2e5d0",
+   "s": 69969
   },
   {
    "p": "server/listen.js",
@@ -206,8 +206,8 @@
   },
   {
    "p": "server/mind/heartbeat.js",
-   "h": "5e9ad49b004e9f1691e4a04939e2b66b59bf311680950529206f787a9a44e06e",
-   "s": 8561
+   "h": "6d813266a96d39e84b07b74711b76510081c23a75c689435638472129b235dea",
+   "s": 8700
   },
   {
    "p": "server/mind/journal.js",
@@ -216,13 +216,13 @@
   },
   {
    "p": "server/mind/memory.js",
-   "h": "43b3c227ee4dd826138b83424f4a92a12b3c0cab0dda10886789be84eb427341",
-   "s": 8999
+   "h": "ab4f58368ddef2df1e2403efb0d67b11a65dfd27f36d3a3445dcb4f53f0b4604",
+   "s": 17296
   },
   {
    "p": "server/mind/prompt.js",
-   "h": "500471fa1252276ffdf62521d51d052a11a63a389b457df664a26fd3338e8305",
-   "s": 5420
+   "h": "5c6385deedea6b88e6b7e1b6921c224fedb1fa489526d4e20900ff0c6ba854e2",
+   "s": 5723
   },
   {
    "p": "server/mind/state.js",
@@ -233,6 +233,11 @@
    "p": "server/mind/store.js",
    "h": "505244a8f1d8d924bee1c79c444e2c6e60ce5979b08f9f70baa5f826220dc9d6",
    "s": 2600
+  },
+  {
+   "p": "server/mind/vault.js",
+   "h": "35ccb9ce2e4b8bdbf2e1f6141d289a856a09e666536cc76c46ab4114ff06b51c",
+   "s": 13072
   },
   {
    "p": "server/notify.js",
@@ -386,8 +391,8 @@
   },
   {
    "p": "server/tools/mind.js",
-   "h": "22c1c5f6d94dcea87c1c3bd68120fa74747f21015ef8307315d90a00a0d8f241",
-   "s": 9853
+   "h": "ea744e4f990c005dd9c644438fea63672e6ed21f82445905f2cf9c7670c8177a",
+   "s": 11244
   },
   {
    "p": "server/tools/pc.js",
@@ -1071,13 +1076,13 @@
   },
   {
    "p": "src/components/PresenceView.css",
-   "h": "7a1e6b08a55a3fa1094ab82a0139be78640c954a116438e351b8a67fb71ff613",
-   "s": 21927
+   "h": "22fbe88079f2202441ffa3f93c98565a32fbb21fa8598e24dd98bd7c034f6be0",
+   "s": 22034
   },
   {
    "p": "src/components/PresenceView.jsx",
-   "h": "731f55177008f60af89674a8418b1ed5e6dc66585e58b6581865b283880b1541",
-   "s": 27171
+   "h": "9231fcc9dc67e8d656107e143583d9f03ab93fbb7e787815b1d3d89e2b3d8c7e",
+   "s": 27384
   },
   {
    "p": "src/components/PreviewPanel.css",
@@ -1171,8 +1176,8 @@
   },
   {
    "p": "src/components/settings/MemoryTab.jsx",
-   "h": "2b0c079324b00b803c9da9ba4924340b54492bf6ca6c1724fe0468079538d87b",
-   "s": 4913
+   "h": "c21341980b22be03955f66c2893f95aadc20afdaba42c08dd71b9443f2459707",
+   "s": 6193
   },
   {
    "p": "src/components/settings/PersonalityTab.jsx",
@@ -1226,8 +1231,8 @@
   },
   {
    "p": "src/presence/BrainNetwork.js",
-   "h": "19024aef96a40d8b48c458f31a4f75a7e08d585321a494825b56af103db8ea63",
-   "s": 26159
+   "h": "ff6234791b4ba29f3dcb4725ced33569f6b514408008b776fbc480b0a26369f1",
+   "s": 26714
   },
   {
    "p": "src/presence/FaceScene.js",
@@ -1331,8 +1336,8 @@
   },
   {
    "p": "src/widgets/NeuralWidget.jsx",
-   "h": "6458d8b32b6436048eddbdc23cf41ffe3447d20f957f87cc5849b7191fb0ece7",
-   "s": 3514
+   "h": "9000ad11380f6dd3bc719663fcb0d28a0af7bea76c4227bf327922aafa226ae6",
+   "s": 3699
   },
   {
    "p": "src/widgets/PresenceWidget.jsx",
