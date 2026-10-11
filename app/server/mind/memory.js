@@ -13,10 +13,18 @@
 // comes back is what a person would actually think of in the moment — recent
 // things, important things, and things related to the question — rather than
 // whatever happens to share the most keywords.
+//
+// Memories are linked, like notes in Obsidian. A new memory links itself to
+// the few it is most related to (and an episode to the one before it in the
+// same conversation), links are kept both ways, and recall follows them:
+// what comes to mind brings its neighbours with it. The whole stream is
+// mirrored as a folder of Markdown notes with [[wiki-links]] (vault.js), so
+// it can be opened, read and edited in Obsidian.
 
-import { readJson, writeJson, appendJsonl, readJsonl, writeJsonl, newId } from './store.js';
+import { readJson, writeJson, readJsonl, writeJsonl, newId } from './store.js';
 import { activeProject, getProjectNotes, setProjectNotes, migrateFromSingleProject } from '../projects.js';
 import { fileGoalsUnder } from './state.js';
+import { isValidSessionId } from '../sessions.js';
 
 const CORE_FILE = 'core.json';
 const STREAM_FILE = 'stream.jsonl';
@@ -100,7 +108,7 @@ export function coreReplace(block, oldText, newText) {
 
 // --- memory stream ------------------------------------------------------------
 
-export function remember({ text, kind = 'observation', importance = 5, tags = [], source = 'agent' }) {
+export function remember({ text, kind = 'observation', importance = 5, tags = [], source = 'agent', links = [], now = Date.now() }) {
   const t = String(text || '').trim();
   if (!t) throw new Error('Memory text is empty.');
   if (!MEMORY_KINDS.includes(kind)) throw new Error(`kind must be one of: ${MEMORY_KINDS.join(', ')}.`);
@@ -111,12 +119,143 @@ export function remember({ text, kind = 'observation', importance = 5, tags = []
     importance: Math.max(1, Math.min(10, Math.round(Number(importance) || 5))),
     tags: (Array.isArray(tags) ? tags : []).map(String).slice(0, 10),
     source,
-    createdAt: Date.now(),
-    lastAccessed: Date.now(),
+    links: [],
+    createdAt: now,
+    lastAccessed: now,
   };
-  appendJsonl(STREAM_FILE, entry);
+  const rows = allMemories();
+  const ids = new Set(rows.map((r) => r.id));
+  const wanted = (Array.isArray(links) ? links : []).map(String).filter((id) => ids.has(id));
+  entry.links = [...new Set([...wanted, ...relatedTo(entry, rows)])];
+  // Both ways: the memories it links to link back to it.
+  const back = new Set(entry.links);
+  const next = rows.map((r) => (back.has(r.id) ? { ...r, links: [...new Set([...(r.links || []), entry.id])] } : r));
+  next.push(entry);
+  writeJsonl(STREAM_FILE, next);
+  changed([entry.id, ...entry.links]);
   maybeTrim();
   return entry;
+}
+
+/* Which existing memories a new one should link to: the previous episode of
+ * the same conversation, and up to three others that share distinctive words
+ * with it. Common words ("user", "asked") are in almost every episode and
+ * would link everything to everything, so only words found in at most a
+ * quarter of the stream count, and two of them must be shared. */
+const AUTO_LINKS = 3;
+export function relatedTo(entry, rows) {
+  const out = [];
+  const session = (entry.tags || []).find((t) => isValidSessionId(t));
+  if (session && entry.kind === 'episode') {
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (rows[i].id !== entry.id && rows[i].kind === 'episode' && (rows[i].tags || []).includes(session)) { out.push(rows[i].id); break; }
+    }
+  }
+  const others = rows.filter((r) => r.id !== entry.id);
+  if (!others.length) return out;
+  const q = new Set(tokenize(`${entry.text} ${topicsOf(entry).join(' ')}`));
+  const docs = others.map((r) => new Set(tokenize(`${r.text} ${topicsOf(r).join(' ')}`)));
+  const df = new Map();
+  for (const d of docs) for (const w of d) df.set(w, (df.get(w) || 0) + 1);
+  const N = others.length;
+  const rare = (w) => (df.get(w) || 0) <= Math.max(1, N * 0.25);
+  const scored = others.map((r, i) => {
+    let score = 0; let shared = 0;
+    for (const w of q) {
+      if (!docs[i].has(w) || !rare(w)) continue;
+      shared += 1;
+      score += Math.log(1 + N / (df.get(w) || 1));
+    }
+    return { id: r.id, score: score / Math.sqrt(1 + docs[i].size / 20), shared };
+  }).filter((x) => x.shared >= 2 && !out.includes(x.id));
+  scored.sort((a, b) => b.score - a.score);
+  return [...out, ...scored.slice(0, AUTO_LINKS).map((x) => x.id)];
+}
+
+/* Memories from before links existed have no `links` field: link each to
+ * what came before it, as if it had just been remembered. Runs once per
+ * memory; returns how many were linked. */
+export function linkUnlinked() {
+  const rows = allMemories();
+  const todo = rows.filter((r) => !Array.isArray(r.links));
+  if (!todo.length) return 0;
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  for (const r of rows) if (!Array.isArray(r.links)) r.links = [];
+  rows.forEach((r, i) => {
+    if (!todo.includes(r)) return;
+    for (const l of relatedTo(r, rows.slice(0, i))) {
+      r.links = [...new Set([...r.links, l])];
+      const o = byId.get(l);
+      o.links = [...new Set([...o.links, r.id])];
+    }
+  });
+  writeJsonl(STREAM_FILE, rows);
+  changed(rows.map((r) => r.id));
+  return todo.length;
+}
+
+/* Link two memories, both ways. */
+export function linkMemories(a, b) {
+  if (a === b) throw new Error('A memory cannot link to itself.');
+  const rows = allMemories();
+  const A = rows.find((r) => r.id === a);
+  const B = rows.find((r) => r.id === b);
+  if (!A || !B) throw new Error(`No memory "${A ? b : a}".`);
+  A.links = [...new Set([...(A.links || []), b])];
+  B.links = [...new Set([...(B.links || []), a])];
+  writeJsonl(STREAM_FILE, rows);
+  changed([a, b]);
+  return { linked: [a, b] };
+}
+
+/* The topics a memory is about: its tags, minus bookkeeping (the session id
+ * and the "conversation" label every episode carries). */
+export function topicsOf(m) {
+  return (m.tags || [])
+    .map((t) => String(t).trim().toLowerCase())
+    .filter((t) => t && t !== 'conversation' && !isValidSessionId(t) && t.length <= 40);
+}
+
+// The vault listens here, so this file never has to import it.
+const listeners = new Set();
+export function onMemoryChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+function changed(ids, removed = []) {
+  for (const fn of listeners) { try { fn(ids, removed); } catch { /* a mirror must not break memory */ } }
+}
+
+/* Change a memory's text, kind, importance, topics or links — what the user
+ * does by editing its note in the vault. Links are kept both ways. */
+export function updateMemory(id, patch = {}) {
+  const rows = allMemories();
+  const m = rows.find((r) => r.id === id);
+  if (!m) throw new Error(`No memory "${id}".`);
+  if (patch.text != null) {
+    const t = String(patch.text).trim();
+    if (t) m.text = t.slice(0, 4000);
+  }
+  if (patch.kind && MEMORY_KINDS.includes(patch.kind)) m.kind = patch.kind;
+  if (patch.importance != null) m.importance = Math.max(1, Math.min(10, Math.round(Number(patch.importance) || m.importance)));
+  if (Array.isArray(patch.tags)) {
+    // Bookkeeping tags are not shown in the note, so an edit cannot drop them.
+    const kept = (m.tags || []).filter((t) => !topicsOf({ tags: [t] }).length);
+    m.tags = [...new Set([...kept, ...patch.tags.map(String)])].slice(0, 10);
+  }
+  const touched = [id];
+  if (Array.isArray(patch.links)) {
+    const ids = new Set(rows.map((r) => r.id));
+    const next = new Set(patch.links.filter((l) => l !== id && ids.has(l)));
+    const prev = new Set(m.links || []);
+    m.links = [...next];
+    for (const r of rows) {
+      if (r === m) continue;
+      const has = (r.links || []).includes(id);
+      if (next.has(r.id) && !has) { r.links = [...(r.links || []), id]; touched.push(r.id); }
+      if (!next.has(r.id) && prev.has(r.id) && has) { r.links = r.links.filter((l) => l !== id); touched.push(r.id); }
+    }
+  }
+  writeJsonl(STREAM_FILE, rows);
+  changed(touched);
+  return m;
 }
 
 export function allMemories() {
@@ -138,13 +277,29 @@ function maybeTrim() {
       .slice(0, MAX_STREAM)
       .map((x) => x.i),
   );
-  writeJsonl(STREAM_FILE, rows.filter((_, i) => keep.has(i)));
+  const kept = rows.filter((_, i) => keep.has(i));
+  const ids = new Set(kept.map((r) => r.id));
+  const removed = rows.filter((r) => !ids.has(r.id)).map((r) => r.id);
+  const dropped = new Set(removed);
+  const touched = kept.filter((r) => (r.links || []).some((l) => dropped.has(l))).map((r) => r.id);
+  writeJsonl(STREAM_FILE, kept.map((r) => ({ ...r, links: (r.links || []).filter((l) => ids.has(l)) })));
+  changed(touched, removed);
 }
 
 const STOP = new Set('a an and are as at be but by for from has have i if in into is it its me my of on or our so that the their them then there these they this to was we were what when which who will with you your'.split(' '));
 
+/* Lightly stemmed, so "boards" finds "board" and "flashing" finds "flash".
+ * Deliberately crude: no dictionary, just the common English endings. */
+export function stem(w) {
+  if (w.length > 5 && w.endsWith('ing')) return w.slice(0, -3);
+  if (w.length > 4 && w.endsWith('ies')) return `${w.slice(0, -3)}y`;
+  if (w.length > 4 && w.endsWith('ed')) return w.slice(0, -2);
+  if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) return w.slice(0, -1);
+  return w;
+}
+
 export function tokenize(s) {
-  return String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 1 && !STOP.has(w));
+  return String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 1 && !STOP.has(w)).map(stem);
 }
 
 /* Generative Agents retrieval: score = recency + importance + relevance, each
@@ -184,12 +339,32 @@ export function recall(query, { limit = 6, kinds = null, touch = true, now = Dat
   });
 
   const maxRel = Math.max(...raw.map((x) => x.rel)) || 1;
-  const scored = raw
+  const direct = raw
     // With a query, something must actually match; otherwise it is just "recent and important".
     .filter((x) => !q.length || x.rel > 0)
     .map((x) => ({ ...x.r, score: +(x.recency + x.importance + (q.length ? x.rel / maxRel : 0)).toFixed(3) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+    .sort((a, b) => b.score - a.score);
+
+  // Spreading activation: the best direct matches bring the memories they
+  // link to along, at half their strength, even when those share no words
+  // with the query. That is what the links are for.
+  let scored = direct.slice(0, limit);
+  if (q.length && scored.length) {
+    const byId = new Map(raw.map((x) => [x.r.id, x]));
+    const have = new Set(scored.map((m) => m.id));
+    const spread = new Map();
+    for (const m of direct.slice(0, Math.max(3, Math.ceil(limit / 2)))) {
+      for (const l of m.links || []) {
+        const x = byId.get(l);
+        if (!x || have.has(l)) continue;
+        const s = +(0.5 * m.score + 0.5 * (x.recency + x.importance)).toFixed(3);
+        if (!spread.has(l) || spread.get(l).score < s) spread.set(l, { ...x.r, score: s, via: m.id });
+      }
+    }
+    scored = [...scored, ...spread.values()].sort((a, b) => b.score - a.score).slice(0, limit);
+    // Association never crowds out the best direct match.
+    if (!scored.some((m) => !m.via)) scored = [direct[0], ...scored.slice(0, limit - 1)];
+  }
 
   if (touch && scored.length) {
     const ids = new Set(scored.map((s) => s.id));

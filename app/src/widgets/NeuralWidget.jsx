@@ -77,6 +77,8 @@ export default function NeuralWidget() {
         <span className="is-conversation">conversations{counts ? ` ${counts.conversations}` : ''}</span>
         <span className="is-skill">skills{counts ? ` ${counts.skills}` : ''}</span>
         <span className="is-tool">tools{counts ? ` ${counts.tools}` : ''}</span>
+        <span className="is-memory">memories{counts ? ` ${counts.memories ?? 0}` : ''}</span>
+        <span className="is-topic">topics{counts ? ` ${counts.topics ?? 0}` : ''}</span>
         <span className="is-emotion">emotions</span>
       </div>
       {path && <div className="widget__path">{path}</div>}

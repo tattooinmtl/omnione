@@ -26,6 +26,17 @@ export default function MemoryTab() {
     } catch (e) { setMsg({ text: e.message, error: true }); }
   };
 
+  const vaultCall = async (what) => {
+    try {
+      const r = await api(`/api/mind/vault/${what}`, { method: 'POST', body: {} });
+      if (r.error) throw new Error(r.error);
+      await load();
+      setMsg({ text: `Vault in sync: ${r.memories} memories${r.imported ? `, ${r.imported} edit(s) taken in from the notes` : ''}.`, error: false });
+    } catch (e) { setMsg({ text: e.message, error: true }); }
+  };
+  const openVault = () => vaultCall('open');
+  const syncVault = () => vaultCall('sync');
+
   return (
     <>
       <Section title="Who Omi-One is (SOUL.md)" lead="Your description of Omi-One. It reads this every turn and can't change it. Personalities play roles on top of it.">
@@ -50,6 +61,16 @@ export default function MemoryTab() {
           </details>
         )}
       </Section>
+
+      {mind.vault && (
+        <Section title="Memory vault" lead="Every memory is a Markdown note, linked to related ones with [[wiki-links]] and grouped by topic. In Obsidian, choose “Open folder as vault” and pick this folder to browse the graph. Edit a note there, or write a new one in Memories/, and Omi-One takes it in.">
+          <p className="settings-modal__note"><code>{mind.vault.dir}</code> · {mind.vault.notes} notes</p>
+          <div className="settings-modal__form-row">
+            <button type="button" className="settings-modal__save" onClick={openVault}>Open folder</button>
+            <button type="button" className="settings-modal__ghost" onClick={syncVault}>Sync now</button>
+          </div>
+        </Section>
+      )}
 
       <Section title="Heartbeat" lead="When nobody is using it, Omi-One wakes up now and then to work on its own goals, reflect and tidy its notes. It can't run commands or spend credits on its own.">
         <Switch id="memory-hb" on={hb.enabled} onChange={(on) => setHb({ enabled: on }, on ? 'Heartbeat on.' : 'Heartbeat off: Omi-One only acts when you ask.')} label="Heartbeat" hint={`${hb.beats || 0} beats so far · last ${ago(hb.lastBeat)}`} />

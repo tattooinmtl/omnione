@@ -456,6 +456,8 @@
 .presence__brain-legend .is-conversation { --c: #ff8a2a; }
 .presence__brain-legend .is-skill { --c: #3dff7a; }
 .presence__brain-legend .is-tool { --c: #3fc8ff; }
+.presence__brain-legend .is-memory { --c: #ffd84a; }
+.presence__brain-legend .is-topic { --c: #ff5fa8; }
 .presence__brain-legend .is-emotion { --c: #e04dff; }
 .presence__brain-hint {
   position: absolute;

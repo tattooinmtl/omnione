@@ -7,7 +7,7 @@
 // remember anything.
 
 import { registerTool } from '../toolRegistry.js';
-import { CORE_LIMITS, MEMORY_KINDS, coreAppend, coreReplace, remember, recall } from '../mind/memory.js';
+import { CORE_LIMITS, MEMORY_KINDS, coreAppend, coreReplace, remember, recall, linkMemories, allMemories } from '../mind/memory.js';
 import { writeJournal, JOURNAL_KINDS } from '../mind/journal.js';
 import { setMood, setFocus, addGoal, updateGoal, listGoals, addProposal, GOAL_STATUSES } from '../mind/state.js';
 
@@ -46,7 +46,7 @@ registerTool({
 
 registerTool({
   name: 'remember',
-  description: 'Store something in your long-term memory stream. Too much to keep in core memory, but worth finding later: an observation, a fact, or a reflection (a higher-level insight drawn from several memories). Rate importance 1 (mundane) to 10 (life-changing for this work).',
+  description: 'Store something in your long-term memory. Too much to keep in core memory, but worth finding later: an observation, a fact, or a reflection (a higher-level insight drawn from several memories). Rate importance 1 (mundane) to 10 (life-changing for this work). Tags are topics (e.g. "esp32", "camera"): memories sharing a topic are grouped under it. The new memory links itself to the few memories it is most related to; pass `links` with the ids of any others it builds on — a reflection should always link the memories it was drawn from.',
   permission: 'read',
   schema: {
     type: 'object',
@@ -55,18 +55,23 @@ registerTool({
       kind: { type: 'string', enum: MEMORY_KINDS, default: 'observation' },
       importance: { type: 'integer', minimum: 1, maximum: 10, default: 5 },
       tags: { type: 'array', items: { type: 'string' } },
+      links: { type: 'array', items: { type: 'string' }, description: 'Ids of memories (from recall) this one relates to or was drawn from.' },
     },
     required: ['text'],
   },
-  handler: wrap(({ text, kind, importance, tags }) => {
-    const m = remember({ text, kind, importance, tags });
-    return { id: m.id, kind: m.kind, importance: m.importance };
+  handler: wrap(({ text, kind, importance, tags, links }) => {
+    const m = remember({ text, kind, importance, tags, links });
+    const byId = new Map(allMemories().map((r) => [r.id, r]));
+    return {
+      id: m.id, kind: m.kind, importance: m.importance,
+      linkedTo: m.links.map((id) => ({ id, text: String(byId.get(id)?.text || '').slice(0, 120) })),
+    };
   }),
 });
 
 registerTool({
   name: 'recall',
-  description: 'Search your long-term memory stream. Results are ranked by relevance to the query, importance and recency. Search before starting anything you may have done or discussed before.',
+  description: 'Search your long-term memory. Results are ranked by relevance to the query, importance and recency, and the best matches bring the memories linked to them along (marked `via`: the memory that brought it to mind). Each result lists its own `links`; recall again or link_memories to follow or extend the web. Search before starting anything you may have done or discussed before.',
   permission: 'read',
   schema: {
     type: 'object',
@@ -78,7 +83,22 @@ registerTool({
     required: ['query'],
   },
   handler: wrap(({ query, limit, kinds }) => recall(query, { limit: Math.min(Number(limit) || 6, 20), kinds })
-    .map((m) => ({ id: m.id, kind: m.kind, importance: m.importance, when: new Date(m.createdAt).toISOString(), text: m.text }))),
+    .map((m) => ({
+      id: m.id, kind: m.kind, importance: m.importance, when: new Date(m.createdAt).toISOString(), text: m.text,
+      links: m.links || [], ...(m.via ? { via: m.via } : {}),
+    }))),
+});
+
+registerTool({
+  name: 'link_memories',
+  description: 'Connect two memories you see are related (both ways), by their ids from recall. Linked memories come to mind together, and the link shows in your neural network and the memory vault.',
+  permission: 'read',
+  schema: {
+    type: 'object',
+    properties: { a: { type: 'string' }, b: { type: 'string' } },
+    required: ['a', 'b'],
+  },
+  handler: wrap(({ a, b }) => linkMemories(String(a), String(b))),
 });
 
 registerTool({

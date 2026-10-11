@@ -10,6 +10,11 @@
 // during, so the path an action took is: brain → what it felt → what it did
 // → where it did it.
 //
+// Its memories are neurons as well (gold), linked to each other the way the
+// memory vault links them, to the topics they are about (pink) and to the
+// conversation each episode happened in: the knowledge it has built up, not
+// just what it did.
+//
 // When the agent acts, that path lights up: pulses run along it, the edges
 // it crossed stay warm for a while, and the neurons in use glow and pulse
 // until the call finishes. A conversation or link that did not exist yet is
@@ -32,11 +37,13 @@ export const KIND_COLORS = {
   conversation: 0xff8a2a,
   skill: 0x3dff7a,
   tool: 0x3fc8ff,
+  memory: 0xffd84a,
+  topic: 0xff5fa8,
 };
 
 const BRAIN_R = 1.15;     // the brain mesh's scale
 const EMOTION_R = 1.75;   // the emotion ring
-const SHELL = { conversation: 2.7, tool: 3.9, skill: 4.1 };
+const SHELL = { conversation: 2.7, tool: 3.9, skill: 4.1, memory: 3.3, topic: 4.6 };
 const HOP_S = 0.38;       // seconds for a pulse to cross one edge
 const HEAT_HALF_S = 6;    // how long a taken edge stays lit
 const ACT_HALF_S = 1.6;   // how long a fired neuron keeps glowing
@@ -342,11 +349,13 @@ export class BrainNetwork {
       // An emotion link names an emotion the engine knows; the view made those.
       this.#ensureLink(l.source, l.target, l.weight || 1);
     }
-    this.counts = { conversations: 0, tools: 0, skills: 0 };
+    this.counts = { conversations: 0, tools: 0, skills: 0, memories: 0, topics: 0 };
     for (const n of this.nodes) {
       if (n.kind === 'conversation') this.counts.conversations += 1;
       else if (n.kind === 'tool') this.counts.tools += 1;
       else if (n.kind === 'skill') this.counts.skills += 1;
+      else if (n.kind === 'memory') this.counts.memories += 1;
+      else if (n.kind === 'topic') this.counts.topics += 1;
     }
   }
 
@@ -586,7 +595,7 @@ export class BrainNetwork {
     // More names as you zoom in; the busiest neurons get them first.
     const budget = Math.round(Math.min(140, (this.small ? 14 : 34) * (9.8 / dist) ** 2));
     const ranked = this.nodes
-      .filter((n) => n.kind === 'conversation' || n.kind === 'tool' || n.kind === 'skill')
+      .filter((n) => n.kind === 'conversation' || n.kind === 'tool' || n.kind === 'skill' || n.kind === 'memory' || n.kind === 'topic')
       .sort((a, b) => (b.weight + b.degree) - (a.weight + a.degree))
       .slice(0, budget);
     const show = new Set(ranked);
@@ -610,7 +619,7 @@ export class BrainNetwork {
         layer.appendChild(el);
         this.labelEls.set(n.id, el);
       }
-      const text = n.kind === 'conversation' ? `Conversation: ${n.label}` : n.label;
+      const text = n.kind === 'conversation' ? `Conversation: ${n.label}` : n.kind === 'topic' ? `#${n.label}` : n.label;
       if (el.textContent !== text) el.textContent = text;
       el.style.display = '';
       const x = (v.x + 1) / 2 * w;

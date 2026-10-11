@@ -98,6 +98,8 @@ import { getState as getMindState, currentMood, listGoals, setHeartbeat, resolve
 import { readJournal } from './mind/journal.js';
 import { readSoul, writeSoul } from './mind/prompt.js';
 import { brainGraph, recordFeel } from './brain.js';
+import { startVault, syncVault, vaultStatus, vaultDir } from './mind/vault.js';
+import { spawn } from 'node:child_process';
 import { subscribeLive, publishLive, originOf } from './live.js';
 import { listener as speechListener } from './listen.js';
 import { beat, startHeartbeat, heartbeatStatus, onHeartbeatEvent } from './mind/heartbeat.js';
@@ -1088,12 +1090,25 @@ app.get('/api/mind', (_req, res) => {
     proposals: st.proposals.slice(-30).reverse(),
     journal: readJournal({ limit: 40 }),
     memories: recentMemories(15),
+    vault: vaultStatus(),
     heartbeat: heartbeatStatus(),
   });
 });
 
+// The memory vault: sync it now (take in edits made in Obsidian) or show it.
+app.post('/api/mind/vault/sync', (_req, res) => {
+  res.json(syncVault({ force: true }));
+});
+
+app.post('/api/mind/vault/open', (_req, res) => {
+  const r = syncVault({ force: true });
+  if (process.platform !== 'win32') return res.status(400).json({ error: 'Opening the folder is only available on Windows.', ...r });
+  spawn('explorer.exe', [vaultDir()], { detached: true, stdio: 'ignore', windowsHide: false }).unref();
+  res.json(r);
+});
+
 // The brain network for the Presence view: conversations, tools and skills,
-// and the emotions felt while each action ran.
+// memories and their topics, and the emotions felt while each action ran.
 app.get('/api/brain', (_req, res) => {
   res.json(brainGraph());
 });
@@ -1584,6 +1599,10 @@ if (isMain) {
     console.log(`[omnione] hooks:     ${HOOKS_DIR}`);
     console.log(`[omnione] mcp:       ${MCP_CONFIG_PATH}`);
   });
+
+  // The memory vault: memories as linked notes, openable in Obsidian.
+  startVault();
+  console.log(`[omnione] memory vault: ${vaultDir()} (open it in Obsidian as a vault)`);
 
   // The heartbeat: the agent's own time between conversations.
   if (startHeartbeat()) console.log('[omnione] heartbeat: on (see /api/mind; GWN_HEARTBEAT=0 disables)');

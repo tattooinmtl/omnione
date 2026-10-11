@@ -516,6 +516,8 @@ export default function PresenceView({ onClose, toast }) {
             <span className="is-conversation">conversations{brainCounts ? ` ${brainCounts.conversations}` : ''}</span>
             <span className="is-skill">skills{brainCounts ? ` ${brainCounts.skills}` : ''}</span>
             <span className="is-tool">tools{brainCounts ? ` ${brainCounts.tools}` : ''}</span>
+            <span className="is-memory">memories{brainCounts ? ` ${brainCounts.memories ?? 0}` : ''}</span>
+            <span className="is-topic">topics{brainCounts ? ` ${brainCounts.topics ?? 0}` : ''}</span>
             <span className="is-emotion">emotions</span>
           </div>
           <div className="presence__brain-hint">drag to rotate · wheel to zoom</div>

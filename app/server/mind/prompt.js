@@ -12,6 +12,7 @@ import { PROJECT_ROOT } from './store.js';
 import { getCore } from './memory.js';
 import { personalityPrompt } from '../personality.js';
 import { recall } from './memory.js';
+import { syncVault } from './vault.js';
 import { currentMood, listGoals, getState } from './state.js';
 import { readJournal } from './journal.js';
 
@@ -89,9 +90,11 @@ ${projectBlock}${core.scratch ? `\n<scratch>\n${core.scratch}\n</scratch>` : ''}
   }
 
   if (prompt.trim()) {
-    const related = recall(prompt, { limit: 5, touch: true, now });
+    // Take in anything the user edited in the memory vault first (throttled).
+    syncVault({ now });
+    const related = recall(prompt, { limit: 6, touch: true, now });
     if (related.length) {
-      parts.push(`MEMORIES THIS BRINGS TO MIND:\n${related.map((m) => `- (${m.kind}, ${ago(m.createdAt, now)}) ${m.text.replace(/\s+/g, ' ').slice(0, 300)}`).join('\n')}`);
+      parts.push(`MEMORIES THIS BRINGS TO MIND (ids for recall / link_memories / remember links; "linked from" = came to mind through that memory's link):\n${related.map((m) => `- [${m.id}] (${m.kind}, ${ago(m.createdAt, now)}${m.via ? `, linked from ${m.via}` : ''}) ${m.text.replace(/\s+/g, ' ').slice(0, 300)}`).join('\n')}`);
     }
   }
 

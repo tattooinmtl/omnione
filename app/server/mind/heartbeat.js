@@ -68,7 +68,7 @@ ${lastJournal ? `Last thing you wrote: "${lastJournal.text.replace(/\s+/g, ' ').
 Decide for yourself what is worth doing with this beat. Options:
 1. Rest — if nothing needs doing, that is fine. Just write a short journal entry.
 2. Work on one of your goals. You may read anything and edit files in the workspace (every edit is checkpointed and can be undone). Commands and anything that spends credits will be refused: use propose_task for those.
-3. Reflect${shouldReflect ? ' — RECOMMENDED NOW: a lot has happened since your last reflection' : ''}. recall recent episodes and observations, ask what they mean, and store 1-3 insights with remember(kind: "reflection", importance 7+). Update core memory if you learned something lasting about the user or yourself.
+3. Reflect${shouldReflect ? ' — RECOMMENDED NOW: a lot has happened since your last reflection' : ''}. recall recent episodes and observations, ask what they mean, and store 1-3 insights with remember(kind: "reflection", importance 7+, links: the ids of the memories each insight was drawn from). Where you see two memories are related and not yet linked, link_memories them. Update core memory if you learned something lasting about the user or yourself.
 4. If you have no goals, look at the workspace and your memories and adopt one or two worth pursuing (goal_add).
 5. If there is something the user should decide, propose_task.
 
