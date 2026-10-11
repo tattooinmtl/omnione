@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.15.0",
- "build": "22a9ceadc6c4",
- "commit": "5af893b9700c",
- "date": "2026-10-11T09:37:15-04:00",
+ "version": "0.15.1",
+ "build": "228cd5ec66e2",
+ "commit": "68e24b505831",
+ "date": "2026-10-11T10:52:30-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -21,7 +21,7 @@
   },
   {
    "p": "build.json",
-   "h": "e855aeace7c2b603e596bf88b5e8190915f1f2b53de65be77dcdd979398d7e06",
+   "h": "cca6bca0b268fae0e3629c4632efae183ea37f35e612a4b994915c00f7e86f07",
    "s": 120
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "b0b60205abb8e7684af8091d18c6f1c07fe186fe2d9ac2bd18b59c264ec0b034",
+   "h": "89cfbb099e094d48a3b648795c26b6026e7476ffaf26249075bf101780843459",
    "s": 219233
   },
   {
    "p": "package.json",
-   "h": "d7759090385b673eb5596a62364fc1f5457281b4e6ee5cfd6dd599351de26248",
+   "h": "4783722c6baed71738bf33871be8c5d6a15e4d571fcec2640850abd153913919",
    "s": 1269
   },
   {
@@ -76,8 +76,8 @@
   },
   {
    "p": "server/agent.js",
-   "h": "7f9626ee946c411b4751e3e8d7d59fdc64f3b182d0c03d4bd1ba9d0ded4c1282",
-   "s": 30092
+   "h": "d8946cfc07027e70226898e5e89ea0f4cf0b0de5c4cdc96ade628ac757474c97",
+   "s": 30396
   },
   {
    "p": "server/agentConfig.js",
@@ -216,8 +216,8 @@
   },
   {
    "p": "server/mind/memory.js",
-   "h": "ab4f58368ddef2df1e2403efb0d67b11a65dfd27f36d3a3445dcb4f53f0b4604",
-   "s": 17296
+   "h": "2b6be3505e619db360c21bda4033900630cce0c969da60c953aa0e0170bde0b3",
+   "s": 18959
   },
   {
    "p": "server/mind/prompt.js",
@@ -236,8 +236,8 @@
   },
   {
    "p": "server/mind/vault.js",
-   "h": "35ccb9ce2e4b8bdbf2e1f6141d289a856a09e666536cc76c46ab4114ff06b51c",
-   "s": 13072
+   "h": "71970b0becf171be183c6938021f2a0c0ce9fead53af833b1d599079dbb35e38",
+   "s": 16987
   },
   {
    "p": "server/notify.js",
@@ -391,8 +391,8 @@
   },
   {
    "p": "server/tools/mind.js",
-   "h": "ea744e4f990c005dd9c644438fea63672e6ed21f82445905f2cf9c7670c8177a",
-   "s": 11244
+   "h": "29ae48926a9fdfc0147252cc809c36240d5368e29ed7f5a311e3ed800ccee2da",
+   "s": 11418
   },
   {
    "p": "server/tools/pc.js",
