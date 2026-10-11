@@ -133,6 +133,7 @@ export function remember({ text, kind = 'observation', importance = 5, tags = []
   next.push(entry);
   writeJsonl(STREAM_FILE, next);
   changed([entry.id, ...entry.links]);
+  if (wanted.length) markUsed(wanted, now);
   maybeTrim();
   return entry;
 }
@@ -194,6 +195,43 @@ export function linkUnlinked() {
   return todo.length;
 }
 
+/* Record that memories were actually used: found by a search the agent
+ * made itself, or built on by a new memory or a link. Memories brought to
+ * mind automatically don't count; nobody chose them. */
+export function markUsed(ids, now = Date.now()) {
+  const want = new Set(ids);
+  if (!want.size) return;
+  const rows = allMemories();
+  const hit = [];
+  for (const r of rows) {
+    if (!want.has(r.id)) continue;
+    r.uses = (r.uses || 0) + 1;
+    r.lastUsed = now;
+    hit.push(r.id);
+  }
+  if (!hit.length) return;
+  writeJsonl(STREAM_FILE, rows);
+  changed(hit);
+}
+
+/* Episodes used to carry a "conversation" tag. Every episode had it, so it
+ * filtered nothing; the session tag is the one that narrows. And an episode
+ * could rate up to 8, level with what was learned; it is capped at 4 now.
+ * Brings old episodes into line, once. */
+export const EPISODE_MAX_IMPORTANCE = 4;
+export function tidyEpisodes() {
+  const rows = allMemories();
+  const touched = [];
+  for (const r of rows) {
+    let hit = false;
+    if ((r.tags || []).includes('conversation')) { r.tags = r.tags.filter((t) => t !== 'conversation'); hit = true; }
+    if (r.kind === 'episode' && r.importance > EPISODE_MAX_IMPORTANCE) { r.importance = EPISODE_MAX_IMPORTANCE; hit = true; }
+    if (hit) touched.push(r.id);
+  }
+  if (touched.length) { writeJsonl(STREAM_FILE, rows); changed(touched); }
+  return touched.length;
+}
+
 /* Link two memories, both ways. */
 export function linkMemories(a, b) {
   if (a === b) throw new Error('A memory cannot link to itself.');
@@ -205,6 +243,7 @@ export function linkMemories(a, b) {
   B.links = [...new Set([...(B.links || []), a])];
   writeJsonl(STREAM_FILE, rows);
   changed([a, b]);
+  markUsed([a, b]);
   return { linked: [a, b] };
 }
 
@@ -335,7 +374,9 @@ export function recall(query, { limit = 6, kinds = null, touch = true, now = Dat
       }
     }
     const hours = Math.max(0, (now - (r.lastAccessed || r.createdAt)) / 3_600_000);
-    return { r, rel, recency: Math.pow(0.995, hours), importance: r.importance / 10 };
+    // A memory that keeps getting used stays a little stronger (at most +0.3).
+    const used = Math.min(0.3, 0.1 * Math.log2(1 + (r.uses || 0)));
+    return { r, rel, recency: Math.pow(0.995, hours), importance: r.importance / 10 + used };
   });
 
   const maxRel = Math.max(...raw.map((x) => x.rel)) || 1;

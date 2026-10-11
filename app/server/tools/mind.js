@@ -7,7 +7,7 @@
 // remember anything.
 
 import { registerTool } from '../toolRegistry.js';
-import { CORE_LIMITS, MEMORY_KINDS, coreAppend, coreReplace, remember, recall, linkMemories, allMemories } from '../mind/memory.js';
+import { CORE_LIMITS, MEMORY_KINDS, coreAppend, coreReplace, remember, recall, linkMemories, allMemories, markUsed } from '../mind/memory.js';
 import { writeJournal, JOURNAL_KINDS } from '../mind/journal.js';
 import { setMood, setFocus, addGoal, updateGoal, listGoals, addProposal, GOAL_STATUSES } from '../mind/state.js';
 
@@ -82,11 +82,15 @@ registerTool({
     },
     required: ['query'],
   },
-  handler: wrap(({ query, limit, kinds }) => recall(query, { limit: Math.min(Number(limit) || 6, 20), kinds })
-    .map((m) => ({
+  handler: wrap(({ query, limit, kinds }) => {
+    const found = recall(query, { limit: Math.min(Number(limit) || 6, 20), kinds });
+    // Searched for on purpose: that counts as using them.
+    markUsed(found.map((m) => m.id));
+    return found.map((m) => ({
       id: m.id, kind: m.kind, importance: m.importance, when: new Date(m.createdAt).toISOString(), text: m.text,
-      links: m.links || [], ...(m.via ? { via: m.via } : {}),
-    }))),
+      links: m.links || [], used: (m.uses || 0) + 1, ...(m.via ? { via: m.via } : {}),
+    }));
+  }),
 });
 
 registerTool({

@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getMindDir, readJson, writeJson } from './store.js';
 import {
-  allMemories, remember, updateMemory, linkUnlinked, topicsOf, onMemoryChange, MEMORY_KINDS,
+  allMemories, remember, updateMemory, linkUnlinked, tidyEpisodes, topicsOf, onMemoryChange, MEMORY_KINDS,
 } from './memory.js';
 
 const INDEX_FILE = 'vault.json';
@@ -53,44 +53,84 @@ export function safeName(s, max = 60) {
   return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[. ]+$/, '');
 }
 
-/* What a person would call this memory: for an episode, what was asked;
- * otherwise its first sentence. */
-export function titleOf(m) {
+/* The full title of a memory: for an episode, what was asked; otherwise
+ * its first sentence. Kept whole, in the note's frontmatter. Sentences end
+ * at ". " followed by a capital, so "v3.1" and ".gwn-mind" don't end one. */
+export function fullTitleOf(m) {
   const asked = /^The user asked: "([\s\S]*?)"\./.exec(m.text || '');
-  if (m.kind === 'episode' && asked) return safeName(`Asked - ${asked[1]}`);
-  const first = String(m.text || '').split(/(?<=[.!?])\s|\n/)[0];
-  return safeName(first);
+  if (m.kind === 'episode' && asked) return `Asked: ${asked[1].replace(/\s+/g, ' ').trim()}`.slice(0, 200);
+  const first = String(m.text || '').replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+(?=[A-Z("'])/)[0];
+  return first.slice(0, 200);
 }
+
+/* A short label for the neural network view. */
+export function titleOf(m) { return safeName(fullTitleOf(m)); }
+
+// Filler that says nothing about what a memory is about.
+const SLUG_STOP = new Set(('a an and are as at be but by for from has have i if in into is it its me my of on or our so that the their them then there '
+  + 'these they this to was we were what when which who will with you your can could would should do does did just also now yes ok okay im '
+  + 'dont not all any how whats hey hi please thx thanks really very about some been being had more most much one only own same than too '
+  + 'up out over under again here why where while').split(' '));
+
+/* A note's filename: a short, lowercase slug of what it is about, e.g.
+ * "esp32-com5-genuine-d0wd-v3-rev". Assigned once and never changed, so
+ * links to it keep working whatever happens to its text or title. */
+export function slugOf(m) {
+  const words = fullTitleOf(m).replace(/^Asked: /, '')
+    .normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()
+    .split(/[^a-z0-9]+/).filter((w) => w && !SLUG_STOP.has(w));
+  const picked = [];
+  let len = 0;
+  for (const w of words) {
+    if (picked.includes(w)) continue;
+    if (picked.length >= 6 || len + w.length + 1 > 50) break;
+    picked.push(w);
+    len += w.length + 1;
+  }
+  const core = picked.join('-') || `${m.kind}-${String(m.id).slice(-6)}`;
+  return m.kind === 'episode' ? `asked-${core}` : core;
+}
+
+// Version of the naming scheme. Notes named by an older one are renamed
+// once; links are rebuilt from ids, so nothing breaks.
+const NAMING = 2;
 
 function claimName(ix, m) {
   if (ix.notes[m.id]?.file) return ix.notes[m.id].file;
   const taken = new Set(Object.values(ix.notes).map((n) => n.file.toLowerCase()));
-  const base = titleOf(m);
+  const base = slugOf(m);
   let name = base;
-  for (let i = 2; taken.has(`${name}.md`.toLowerCase()); i++) name = `${base} ${i}`;
+  for (let i = 2; taken.has(`${name}.md`.toLowerCase()); i++) name = `${base}-${i}`;
   ix.notes[m.id] = { file: `${name}.md`, writtenAt: 0 };
   return ix.notes[m.id].file;
 }
 
-const noteLink = (file) => `[[Memories/${file.replace(/\.md$/, '')}|${file.replace(/\.md$/, '')}]]`;
+const noteLink = (file, label) => `[[Memories/${file.replace(/\.md$/, '')}|${String(label || file.replace(/\.md$/, '')).replace(/[[\]|]/g, ' ')}]]`;
 const topicLink = (t) => `[[Topics/${safeName(t)}|${t}]]`;
 
 // --- writing ------------------------------------------------------------------
 
-export function renderNote(m, nameOf) {
+export function renderNote(m, nameOf, titleById = () => '') {
   const topics = topicsOf(m);
+  const title = JSON.stringify(fullTitleOf(m)); // a YAML double-quoted string
   const fm = [
     '---',
     `id: ${m.id}`,
+    `title: ${title}`,
+    `aliases: [${title}]`,
     `kind: ${m.kind}`,
     `importance: ${m.importance}`,
     `tags: [${topics.map((t) => t.replace(/[,[\]]/g, ' ').trim()).join(', ')}]`,
     `created: ${new Date(m.createdAt).toISOString()}`,
     `source: ${m.source || 'agent'}`,
+    // How often it was actually used: found by a search, or built on by a
+    // new memory or a link. Kept by Omi-One; an edit here is ignored.
+    `used: ${m.uses || 0}`,
+    ...(m.lastUsed ? [`last_used: ${new Date(m.lastUsed).toISOString()}`] : []),
     '---',
   ].join('\n');
-  const links = (m.links || []).map((id) => nameOf(id)).filter(Boolean);
-  const linked = links.length ? links.map((f) => `- ${noteLink(f)}`).join('\n') : '_None yet._';
+  const links = (m.links || []).map((id) => [nameOf(id), titleById(id)]).filter(([f]) => f);
+  const linked = links.length ? links.map(([f, t]) => `- ${noteLink(f, t)}`).join('\n') : '_None yet._';
   const about = topics.length ? `\n\nTopics: ${topics.map(topicLink).join(' · ')}` : '';
   return `${fm}\n${m.text.trim()}\n\n${LINKED_HEADING}\n${linked}${about}\n`;
 }
@@ -107,10 +147,11 @@ function writeNotes(ix, rows, ids) {
   const byId = new Map(rows.map((r) => [r.id, r]));
   for (const r of rows) claimName(ix, r);
   const nameOf = (id) => ix.notes[id]?.file;
+  const titleById = (id) => (byId.has(id) ? titleOf(byId.get(id)) : '');
   for (const id of ids) {
     const m = byId.get(id);
     if (!m) continue;
-    ix.notes[id].writtenAt = writeFile(path.join(memDir(), nameOf(id)), renderNote(m, nameOf));
+    ix.notes[id].writtenAt = writeFile(path.join(memDir(), nameOf(id)), renderNote(m, nameOf, titleById));
   }
 }
 
@@ -137,7 +178,7 @@ function writeHubs(ix, rows) {
     want.add(file.toLowerCase());
     const list = ms
       .sort((a, b) => b.importance - a.importance || b.createdAt - a.createdAt)
-      .map((m) => `- ${noteLink(ix.notes[m.id].file)} (${m.kind}, importance ${m.importance})`)
+      .map((m) => `- ${noteLink(ix.notes[m.id].file, titleOf(m))} (${m.kind}, importance ${m.importance}${m.uses ? `, used ${m.uses}×` : ''})`)
       .join('\n');
     writeFile(path.join(topicDir(), file), `---\ntype: topic\n---\n<!-- Written by Omi-One from the memories tagged "${t}". Edits here are overwritten. -->\n\n${list}\n`);
   }
@@ -154,13 +195,24 @@ function writeHubs(ix, rows) {
     '',
     `${rows.length} memories, ${Math.round(links)} links between them, ${byTopic.size} topics.`,
     '',
-    'Each note in **Memories/** is one memory. Edit its text, its `importance`/`kind`/`tags`, or the links under "Linked memories", and Omi-One takes the change in within a minute. A new note you write in Memories/ becomes a new memory.',
+    '## How this vault works',
+    '',
+    '- The memory itself is `.gwn-mind/stream.jsonl`; these notes are written from it, and **regenerated** from it, never merged into. Every note is rewritten whenever its memory changes.',
+    '- Edits flow back. Change a note\'s text, its `importance` / `kind` / `tags`, or the links under "Linked memories", and Omi-One takes the change in within a minute. A new note written in Memories/ becomes a new memory. `used`, `title` and `aliases` are Omi-One\'s and are not read back.',
+    '- Filenames are short slugs, assigned once and never changed, so links never break. The full title is in each note\'s `title` (and `aliases`, so Obsidian finds it by its title).',
+    '- Renaming a note is safe (it is followed by its `id`). Deleting a note does not forget the memory; the note is written back.',
     '',
     '## Topics',
     topics.length ? topics.map(([t, ms]) => `- ${topicLink(t)} (${ms.length})`).join('\n') : '_None yet._',
     '',
     '## Latest reflections',
-    reflections.length ? reflections.map((r) => `- ${noteLink(ix.notes[r.id].file)}`).join('\n') : '_None yet._',
+    reflections.length ? reflections.map((r) => `- ${noteLink(ix.notes[r.id].file, titleOf(r))}`).join('\n') : '_None yet._',
+    '',
+    '## Most used',
+    (() => {
+      const used = rows.filter((r) => r.uses > 0).sort((a, b) => b.uses - a.uses).slice(0, 10);
+      return used.length ? used.map((r) => `- ${noteLink(ix.notes[r.id].file, titleOf(r))} (${r.uses}×)`).join('\n') : '_Nothing yet._';
+    })(),
     '',
   ].join('\n');
   writeFile(path.join(vaultDir(), 'Omi-One.md'), home);
@@ -286,16 +338,27 @@ export function syncVault({ force = false, now = Date.now() } = {}) {
   if (!force && now - lastSync < SYNC_EVERY_MS) return null;
   lastSync = now;
   try {
-    const linked = muted(() => linkUnlinked());
     const ix = readIndex();
+    // Old episodes are tidied once; after that an importance set by hand in
+    // the vault is the user's call and stays.
+    const linked = muted(() => linkUnlinked() + (ix.tidied ? 0 : tidyEpisodes()));
+    ix.tidied = true;
     const imported = importEdits(ix);
     const rows = allMemories();
     const live = new Set(rows.map((r) => r.id));
     removeNotes(ix, Object.keys(ix.notes).filter((id) => !live.has(id)));
+    // Notes named by an older scheme get today's slugs, once. Edits in them
+    // were taken in just above. A note the user wrote keeps its own name.
+    const renamed = (ix.naming || 1) < NAMING;
+    if (renamed) {
+      const byId = new Map(rows.map((r) => [r.id, r]));
+      removeNotes(ix, Object.keys(ix.notes).filter((id) => byId.get(id)?.source !== 'user'));
+      ix.naming = NAMING;
+    }
     for (const r of rows) claimName(ix, r);
-    // Linking or an import can change the links of notes nobody touched, so
-    // after either, every note is rewritten.
-    const all = linked > 0 || imported > 0;
+    // Linking, an import or a rename can change the links of notes nobody
+    // touched, so after any of them, every note is rewritten.
+    const all = linked > 0 || imported > 0 || renamed;
     const stale = rows.filter((r) => {
       const n = ix.notes[r.id];
       return all || !n.writtenAt || !fs.existsSync(path.join(memDir(), n.file));

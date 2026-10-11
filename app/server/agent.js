@@ -29,7 +29,7 @@ import { createCheckpoint } from './checkpoints.js';
 import { getTodos } from './tools/todo.js';
 import { renderTranscript } from './reflection.js';
 import { buildMindContext } from './mind/prompt.js';
-import { remember } from './mind/memory.js';
+import { remember, EPISODE_MAX_IMPORTANCE } from './mind/memory.js';
 import { nudgeMood, currentMood } from './mind/state.js';
 import { recordUsage, recordTool, recordSession, recordError, recordApproval, recordMood } from './stats.js';
 import { resolveInWorkspace, getWorkspaceRoot } from './workspace.js';
@@ -670,8 +670,12 @@ function recordEpisode({ prompt, finalText, toolCallsTotal, toolErrors, sessionI
     remember({
       kind: 'episode',
       text: `The user asked: "${ask}". I responded${toolCallsTotal ? ` after ${toolCallsTotal} tool call(s)${toolErrors ? `, ${toolErrors} failed` : ''}` : ''}: "${said}"`,
-      importance: Math.min(8, 2 + Math.floor(toolCallsTotal / 5) + (toolErrors > 2 ? 1 : 0)),
-      tags: ['conversation', sessionId],
+      // Kept low on purpose (2-4): what was asked is history, not something
+      // learned. Facts and reflections sit above it, and recall relies on
+      // that gap to tell the two apart.
+      importance: Math.min(EPISODE_MAX_IMPORTANCE, 2 +Math.floor(toolCallsTotal / 10) + (toolErrors > 2 ? 1 : 0)),
+      // The session id is the tag that narrows; kind already says "episode".
+      tags: [sessionId],
       source: 'loop',
     });
   } catch { /* mind optional */ }
