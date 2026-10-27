@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.15.4",
- "build": "a086ddee4817",
- "commit": "30fa06b935a2",
- "date": "2026-10-26T22:03:12-04:00",
+ "version": "0.16.0",
+ "build": "3ad502477cbb",
+ "commit": "3b97c4516f44",
+ "date": "2026-10-26T22:50:15-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "456b15ef434d15b1746c8663b62b3ebefd3ef95a503ba4365c5bc51618bcffe6",
-   "s": 7717888
+   "h": "fdfcc92f9512c56b0739ae6f7459dd1147d6919ef2ec515450fe55854cbfbb4c",
+   "s": 7719936
   },
   {
    "p": "build.json",
-   "h": "8cab43e6ba56e12488a1ee927f2a20166b5da180c316f9034051358e06c60f1b",
+   "h": "d68eb0a8e8e690a11df1823e77abfce1802bd5c09b6ffd01fa0224ba4c0b0da3",
    "s": 121
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "25b3734118c3d02d342e0f8ce718093b01558140b084cc4626529aea53bec4d7",
+   "h": "f5502eb064e700c243278a6b1949b122ad420aa7d27b94cd417b935e91fcfc26",
    "s": 218799
   },
   {
    "p": "package.json",
-   "h": "22d5a3845302d7392a385473803bb516286b4fa702f345d38c1b5025cdc1070a",
+   "h": "9762840bae85c7ae4f0d72a2eee0ac01ca08e930a44ad9a0866e544b7298e5eb",
    "s": 1320
   },
   {
@@ -81,8 +81,8 @@
   },
   {
    "p": "server/agentConfig.js",
-   "h": "03e2abc3ea94953461aa412d4949dbefd40719259f61996a2e0d945a09806f16",
-   "s": 4162
+   "h": "ec9680882b7bb950734d2bed5879656691e023e1b2e498a9f6398b78e2035430",
+   "s": 4575
   },
   {
    "p": "server/agentSlots.js",
@@ -176,8 +176,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "899e443b3a51f95faf60d85bb111fcd01865e7c2a8c6f720def1505e373f1a13",
-   "s": 70567
+   "h": "dec69f538bfd55fe5b138877faabf9acd308539f4310141360d327c14f0d54a3",
+   "s": 71105
   },
   {
    "p": "server/listen.js",
@@ -308,6 +308,11 @@
    "p": "server/secrets.js",
    "h": "451cdc731418c1090bdaad106c1356a88f319e2ed1f4e9d2f4ff8e64071a139e",
    "s": 5548
+  },
+  {
+   "p": "server/selfUpdate.js",
+   "h": "6347847ab124a32653a23b3247be46814a2a4a4eddd6118e3b0d852d9c8172ae",
+   "s": 4665
   },
   {
    "p": "server/sessions.js",
@@ -991,13 +996,13 @@
   },
   {
    "p": "src/components/AiPanel.css",
-   "h": "0c94a6d541698ccb935935fed4715f9f62a8ff357ffddb23398b7fec2836f29b",
-   "s": 13491
+   "h": "c71c8680d7371260a29d89009b06958a4f29cb3aaf61da5e1063e144d528214b",
+   "s": 13891
   },
   {
    "p": "src/components/AiPanel.jsx",
-   "h": "ae3132ff9b00c31e5d9fc277511c6f38dac31661d40a2462b969886f7a1824dc",
-   "s": 46030
+   "h": "26f5d298b3400e6a1536707113b3b1a8bc793a661033a90b5dc3d626984f7b0d",
+   "s": 47691
   },
   {
    "p": "src/components/AppShell.css",
@@ -1036,8 +1041,8 @@
   },
   {
    "p": "src/components/CommandPalette.jsx",
-   "h": "fff87922657098221ecfab24f8f6d9f0b1f9f320bd8735d5dea3c8dae88369f9",
-   "s": 7884
+   "h": "9208dc64caee1e146c63e43dfe9b2fb6f101077a7b62699403e9cb079aea3d6e",
+   "s": 8039
   },
   {
    "p": "src/components/ContextMenu.css",
@@ -1096,8 +1101,8 @@
   },
   {
    "p": "src/components/PresenceView.jsx",
-   "h": "9231fcc9dc67e8d656107e143583d9f03ab93fbb7e787815b1d3d89e2b3d8c7e",
-   "s": 27384
+   "h": "015afa123b5c1a7c4d8e812be46a370b066385e1342269c020c44fc08c368368",
+   "s": 27572
   },
   {
    "p": "src/components/PreviewPanel.css",
@@ -1171,8 +1176,8 @@
   },
   {
    "p": "src/components/settings/AgentTab.jsx",
-   "h": "4b16cbd74e533b2c0e1ab1cac3c97f7659cbb75009738d8be0622ae15223ea80",
-   "s": 14682
+   "h": "9a7097bf3b0dc0df72e2c0b460dcaed588fd13d67bbbd4f449f7a2dc6c442865",
+   "s": 15005
   },
   {
    "p": "src/components/settings/CameraTab.jsx",
@@ -1340,6 +1345,11 @@
    "s": 2072
   },
   {
+   "p": "src/utils/updateOmnione.js",
+   "h": "4da68c4124705005f6435c03275e40acfc4cf277b9cfdb3a3d7c280f6d9c6f0b",
+   "s": 1935
+  },
+  {
    "p": "src/utils/workspaceApi.js",
    "h": "efce949171ce74c55c5423918e701bc04ed07bd21161adff1af1ffdd5deace70",
    "s": 2368
@@ -1356,8 +1366,8 @@
   },
   {
    "p": "src/widgets/PresenceWidget.jsx",
-   "h": "7e1617e68b056448c657cc253e826f04bb00326ad9c4923c07744496ae787995",
-   "s": 12347
+   "h": "d94ecf79bd70aefbfc3c513d0ba714021bb9b381199303c714f2b43e7180adb3",
+   "s": 15533
   },
   {
    "p": "src/widgets/Widget.css",

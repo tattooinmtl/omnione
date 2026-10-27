@@ -344,6 +344,10 @@
 .cmd-out li span { color: var(--fg-dim, #9aa6b8); }
 .cmd-out__none { color: var(--fg-dim, #8a96a8); font-style: italic; margin-top: 2px; }
 .cmd-out__note { margin: 8px 0 0; color: var(--fg-dim, #9aa6b8); }
+.cmd-out__action { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cmd-out__action button { font: inherit; padding: 4px 10px; border-radius: 6px; border: 1px solid #0fa89a; background: rgba(15, 168, 154, 0.15); color: inherit; cursor: pointer; }
+.cmd-out__action button:disabled { opacity: 0.6; cursor: default; }
+.cmd-out__action .is-error { color: #f87171; }
 
 /* Attachments: the + button, the chips waiting to be sent, and drop target. */
 .ai-panel__attach {

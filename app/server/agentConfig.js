@@ -78,6 +78,11 @@ export function instructionsPrompt() {
   return parts.join('\n\n');
 }
 
+/* The chat boxes' own commands (src/components/CommandPalette.jsx), plus
+ * /run. A custom command can't take one of these names: the built-in would
+ * win anyway, so the user's command could never run. */
+export const BUILTIN_COMMAND_NAMES = ['help', 'btw', 'skills', 'drafts', 'save', 'zip', 'settings', 'clear', 'new', 'tools', 'hooks', 'update-omnione', 'run'];
+
 /* Clean up the custom commands coming from the Settings form. */
 export function sanitizeCommands(list) {
   const seen = new Set();
@@ -85,7 +90,7 @@ export function sanitizeCommands(list) {
   for (const c of Array.isArray(list) ? list.slice(0, 50) : []) {
     const name = String(c?.name || '').toLowerCase().replace(/^\/+/, '').replace(/[^a-z0-9-]/g, '').slice(0, 30);
     const prompt = String(c?.prompt || '').trim().slice(0, 8000);
-    if (!name || !prompt || seen.has(name)) continue;
+    if (!name || !prompt || seen.has(name) || BUILTIN_COMMAND_NAMES.includes(name)) continue;
     seen.add(name);
     out.push({ name, description: String(c?.description || '').slice(0, 120), prompt });
   }

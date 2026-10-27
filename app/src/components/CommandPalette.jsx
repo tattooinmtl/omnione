@@ -22,6 +22,7 @@ export const STATIC_COMMANDS = [
   { trigger: 'new',      description: 'Start a new conversation (forget the current history)',  run: (api) => api.newSession() },
   { trigger: 'tools',    description: 'List the tools the AI can call (web, browser, MCP)',    run: (api) => api.openTools() },
   { trigger: 'hooks',    description: 'List registered hooks',                                  run: (api) => api.openHooks() },
+  { trigger: 'update-omnione', description: 'Update OmniOne now if a newer version is out (asks before restarting)', run: (api) => api.updateOmnione() },
 ];
 
 /* Is this text a slash command? Returns

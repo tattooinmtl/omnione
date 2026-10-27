@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, Msg, Section, Switch, ago } from './shared.jsx';
+import { STATIC_COMMANDS } from '../CommandPalette.jsx';
 
 const MODES = [
   ['default', 'Ask before changing files or running commands'],
@@ -61,6 +62,11 @@ export default function AgentTab() {
 
   const saveCommand = async (e) => {
     e.preventDefault();
+    const name = cmd.name.replace(/^\/+/, '').toLowerCase();
+    if (name === 'run' || STATIC_COMMANDS.some((c) => c.trigger === name)) {
+      setMsg({ text: `/${name} is one of OmniOne's own commands. Pick another name.`, error: true });
+      return;
+    }
     const list = commands.filter((c, i) => i !== cmd.index);
     list.push({ name: cmd.name, description: cmd.description, prompt: cmd.prompt });
     if (await save({ commands: list }, `Saved. Type /${cmd.name.replace(/^\/+/, '').toLowerCase()} in the chat.`)) setCmd(null);

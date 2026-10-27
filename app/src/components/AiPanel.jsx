@@ -9,6 +9,7 @@ import ProjectBar from './ProjectBar.jsx';
 import { useProviderTokenBudget, fetchSettings } from '../hooks/useProviderTokenBudget';
 import './AiPanel.css';
 import { subscribeStream } from '../utils/stream.js';
+import { checkUpdate, startUpdate } from '../utils/updateOmnione.js';
 
 const SUGGESTIONS = [
   '🎮 Make a neon asteroid shooter',
@@ -405,6 +406,7 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
     openSettings: () => { setPaletteOpen(false); api.openSettings && api.openSettings(); },
     openTools: () => { setPaletteOpen(false); listTools(); },
     openHooks: () => { setPaletteOpen(false); listHooks(); },
+    updateOmnione: () => { setPaletteOpen(false); updateOmnione(); },
     clearPrompt: () => { setPaletteOpen(false); setPrompt(''); setActiveSkill(null); setTimeout(() => taRef.current?.focus(), 30); },
     newSession: ({ quiet = false, keepView = false } = {}) => {
       if (keepView) {
@@ -432,8 +434,8 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
   /* A command's answer, shown in the conversation (and in the Presence chat)
    * like a message, but never sent to the agent. sections: [{ heading, items:
    * [{ name, detail }] }]. */
-  const showCommandOutput = (title, { sections = [], note = '' } = {}) => {
-    const out = { role: 'cmd', id: `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, title, sections, note };
+  const showCommandOutput = (title, { sections = [], note = '', action = null } = {}) => {
+    const out = { role: 'cmd', id: `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, title, sections, note, action };
     setHistory((h) => [...h, out]);
     setShowHistory(true);
     window.dispatchEvent(new CustomEvent('gwn:command-output', { detail: out }));
@@ -461,6 +463,26 @@ export default function AiPanel({ onGenerate, generating, trace, files, api }) {
       });
     } catch (e) {
       showCommandOutput('/hooks', { note: `Could not read the hooks: ${e.message}` });
+    }
+  };
+
+  /* /update-omnione: says what's out, and updates only after a click, since
+   * the restart stops whatever Omi-One is doing. */
+  const updateOmnione = async () => {
+    try {
+      const c = await checkUpdate();
+      showCommandOutput('/update-omnione', {
+        note: c.message,
+        action: c.newer && c.canUpdate ? {
+          label: `Restart and update to v${c.latest.version}`,
+          run: async () => {
+            const r = await startUpdate();
+            return r.message;
+          },
+        } : null,
+      });
+    } catch (e) {
+      showCommandOutput('/update-omnione', { note: `Couldn't check for updates: ${e.message}` });
     }
   };
 
@@ -1016,6 +1038,16 @@ function ThinkingBody({ text }) {
 
 /* A command's answer: headed lists, or a note. */
 export function CommandOutput({ m }) {
+  // A command that offers one more step (/update-omnione's restart).
+  const [act, setAct] = useState({ state: 'idle', text: '' });
+  const runAction = async () => {
+    setAct({ state: 'running', text: '' });
+    try {
+      setAct({ state: 'done', text: (await m.action.run()) || '' });
+    } catch (e) {
+      setAct({ state: 'failed', text: e.message });
+    }
+  };
   return (
     <div className="cmd-out">
       {(m.sections || []).map((sec) => (
@@ -1033,6 +1065,16 @@ export function CommandOutput({ m }) {
         </div>
       ))}
       {m.note && <p className="cmd-out__note">{m.note}</p>}
+      {m.action && (
+        <div className="cmd-out__action">
+          {act.state !== 'done' && (
+            <button type="button" onClick={runAction} disabled={act.state === 'running'}>
+              {act.state === 'running' ? 'Starting…' : m.action.label}
+            </button>
+          )}
+          {act.text && <span className={act.state === 'failed' ? 'is-error' : ''}>{act.text}</span>}
+        </div>
+      )}
     </div>
   );
 }

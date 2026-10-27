@@ -32,6 +32,7 @@ import { resolveInWorkspace, toWorkspaceRelative } from './workspace.js';
 import { imageTypeOf, isDocument, extractDocumentText, safeUploadName } from './attachments.js';
 import { serveBuiltUi } from './ui.js';
 import { desktopExe, getAutostart, setAutostart, isElevated } from './desktop.js';
+import { checkForUpdate, startUpdate } from './selfUpdate.js';
 import { listFixes, getFix, applyFix, rejectFix, undoFix } from './fixes.js';
 import {
   MODES, getMode, setMode, listPending, resolveApproval, cancelPending,
@@ -404,6 +405,16 @@ app.get('/api/app', async (_req, res) => {
     version: (() => { try { return JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8')).version; } catch { return ''; } })(),
     platform: process.platform,
   });
+});
+
+/* /update-omnione: is there a newer build (GET), and update now (POST, after
+ * the user confirmed: OmniOne.exe stops this server and restarts it). */
+app.get('/api/app/update', async (_req, res) => {
+  try { res.json(await checkForUpdate()); } catch (e) { res.status(502).json({ error: e.message }); }
+});
+
+app.post('/api/app/update', async (_req, res) => {
+  try { res.json(await startUpdate()); } catch (e) { res.status(400).json({ error: e.message }); }
 });
 
 app.get('/api/app/autostart', async (_req, res) => {

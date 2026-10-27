@@ -9,6 +9,7 @@ import { parseCommand } from '../components/CommandPalette.jsx';
 import { runPrompt, answerApproval } from './runPrompt.js';
 import { useCamera } from '../utils/camera.js';
 import { subscribeStream } from '../utils/stream.js';
+import { checkUpdate, startUpdate, spokenAnswer, isUpdateRequest } from '../utils/updateOmnione.js';
 
 /* The Presence widget: Omi-One's face in a small floating window, always
  * listening.
@@ -20,7 +21,11 @@ import { subscribeStream } from '../utils/stream.js';
  * by the recognizer itself. Mute releases the microphone.
  *
  * Tool approvals show right here, the administrator one in red; Windows
- * still asks (UAC) after an administrator yes. */
+ * still asks (UAC) after an administrator yes.
+ *
+ * "Omi-One, update yourself" (or /update-omnione typed here) is not a
+ * question: it checks for a newer OmniOne and, if there is one, asks before
+ * restarting (a click, or "Omi-One, yes"). */
 
 const LS_MUTE = 'gwn.widget.muted';
 const LS_VOICE = 'gwn.presence.voice';
@@ -55,6 +60,10 @@ export default function PresenceWidget({ origin }) {
   const [level, setLevel] = useState(0);
   const [approval, setApproval] = useState(null);
   const [typed, setTyped] = useState('');
+  // /update-omnione waiting for a yes: { state: 'asking' | 'starting', version }.
+  const [update, setUpdate] = useState(null);
+  const updateRef = useRef(update);
+  updateRef.current = update;
   const voiceOnRef = useRef(voiceOn);
   voiceOnRef.current = voiceOn;
 
@@ -121,10 +130,53 @@ export default function PresenceWidget({ origin }) {
     return () => window.removeEventListener('gwn:agent-event', onEvent);
   }, []);
 
+  // Say it (if the voice is on) and show it.
+  const tell = useCallback((line) => {
+    setCaption('');
+    setSaid(line);
+    if (voiceOnRef.current && voice.current && engine.current) {
+      const delivery = engine.current.express(line);
+      for (const chunk of speechChunks(line)) voice.current.speak(chunk, delivery.voice);
+    }
+  }, []);
+
+  const checkForUpdate = useCallback(async () => {
+    voice.current?.stop();
+    setSaid('');
+    setCaption('checking for updates…');
+    try {
+      const c = await checkUpdate();
+      if (c.newer && c.canUpdate) {
+        setUpdate({ state: 'asking', version: c.latest.version });
+        tell(`Version ${c.latest.version} is out. Updating restarts me. Shall I update now?`);
+      } else {
+        setUpdate(null);
+        tell(c.message);
+      }
+    } catch (e) {
+      tell(`I couldn't check for updates: ${e.message}`);
+    }
+  }, [tell]);
+
+  const answerUpdate = useCallback(async (yes) => {
+    if (!updateRef.current || updateRef.current.state !== 'asking') return;
+    if (!yes) { setUpdate(null); tell('OK, not now.'); return; }
+    setUpdate((u) => ({ ...u, state: 'starting' }));
+    try {
+      const r = await startUpdate();
+      tell(r.message);
+    } catch (e) {
+      setUpdate(null);
+      tell(`The update didn't start: ${e.message}`);
+    }
+  }, [tell]);
+
   const ask = useCallback(async (text) => {
     const t = String(text || '').trim();
     if (!t) return;
-    if (parseCommand(t)) { setCaption('Slash commands work in the main window.'); return; }
+    const command = parseCommand(t);
+    if (command?.kind === 'static' && command.cmd.trigger === 'update-omnione') { checkForUpdate(); return; }
+    if (command) { setCaption('Slash commands work in the main window.'); return; }
     voice.current?.stop();
     setSaid('');
     setCaption(`“${t}”`);
@@ -133,7 +185,7 @@ export default function PresenceWidget({ origin }) {
     const r = runPrompt(t, { origin });
     run.current = r;
     r.done.finally(() => { if (run.current === r) run.current = null; });
-  }, [origin]);
+  }, [origin, checkForUpdate]);
 
   // Always listening (unless muted): Windows' recognizer, wake word "Omi-One",
   // through this window's shared stream (utils/stream.js). The server re-opens
@@ -150,10 +202,14 @@ export default function PresenceWidget({ origin }) {
         // Its own voice coming back through the speakers is not a question.
         if (voice.current?.mode === 'speaking' || Date.now() - lastSpoke.current < 1200) return;
         if (!ev.text) { setCaption('Yes? Say "Omi-One" and then your question.'); return; }
+        // Waiting for a yes to the update: "Omi-One, yes" / "Omi-One, not now".
+        const answer = updateRef.current?.state === 'asking' ? spokenAnswer(ev.text) : null;
+        if (answer) { answerUpdate(answer === 'yes'); return; }
+        if (isUpdateRequest(ev.text)) { checkForUpdate(); return; }
         ask(ev.text);
       }
     });
-  }, [muted, ask]);
+  }, [muted, ask, answerUpdate, checkForUpdate]);
 
   const toggleMute = () => {
     const next = !muted;
@@ -222,6 +278,19 @@ export default function PresenceWidget({ origin }) {
             {!isAdmin && <button type="button" onClick={() => decide('session')} disabled={approval.state === 'sending'}>Allow for session</button>}
             <button type="button" className={isAdmin ? 'is-admin' : 'is-allow'} onClick={() => decide('once')} disabled={approval.state === 'sending'}>
               {isAdmin ? 'Allow as administrator, once' : 'Allow once'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {update && (
+        <div className="wpres__approval" role="alertdialog" aria-label="Update OmniOne">
+          <div className="wpres__approval-head">UPDATE TO v{update.version}?</div>
+          <p className="wpres__approval-warn">OmniOne restarts, and stops anything Omi-One is doing. Say “Omi-One, yes” or click.</p>
+          <div className="wpres__approval-actions">
+            <button type="button" className="is-deny" onClick={() => answerUpdate(false)} disabled={update.state !== 'asking'}>Not now</button>
+            <button type="button" className="is-allow" onClick={() => answerUpdate(true)} disabled={update.state !== 'asking'}>
+              {update.state === 'starting' ? 'Restarting…' : 'Update and restart'}
             </button>
           </div>
         </div>

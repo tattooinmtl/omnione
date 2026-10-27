@@ -9,6 +9,7 @@ import { Voice, speakable, speechChunks } from '../presence/voice.js';
 import PresenceChat, { chatText } from './PresenceChat.jsx';
 import './PresenceView.css';
 import { subscribeStream } from '../utils/stream.js';
+import { isUpdateRequest } from '../utils/updateOmnione.js';
 
 /* Presence — the agent, embodied.
  *
@@ -288,7 +289,8 @@ export default function PresenceView({ onClose, toast }) {
       const text = await v.listen({ onInterim: (t) => setCaption(`“${t}”`) });
       if (!text) { setCaption(''); return; }
       setCaption(`“${text}”`);
-      window.dispatchEvent(new CustomEvent('gwn:submit-prompt', { detail: { text } }));
+      // "Update yourself" is the /update-omnione command, not a question.
+      window.dispatchEvent(new CustomEvent('gwn:submit-prompt', { detail: { text: isUpdateRequest(text) ? '/update-omnione' : text } }));
     } catch (e) {
       toast?.(`Microphone: ${e.message}`, 'error');
     }
