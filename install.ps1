@@ -113,9 +113,13 @@
         Say "Into: $OmniHome"
         Write-Host ''
         $node = Get-Command node -ErrorAction SilentlyContinue
-        if (-not $node) { Say 'OmniOne needs Node.js 20 or newer. Install it from https://nodejs.org, then run this again.' Yellow; return }
-        $major = [int]((& node -v).TrimStart('v').Split('.')[0])
-        if ($major -lt 20) { Say "OmniOne needs Node.js 20 or newer (you have $(& node -v)). Update it from https://nodejs.org." Yellow; return }
+        if (-not $node) { Say 'OmniOne needs Node.js 20.19 or newer. Install the LTS from https://nodejs.org, then run this again.' Yellow; return }
+        # Same rule as package.json "engines" (Vite 8): ^20.19 or >=22.12.
+        $nv = (& node -v).Trim()
+        $parts = $nv.TrimStart('v').Split('.')
+        $major = [int]$parts[0]; $minor = [int]$parts[1]
+        $nodeOk = ($major -eq 20 -and $minor -ge 19) -or ($major -eq 22 -and $minor -ge 12) -or ($major -gt 22)
+        if (-not $nodeOk) { Say "OmniOne needs Node.js 20.19 or newer (22.12 or newer on Node 22); you have $nv. Install the LTS from https://nodejs.org, then run this again." Yellow; return }
     }
 
     # --- The latest release: pinned to one commit, so every file matches -----------

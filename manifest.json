@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.16.0",
- "build": "3ad502477cbb",
- "commit": "3b97c4516f44",
- "date": "2026-10-26T22:50:15-04:00",
+ "version": "0.16.1",
+ "build": "e2821b510d7b",
+ "commit": "cce43394036d",
+ "date": "2026-10-26T23:12:15-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "fdfcc92f9512c56b0739ae6f7459dd1147d6919ef2ec515450fe55854cbfbb4c",
-   "s": 7719936
+   "h": "1d114c651a01eb335876e5c24f325db69a00bb0d88c05a759be7b24d9705e44f",
+   "s": 7725568
   },
   {
    "p": "build.json",
-   "h": "d68eb0a8e8e690a11df1823e77abfce1802bd5c09b6ffd01fa0224ba4c0b0da3",
+   "h": "4e34544685a74f7f883d565220ebd01024cf08b8209997d873bcec0c39e5113e",
    "s": 121
   },
   {
@@ -51,13 +51,13 @@
   },
   {
    "p": "package-lock.json",
-   "h": "f5502eb064e700c243278a6b1949b122ad420aa7d27b94cd417b935e91fcfc26",
-   "s": 218799
+   "h": "0ae5974c448de892979dd7d02841185d6b94dcfe2a6ca1cd9a467bb73a057196",
+   "s": 183977
   },
   {
    "p": "package.json",
-   "h": "9762840bae85c7ae4f0d72a2eee0ac01ca08e930a44ad9a0866e544b7298e5eb",
-   "s": 1320
+   "h": "bbe6ae4c89f7ab8e3b74715630dfb44c999354bd2cde62b947bc23af7f8de393",
+   "s": 1426
   },
   {
    "p": "public/omnione.ico",
@@ -243,6 +243,11 @@
    "p": "server/mind/vault.js",
    "h": "42fe1c9d2feefb741f6183cef04c396209048655ccf43b727518084ac2a5f9a0",
    "s": 17385
+  },
+  {
+   "p": "server/nodeVersion.js",
+   "h": "4c122a4f8c0e0e142b92f594cf5a3b07d0ec8d7e3be2e2eb3bf0cb02c021753f",
+   "s": 1231
   },
   {
    "p": "server/notify.js",
@@ -996,8 +1001,8 @@
   },
   {
    "p": "src/components/AiPanel.css",
-   "h": "c71c8680d7371260a29d89009b06958a4f29cb3aaf61da5e1063e144d528214b",
-   "s": 13891
+   "h": "4d436a994a5dadf72a69f715be193a3f9cd5d16e00091078e01a9405a6b2c24b",
+   "s": 13812
   },
   {
    "p": "src/components/AiPanel.jsx",
