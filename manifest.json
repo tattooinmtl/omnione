@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.16.1",
- "build": "e2821b510d7b",
- "commit": "cce43394036d",
- "date": "2026-10-26T23:12:15-04:00",
+ "version": "0.16.2",
+ "build": "c317446ce95d",
+ "commit": "a4266d73747f",
+ "date": "2026-10-27T11:32:54-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "1d114c651a01eb335876e5c24f325db69a00bb0d88c05a759be7b24d9705e44f",
+   "h": "cdf6aa789b0d67f67dcaa85bd1f72107c5a235fed55b4eebf94b2a54f3f2b971",
    "s": 7725568
   },
   {
    "p": "build.json",
-   "h": "4e34544685a74f7f883d565220ebd01024cf08b8209997d873bcec0c39e5113e",
+   "h": "a8a11bc663eaf281a97154ddb377709e8375fe714cfdf87343999d9f662dd84f",
    "s": 121
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "0ae5974c448de892979dd7d02841185d6b94dcfe2a6ca1cd9a467bb73a057196",
+   "h": "6f64721808c1a32b1cdf60969b3963ea970b62d7c68be61c6831155b31b86bd2",
    "s": 183977
   },
   {
    "p": "package.json",
-   "h": "bbe6ae4c89f7ab8e3b74715630dfb44c999354bd2cde62b947bc23af7f8de393",
+   "h": "de54dfb69ac12b348241104f0c412f254bdf16bb79d134a4947a52c936a51791",
    "s": 1426
   },
   {
@@ -491,8 +491,8 @@
   },
   {
    "p": "server/workspace.js",
-   "h": "6c2dbc620db5f9d8f71563296854a645afc14c99d989deedc22681b00a758f6d",
-   "s": 9900
+   "h": "2d28eaae7f0bcb47d457d3c80e8a2edb7f18852787db349dc9302d90de8eda55",
+   "s": 10120
   },
   {
    "p": "server/workspaceFiles.js",

@@ -247,6 +247,10 @@ export function* walkWorkspace(startRel = '.', { maxEntries = 20000 } = {}) {
     }
     for (const entry of entries) {
       if (seen >= maxEntries) return;
+      // A link (to a file or a folder, junctions included) can point out of
+      // the workspace; grep would read through it. Never yielded (audit
+      // 2026-10-27).
+      if (entry.isSymbolicLink()) continue;
       const abs = path.join(dir, entry.name);
       const rel = path.relative(root, abs).split(path.sep).join('/');
       const isDir = entry.isDirectory();
