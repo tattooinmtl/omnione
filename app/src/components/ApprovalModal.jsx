@@ -148,6 +148,18 @@ export function Preview({ preview }) {
     );
   }
 
+  if (preview.kind === 'outbound') {
+    return (
+      <>
+        <div className="approval__label">
+          Open a page on <code>{preview.host}</code> with an address Omi-One put together. Data in it reaches that site.
+        </div>
+        <pre className="approval__code">{preview.url}</pre>
+        <div className="approval__label">"Allow for this session" allows every page on {preview.host}.</div>
+      </>
+    );
+  }
+
   if (preview.kind === 'post') {
     return (
       <>

@@ -4,9 +4,13 @@
 // All classed 'read'. They write, but only into .gwn-mind/ — the agent's own
 // head, not the user's workspace — so they run in every mode, plan included.
 // An agent that had to ask permission to remember something would not
-// remember anything.
+// remember anything. The one exception: a run that has read outside content
+// (taint.js) has its memory writes held for the user's review instead
+// (mind/held.js), since whoever wrote that content could be the one asking.
 
-import { registerTool } from '../toolRegistry.js';
+import { registerTool, getTool } from '../toolRegistry.js';
+import { taintOf } from '../taint.js';
+import { registerHoldable, holdWrite } from '../mind/held.js';
 import { CORE_LIMITS, MEMORY_KINDS, coreAppend, coreReplace, remember, recall, linkMemories, allMemories, markUsed } from '../mind/memory.js';
 import { writeJournal, JOURNAL_KINDS } from '../mind/journal.js';
 import { setMood, setFocus, addGoal, updateGoal, listGoals, addProposal, GOAL_STATUSES } from '../mind/state.js';
@@ -242,3 +246,27 @@ registerTool({
     return { ok: true, result: { shown: true } };
   },
 });
+
+// --- held for review -------------------------------------------------------
+// Writes that would change what every later session knows or works on.
+// Mood, focus, expressions and proposals (which ask the user anyway) aren't.
+export const HOLDABLE = ['core_memory_append', 'core_memory_replace', 'remember', 'link_memories', 'journal_write', 'goal_add', 'goal_update'];
+
+for (const name of HOLDABLE) {
+  const tool = getTool(name);
+  const real = tool.handler;
+  registerHoldable(name, real);
+  tool.handler = async (args, ctx = {}) => {
+    const by = taintOf(ctx.sessionId);
+    if (!by) return real(args, ctx);
+    const h = holdWrite({ tool: name, args, sessionId: ctx.sessionId, taintedBy: by });
+    return {
+      ok: true,
+      result: {
+        held: true,
+        id: h.id,
+        note: `Held for the user's review: this conversation read outside content (${by}), so the user approves it in Settings → Memory before it becomes part of your mind. Don't retry it; carry on.`,
+      },
+    };
+  };
+}

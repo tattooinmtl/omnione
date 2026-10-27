@@ -25,6 +25,7 @@
 
 import crypto from 'node:crypto';
 import { agentSettings } from './agentConfig.js';
+import { urlCarriesData, isKnownUrl, clearTaint } from './taint.js';
 
 export const MODES = ['plan', 'default', 'acceptEdits', 'bypass', 'autonomous'];
 export const DEFAULT_MODE = 'default';
@@ -48,14 +49,27 @@ export function setMode(sessionId, mode) {
 export function clearSession(sessionId) {
   modes.delete(sessionId);
   sessionAllows.delete(sessionId);
+  clearTaint(sessionId);
 }
 
 /* The key an "allow for this session" decision is remembered under. Keyed by
  * tool plus the significant argument, so approving `bash: npm test` does not
  * also approve `bash: rm -rf /`. */
 export function allowKey(toolName, args) {
+  // browser_open is approved per site: "allow for this session" on one URL
+  // with a query lets the agent read that site's other pages too.
+  if (toolName === 'browser_open') {
+    try { return `browser_open:${new URL(String(args?.url)).host.toLowerCase()}`; } catch { /* falls through */ }
+  }
   const significant = args?.command ?? args?.path ?? args?.file_path ?? '';
   return `${toolName}:${String(significant).slice(0, 200)}`;
+}
+
+/* Whether opening this URL would need the user's yes (see checkPermission). */
+export function needsOutboundApproval(sessionId, args) {
+  const url = String(args?.url ?? '');
+  if (!urlCarriesData(url) || isKnownUrl(sessionId, url)) return false;
+  return !sessionAllows.get(sessionId)?.has(allowKey('browser_open', args));
 }
 
 /* write_file / edit_file on plan.md at the workspace root, and nothing else. */
@@ -87,6 +101,16 @@ export function checkPermission({ sessionId, tool, args }) {
   }
 
   if (mode === 'bypass') return { decision: 'allow' };
+
+  // A read that could send data out: a URL the agent built, with a query or
+  // an encoded path, to a site not yet allowed this session. URLs the user
+  // wrote or a search returned are plain reads.
+  if (tool.name === 'browser_open' && needsOutboundApproval(sessionId, args)) {
+    if (mode === 'autonomous') {
+      return { decision: 'deny', reason: `Autonomous mode: "${args.url}" carries data in its address and nobody is here to approve sending it. Open the site's plain pages, or use propose_task.` };
+    }
+    return { decision: 'ask' };
+  }
 
   if (permission === 'read') return { decision: 'allow' };
 

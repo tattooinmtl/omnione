@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.15.3",
- "build": "91aae7917c14",
- "commit": "b27c32383f8d",
- "date": "2026-10-26T20:44:51-04:00",
+ "version": "0.15.4",
+ "build": "a086ddee4817",
+ "commit": "30fa06b935a2",
+ "date": "2026-10-26T22:03:12-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "f5cb40b6fa6bdbd62ba9f56468ad4a8462b2575168c53f050fc2a0b1ff2d5ac8",
+   "h": "456b15ef434d15b1746c8663b62b3ebefd3ef95a503ba4365c5bc51618bcffe6",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "a0f43cffcfa3e82b47a0d06be95961ff7dbe4a4b519c2276278ea89fbff6053e",
+   "h": "8cab43e6ba56e12488a1ee927f2a20166b5da180c316f9034051358e06c60f1b",
    "s": 121
   },
   {
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "6f1d5c162bae80afcc68c4975d1df64c3cc13bcaa566608e4676db91236f733f",
+   "h": "25b3734118c3d02d342e0f8ce718093b01558140b084cc4626529aea53bec4d7",
    "s": 218799
   },
   {
    "p": "package.json",
-   "h": "3c3a637468c9cb9fd4a2389cf8f971c6adaa026b05174b9e7a1a4751838db37c",
+   "h": "22d5a3845302d7392a385473803bb516286b4fa702f345d38c1b5025cdc1070a",
    "s": 1320
   },
   {
@@ -76,8 +76,8 @@
   },
   {
    "p": "server/agent.js",
-   "h": "d8946cfc07027e70226898e5e89ea0f4cf0b0de5c4cdc96ade628ac757474c97",
-   "s": 30396
+   "h": "93d84741f3fbfd1490d9902359aabe428e3c8cb71c44ee17d3a9ee1e288d57b1",
+   "s": 30744
   },
   {
    "p": "server/agentConfig.js",
@@ -176,8 +176,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "95c90b1d6c18075f3b8efb83b4f234e5f0974e7787c11d6b5bf6076b02e96064",
-   "s": 69849
+   "h": "899e443b3a51f95faf60d85bb111fcd01865e7c2a8c6f720def1505e373f1a13",
+   "s": 70567
   },
   {
    "p": "server/listen.js",
@@ -208,6 +208,11 @@
    "p": "server/mind/heartbeat.js",
    "h": "6d813266a96d39e84b07b74711b76510081c23a75c689435638472129b235dea",
    "s": 8700
+  },
+  {
+   "p": "server/mind/held.js",
+   "h": "dd0c8d497f90d0fa1144486d9a083aaadbe2a4d0cbc216c47c04e9a35edb98ab",
+   "s": 1965
   },
   {
    "p": "server/mind/journal.js",
@@ -251,8 +256,8 @@
   },
   {
    "p": "server/permissions.js",
-   "h": "22a9e1cbf0b8238e4e2f63d640070af553f7a37f0e217b135b41cdb32db6c327",
-   "s": 7589
+   "h": "cda8eb64906dea4f7cb428d2bec8c02869da22423079e80e5ba8b30e1a0eed16",
+   "s": 8888
   },
   {
    "p": "server/personality.js",
@@ -335,14 +340,19 @@
    "s": 4496
   },
   {
+   "p": "server/taint.js",
+   "h": "4bf5f8a296a2e46887ef637968c4e51a30aa1d4d87389a712400cea423220577",
+   "s": 2989
+  },
+  {
    "p": "server/toolRegistry.js",
    "h": "ee6ea9c277ffb3ff003d7e0ef4dff11a70ad44837f926d1b76e63ac3a3a6980e",
    "s": 8277
   },
   {
    "p": "server/tools.js",
-   "h": "2e8fa883da71ce08e43c44e527c0a9b200220e2f11d1ef618466b2a83e79657c",
-   "s": 21437
+   "h": "35fae3c5ae867e342d210fafc9faf32054deb4697a60dd43de968391dfc56dc3",
+   "s": 23966
   },
   {
    "p": "server/tools/admin.js",
@@ -396,8 +406,8 @@
   },
   {
    "p": "server/tools/mind.js",
-   "h": "29ae48926a9fdfc0147252cc809c36240d5368e29ed7f5a311e3ed800ccee2da",
-   "s": 11418
+   "h": "67dde8eac222e1d8368d202110c1c5e7347fa1c13c779d5ef210115333f18bf3",
+   "s": 12775
   },
   {
    "p": "server/tools/pc.js",
@@ -1006,8 +1016,8 @@
   },
   {
    "p": "src/components/ApprovalModal.jsx",
-   "h": "02c0f4dc26f9e313aac20566e2c63a127ae1eedd9009aee07fb7be576e205a75",
-   "s": 6960
+   "h": "77245a070df8a3506fe0b33963147ca2a4eca5a16a8494e48c117d3421886ec7",
+   "s": 7400
   },
   {
    "p": "src/components/CodeEditor.css",
@@ -1181,8 +1191,8 @@
   },
   {
    "p": "src/components/settings/MemoryTab.jsx",
-   "h": "c21341980b22be03955f66c2893f95aadc20afdaba42c08dd71b9443f2459707",
-   "s": 6193
+   "h": "8ef9b557062e341c7811284914dfe5396e14556b6bc9d87a8609965130180371",
+   "s": 8766
   },
   {
    "p": "src/components/settings/PersonalityTab.jsx",

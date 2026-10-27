@@ -8,6 +8,10 @@
 
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
+import zlib from 'node:zlib';
+import { Readable } from 'node:stream';
 import { lookup } from 'node:dns/promises';
 import net from 'node:net';
 import path from 'node:path';
@@ -200,9 +204,9 @@ export function addressKind(ip) {
   return 'private';
 }
 
-/* Throws unless every address the URL's host resolves to may be fetched. */
-export async function assertFetchable(url, { allowLoopback = false, resolve = lookup } = {}) {
-  const host = url.hostname.replace(/^\[|\]$/g, '');
+/* The host's addresses, or an Error unless every one of them may be fetched. */
+export async function checkedAddresses(host, { allowLoopback = false, resolve = lookup } = {}) {
+  host = String(host).replace(/^\[|\]$/g, '');
   const addrs = net.isIP(host) ? [{ address: host }] : await resolve(host, { all: true, verbatim: true });
   if (!addrs.length) throw new Error(`${host} does not resolve.`);
   for (const { address } of addrs) {
@@ -210,6 +214,52 @@ export async function assertFetchable(url, { allowLoopback = false, resolve = lo
     if (kind === 'public' || (kind === 'loopback' && allowLoopback)) continue;
     throw new Error(`Refusing ${host}: it leads to a ${kind} address (${address}). browser_open reads the public web${kind === 'loopback' ? '; pass local: true for a page served on this PC' : ''}.`);
   }
+  return addrs.map(({ address }) => ({ address, family: net.isIPv6(address) ? 6 : 4 }));
+}
+
+/* Throws unless every address the URL's host resolves to may be fetched. */
+export async function assertFetchable(url, opts = {}) {
+  await checkedAddresses(url.hostname, opts);
+}
+
+/* One GET whose socket can only go to an address checked when it connects.
+ * fetch() resolves the name again on its own, so a host could answer with a
+ * public address for the check and 192.168.1.1 for the connection (DNS
+ * rebinding). Here the check is the lookup the connection uses. IP literals
+ * skip lookup and are checked by assertFetchable before this is called. */
+export function pinnedGet(url, { headers = {}, allowLoopback = false, resolve, signal, timeoutMs = NET_TIMEOUT_MS } = {}) {
+  return new Promise((done, fail) => {
+    const lib = url.protocol === 'https:' ? https : http;
+    const checkedLookup = (hostname, opts, cb) => {
+      checkedAddresses(hostname, { allowLoopback, resolve }).then((addrs) => {
+        if (opts?.all) cb(null, addrs);
+        else cb(null, addrs[0].address, addrs[0].family);
+      }, (e) => cb(e));
+    };
+    const signals = [AbortSignal.timeout(timeoutMs), signal].filter(Boolean);
+    const req = lib.request(url, {
+      method: 'GET',
+      headers: { 'Accept-Encoding': 'gzip, deflate, br', ...headers },
+      lookup: checkedLookup,
+      agent: false,
+      signal: AbortSignal.any(signals),
+    }, (res) => {
+      const enc = String(res.headers['content-encoding'] || '').toLowerCase();
+      const unzip = enc === 'gzip' ? zlib.createGunzip() : enc === 'deflate' ? zlib.createInflate() : enc === 'br' ? zlib.createBrotliDecompress() : null;
+      const stream = unzip ? res.pipe(unzip) : res;
+      if (unzip) res.on('error', (e) => unzip.destroy(e));
+      const h = new Headers();
+      for (const [k, v] of Object.entries(res.headers)) {
+        if (k === 'content-encoding' || k === 'content-length') continue;
+        for (const one of [].concat(v)) h.append(k, String(one));
+      }
+      const noBody = [101, 204, 205, 304].includes(res.statusCode);
+      if (noBody) res.resume();
+      done(new Response(noBody ? null : Readable.toWeb(stream), { status: res.statusCode, statusText: res.statusMessage || '', headers: h }));
+    });
+    req.on('error', fail);
+    req.end();
+  });
 }
 
 // --- browser ---------------------------------------------------------------
@@ -236,11 +286,9 @@ export async function browserOpen({ url, maxChars = 12000, local = false }, ctx 
     // Loopback only when asked for, and only for the first hop: a public
     // page must not be able to redirect into this PC.
     for (let hop = 0; ; hop += 1) {
-      await assertFetchable(parsed, { allowLoopback: local === true && hop === 0, resolve: ctx.resolve });
-      resp = await fetchWithTimeout(parsed.href, {
-        headers: { 'User-Agent': BROWSER_UA },
-        redirect: 'manual',
-      }, { signal: ctx.signal });
+      const allowLoopback = local === true && hop === 0;
+      await assertFetchable(parsed, { allowLoopback, resolve: ctx.resolve });
+      resp = await (ctx.httpGet || pinnedGet)(parsed, { headers: { 'User-Agent': BROWSER_UA }, allowLoopback, resolve: ctx.resolve, signal: ctx.signal });
       const next = resp.status >= 300 && resp.status < 400 && resp.headers.get('location');
       if (!next) break;
       if (hop >= MAX_REDIRECTS) return { ok: false, error: `Too many redirects from ${url}.` };

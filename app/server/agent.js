@@ -20,6 +20,7 @@ import { buildSystemPrompt } from './prompts.js';
 import { modelSeesImages } from './attachments.js';
 import { getPrefs } from './prefs.js';
 import { agentSettings, instructionsPrompt } from './agentConfig.js';
+import { noteToolResult, noteUrls } from './taint.js';
 import { parallelLimit } from './agentSlots.js';
 import { getAgent } from './subagent.js';
 import { executeTool, formatToolResult, listTools, syncMcpTools, getTool } from './toolRegistry.js';
@@ -128,6 +129,7 @@ export async function* runAgent({
   const runAdapter = adapterFor(provider.apiStyle);
 
   appendMessage(sessionId, userMessage(prompt, attachments));
+  noteUrls(sessionId, prompt);
   const images = modelSeesImages(provider.id, model);
   const temperature = getPrefs().ai.temperature;
   if (kind !== 'subagent') recordSession(sessionId);
@@ -451,6 +453,7 @@ async function* runOneTool(call, sessionId, signal, runConfig = {}) {
   }
 
   const r = await executeTool(call.name, args, { sessionId, checkpointId, signal, ...runConfig });
+  noteToolResult(sessionId, call.name, r);
   const durationMs = Date.now() - started;
   recordTool({ name: call.name, ok: r.ok, ms: durationMs });
 
@@ -489,6 +492,11 @@ function errorBlock(call, reason) {
 function buildPreview(tool, args) {
   if (tool.name === 'bash') {
     return { kind: 'command', command: args.command, cwd: args.cwd || '.' };
+  }
+  if (tool.name === 'browser_open') {
+    let host = '';
+    try { host = new URL(String(args.url)).host; } catch { /* shown as given */ }
+    return { kind: 'outbound', url: String(args.url ?? ''), host };
   }
   if (tool.name === 'run_as_admin') {
     return { kind: 'admin', command: String(args.command ?? ''), reason: String(args.reason ?? ''), cwd: args.cwd || 'the workspace' };

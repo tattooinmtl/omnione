@@ -98,6 +98,7 @@ import { readJournal } from './mind/journal.js';
 import { readSoul, writeSoul } from './mind/prompt.js';
 import { brainGraph, recordFeel } from './brain.js';
 import { startVault, syncVault, vaultStatus, vaultDir } from './mind/vault.js';
+import { listHeld, approveHeld, discardHeld } from './mind/held.js';
 import { spawn } from 'node:child_process';
 import { subscribeLive, publishLive, originOf } from './live.js';
 import { listener as speechListener } from './listen.js';
@@ -1073,6 +1074,18 @@ function publicSkill(s, includeBody = false) {
 // The agent's inner life, for the Presence view: identity, memory, mood,
 // goals, journal, proposals, and the heartbeat that runs between
 // conversations.
+
+// Memory writes from runs that read outside content, waiting for a yes (mind/held.js).
+app.get('/api/mind/held', (_req, res) => res.json({ held: listHeld() }));
+app.post('/api/mind/held/:id/approve', async (req, res) => {
+  const r = await approveHeld(req.params.id);
+  if (!r) return res.status(404).json({ error: 'No such held write.' });
+  res.json({ ok: r.ok !== false, result: r.result, error: r.error, held: listHeld() });
+});
+app.post('/api/mind/held/:id/discard', (req, res) => {
+  if (!discardHeld(req.params.id)) return res.status(404).json({ error: 'No such held write.' });
+  res.json({ ok: true, held: listHeld() });
+});
 
 app.get('/api/mind', (_req, res) => {
   const st = getMindState();
