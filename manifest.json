@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.15.2",
- "build": "7aae519ba134",
- "commit": "ec9507233070",
- "date": "2026-10-26T20:40:02-04:00",
+ "version": "0.15.3",
+ "build": "91aae7917c14",
+ "commit": "b27c32383f8d",
+ "date": "2026-10-26T20:44:51-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,12 +16,12 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "f76ec01334715b6fef12e074773e96c924af89a08e0dc1efbe500cfc6be3e69d",
+   "h": "f5cb40b6fa6bdbd62ba9f56468ad4a8462b2575168c53f050fc2a0b1ff2d5ac8",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "5072a9ec9eadf55072042fba837c01d551e0f7b0f174b6e81319c84a0dcf9442",
+   "h": "a0f43cffcfa3e82b47a0d06be95961ff7dbe4a4b519c2276278ea89fbff6053e",
    "s": 121
   },
   {
@@ -51,13 +51,13 @@
   },
   {
    "p": "package-lock.json",
-   "h": "e2d3caab8d8a387900f6fe01d2be1dba13582fce4f535ae51afab03249d69409",
-   "s": 219233
+   "h": "6f1d5c162bae80afcc68c4975d1df64c3cc13bcaa566608e4676db91236f733f",
+   "s": 218799
   },
   {
    "p": "package.json",
-   "h": "a1421357859dbb8a636f20ede777e390cfa03eb585eb082674eef28cc9e8815e",
-   "s": 1269
+   "h": "3c3a637468c9cb9fd4a2389cf8f971c6adaa026b05174b9e7a1a4751838db37c",
+   "s": 1320
   },
   {
    "p": "public/omnione.ico",
