@@ -17,6 +17,7 @@ export default function PreviewPanel({ srcDoc, epoch, onError }) {
 
   useEffect(() => {
     const onMessage = (e) => {
+      if (e.source !== iframeRef.current?.contentWindow) return;
       const data = e.data;
       if (!data || data.__gwnPreview !== true) return;
       if (data.type === 'runtime-error' && onError) {
@@ -45,7 +46,9 @@ export default function PreviewPanel({ srcDoc, epoch, onError }) {
           ref={iframeRef}
           className="preview-panel__iframe"
           title="preview"
-          sandbox="allow-scripts allow-pointer-lock allow-same-origin"
+          // No allow-same-origin: a srcdoc frame would otherwise share
+          // OmniOne's origin and could call its API with the page's cookie.
+          sandbox="allow-scripts allow-pointer-lock"
         />
       </div>
     </div>

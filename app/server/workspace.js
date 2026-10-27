@@ -132,6 +132,24 @@ function assertInside(root, abs, original) {
   }
 }
 
+/* The agent's file tools may not change OmniOne itself. If the open folder
+ * contains the app (C:\ or the user folder, say), writing hooks/, server/,
+ * .gwn-mcp.json and the like would run code on the next start or event
+ * without the command approval it otherwise needs. Its own workspace/ folder
+ * is fine. */
+export function assertAgentWritable(abs) {
+  const app = path.resolve(PROJECT_ROOT);
+  const inside = (p, root) => p === root || p.startsWith(root + path.sep);
+  let real = abs;
+  try { real = fs.realpathSync(abs); } catch { /* not there yet */ }
+  for (const p of new Set([path.resolve(abs), real])) {
+    const low = p.toLowerCase();
+    if (inside(low, app.toLowerCase()) && !inside(low, path.resolve(DEFAULT_ROOT).toLowerCase())) {
+      throw new WorkspaceError(`"${toWorkspaceRelative(abs)}" is part of OmniOne itself, which its file tools never change.`);
+    }
+  }
+}
+
 /* The path to show the model and the user: relative, forward slashes. */
 export function toWorkspaceRelative(abs) {
   const rel = path.relative(getWorkspaceRoot(), abs);

@@ -138,7 +138,12 @@ function copyDir(src, dst) {
 }
 
 export function deleteSkill(name) {
-  const dir = path.join(SKILLS_DIR, name);
+  // Only a skill folder directly under skills/: the name comes from a URL,
+  // and "../.." would otherwise delete whatever it pointed at.
+  const n = String(name || '');
+  if (!n || n === '.' || n === '..' || /[\\/:]/.test(n)) return false;
+  const dir = path.join(SKILLS_DIR, n);
+  if (path.dirname(dir) !== path.resolve(SKILLS_DIR)) return false;
   if (!fs.existsSync(dir)) return false;
   fs.rmSync(dir, { recursive: true, force: true });
   scanSkills();

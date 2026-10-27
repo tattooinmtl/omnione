@@ -8,6 +8,8 @@
 
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { lookup } from 'node:dns/promises';
+import net from 'node:net';
 import path from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 import { logSearch } from './searchLog.js';
@@ -170,11 +172,51 @@ function decodeDdgRedirect(href) {
   }
 }
 
+// --- where a URL may lead ---------------------------------------------------
+// browser_open runs without asking and its argument can come from a page the
+// agent just read, so it must not become a way into the router, a NAS, cloud
+// metadata or another local service. Every hop of a redirect is checked.
+
+const MAX_REDIRECTS = 5;
+
+/* Whether an IP address is somewhere other than the public internet. */
+export function addressKind(ip) {
+  let a = String(ip || '').toLowerCase();
+  if (a.startsWith('::ffff:') && net.isIPv4(a.slice(7))) a = a.slice(7);
+  if (net.isIPv4(a)) {
+    const [x, y] = a.split('.').map(Number);
+    if (x === 127) return 'loopback';
+    if (x === 0 || x === 10 || (x === 172 && y >= 16 && y <= 31) || (x === 192 && y === 168)
+      || (x === 100 && y >= 64 && y <= 127) || (x === 198 && (y === 18 || y === 19)) || x >= 224) return 'private';
+    if (x === 169 && y === 254) return 'link-local';
+    return 'public';
+  }
+  if (net.isIPv6(a)) {
+    if (a === '::1') return 'loopback';
+    if (a === '::' || /^f[cd]/.test(a) || /^ff/.test(a)) return 'private';
+    if (/^fe[89ab]/.test(a)) return 'link-local';
+    return 'public';
+  }
+  return 'private';
+}
+
+/* Throws unless every address the URL's host resolves to may be fetched. */
+export async function assertFetchable(url, { allowLoopback = false, resolve = lookup } = {}) {
+  const host = url.hostname.replace(/^\[|\]$/g, '');
+  const addrs = net.isIP(host) ? [{ address: host }] : await resolve(host, { all: true, verbatim: true });
+  if (!addrs.length) throw new Error(`${host} does not resolve.`);
+  for (const { address } of addrs) {
+    const kind = addressKind(address);
+    if (kind === 'public' || (kind === 'loopback' && allowLoopback)) continue;
+    throw new Error(`Refusing ${host}: it leads to a ${kind} address (${address}). browser_open reads the public web${kind === 'loopback' ? '; pass local: true for a page served on this PC' : ''}.`);
+  }
+}
+
 // --- browser ---------------------------------------------------------------
 // Fetches a URL, returns the page title and a text-rendered version of the
 // body (HTML stripped, scripts removed, whitespace collapsed). No headless
 // browser required.
-export async function browserOpen({ url, maxChars = 12000 }, ctx = {}) {
+export async function browserOpen({ url, maxChars = 12000, local = false }, ctx = {}) {
   if (!url || typeof url !== 'string') return { ok: false, error: 'url is required' };
   // Only http(s). Without this the tool would happily read file:// URLs,
   // which is a way straight around the workspace containment that every
@@ -191,11 +233,24 @@ export async function browserOpen({ url, maxChars = 12000 }, ctx = {}) {
 
   let resp;
   try {
-    resp = await fetchWithTimeout(url, {
-      headers: { 'User-Agent': BROWSER_UA },
-      redirect: 'follow',
-    }, { signal: ctx.signal });
+    // Loopback only when asked for, and only for the first hop: a public
+    // page must not be able to redirect into this PC.
+    for (let hop = 0; ; hop += 1) {
+      await assertFetchable(parsed, { allowLoopback: local === true && hop === 0, resolve: ctx.resolve });
+      resp = await fetchWithTimeout(parsed.href, {
+        headers: { 'User-Agent': BROWSER_UA },
+        redirect: 'manual',
+      }, { signal: ctx.signal });
+      const next = resp.status >= 300 && resp.status < 400 && resp.headers.get('location');
+      if (!next) break;
+      if (hop >= MAX_REDIRECTS) return { ok: false, error: `Too many redirects from ${url}.` };
+      parsed = new URL(next, parsed);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return { ok: false, error: `Refusing a redirect to ${parsed.protocol}.` };
+      }
+    }
   } catch (e) {
+    if (/^(Refusing|.* does not resolve)/.test(e?.message || '')) return { ok: false, error: e.message };
     return { ok: false, error: describeFetchError(e) };
   }
   if (!resp.ok) return { ok: false, error: `HTTP ${resp.status}` };

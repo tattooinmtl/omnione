@@ -12,6 +12,7 @@
 import { webSearch, browserOpen } from './tools.js';
 import { listMcpTools, callMcpTool, getServer } from './mcp.js';
 import { convertMcpResult } from './mcpResult.js';
+import { redactForModel } from './redact.js';
 
 /** @typedef {'read'|'write'|'execute'|'admin'} Permission */
 
@@ -109,8 +110,9 @@ export async function executeTool(name, args, ctx = {}) {
 /* Render a tool result as the text the model receives. Models do better with
  * compact JSON than with prose wrappers. */
 export function formatToolResult(r, { maxChars = 30000 } = {}) {
-  if (!r.ok) return `ERROR: ${r.error}`;
-  const text = typeof r.result === 'string' ? r.result : JSON.stringify(r.result, null, 2);
+  // Secrets never reach the model, whatever the tool read (see redact.js).
+  if (!r.ok) return redactForModel(`ERROR: ${r.error}`);
+  const text = redactForModel(typeof r.result === 'string' ? r.result : JSON.stringify(r.result, null, 2));
   if (text.length <= maxChars) return text;
   return text.slice(0, maxChars) + `\n…(truncated, ${text.length - maxChars} more chars)`;
 }
@@ -142,6 +144,7 @@ registerTool({
     properties: {
       url: { type: 'string', description: 'The URL to fetch.' },
       maxChars: { type: 'integer', description: 'Truncate the body to this many characters.', default: 12000 },
+      local: { type: 'boolean', description: 'Allow a page served on this PC (localhost), e.g. a dev server the user is running. LAN and private addresses are always refused.', default: false },
     },
     required: ['url'],
   },

@@ -8,7 +8,6 @@
 // leaves this process; the client only ever receives a 4-char hint.
 
 import express from 'express';
-import cors from 'cors';
 import multer from 'multer';
 import path from 'node:path';
 import os from 'node:os';
@@ -130,9 +129,7 @@ import {
 const PORT = Number(process.env.PORT) || 5180;
 const HOST = process.env.HOST || '127.0.0.1'; // loopback only — see auth.js
 const app = express();
-// CORS is permissive because the token, not the origin, is what gates access.
-// A cross-origin page can send the request but cannot read .gwn-token.
-app.use(cors());
+// No CORS headers: only OmniOne's own page may call the API (see auth.js).
 app.use(express.json({ limit: '4mb' }));
 app.use(authMiddleware);
 

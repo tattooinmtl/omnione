@@ -96,6 +96,21 @@ function cookieFrom(req, name) {
   return '';
 }
 
+/* Whether a request was sent by another site. In dev the Vite proxy adds the
+ * token to every /api request it forwards, whoever sent it, so without this
+ * any page open in the browser could drive the API through localhost:5174.
+ * A browser request carries Origin (or at least Sec-Fetch-Site); OmniOne's
+ * own page has the same origin as the Host it addresses. The preview iframe
+ * runs with an opaque origin and sends "null", which is refused too. Requests
+ * with neither header (curl, the OmniOne shell) are judged by the token. */
+export function isCrossSiteRequest(req) {
+  const site = req.headers['sec-fetch-site'];
+  if (site === 'cross-site' || site === 'same-site') return true;
+  const origin = req.headers.origin;
+  if (origin == null) return false;
+  return String(origin).toLowerCase() !== `http://${String(req.headers.host || '').toLowerCase()}`;
+}
+
 export function authMiddleware(req, res, next) {
   if (PUBLIC_PATHS.has(req.path)) return next();
 
@@ -105,6 +120,10 @@ export function authMiddleware(req, res, next) {
 
   // The UI itself (HTML, scripts, images) is public; only the API is gated.
   if (!req.path.startsWith('/api/') && req.path !== '/api') return next();
+
+  if (isCrossSiteRequest(req)) {
+    return res.status(403).json({ error: 'Forbidden: the API only answers OmniOne\'s own page.' });
+  }
 
   if (req.headers['sec-fetch-site'] === 'same-origin' && safeEqual(cookieFrom(req, UI_COOKIE), uiCookieValue())) {
     return next();

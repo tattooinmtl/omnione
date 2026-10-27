@@ -1,9 +1,9 @@
 {
  "app": "omnione",
- "version": "0.15.1",
- "build": "228cd5ec66e2",
- "commit": "68e24b505831",
- "date": "2026-10-11T10:52:30-04:00",
+ "version": "0.15.2",
+ "build": "7aae519ba134",
+ "commit": "ec9507233070",
+ "date": "2026-10-26T20:40:02-04:00",
  "setup": {
   "version": "1.2",
   "source": "897d6f692aa4"
@@ -16,13 +16,13 @@
   },
   {
    "p": "bin/OmniOne.exe",
-   "h": "ebbacfd33ae04d33c9618f9f9e2243f66a63a4a288ec8069326fe35c105bbd91",
+   "h": "f76ec01334715b6fef12e074773e96c924af89a08e0dc1efbe500cfc6be3e69d",
    "s": 7717888
   },
   {
    "p": "build.json",
-   "h": "cca6bca0b268fae0e3629c4632efae183ea37f35e612a4b994915c00f7e86f07",
-   "s": 120
+   "h": "5072a9ec9eadf55072042fba837c01d551e0f7b0f174b6e81319c84a0dcf9442",
+   "s": 121
   },
   {
    "p": "hooks/PostToolUse/audit-log.js",
@@ -51,12 +51,12 @@
   },
   {
    "p": "package-lock.json",
-   "h": "89cfbb099e094d48a3b648795c26b6026e7476ffaf26249075bf101780843459",
+   "h": "e2d3caab8d8a387900f6fe01d2be1dba13582fce4f535ae51afab03249d69409",
    "s": 219233
   },
   {
    "p": "package.json",
-   "h": "4783722c6baed71738bf33871be8c5d6a15e4d571fcec2640850abd153913919",
+   "h": "a1421357859dbb8a636f20ede777e390cfa03eb585eb082674eef28cc9e8815e",
    "s": 1269
   },
   {
@@ -81,8 +81,8 @@
   },
   {
    "p": "server/agentConfig.js",
-   "h": "02d8dd1ec149851afea1e06af100b3f4594cbcaeef1578134eabb381fc791565",
-   "s": 3691
+   "h": "03e2abc3ea94953461aa412d4949dbefd40719259f61996a2e0d945a09806f16",
+   "s": 4162
   },
   {
    "p": "server/agentSlots.js",
@@ -96,8 +96,8 @@
   },
   {
    "p": "server/auth.js",
-   "h": "a4a159abbf920660ec0c74c375bbe777e61e4e8d308185340fc9a93f519938c9",
-   "s": 5326
+   "h": "b96a6851402227819f05324509d03c954736f3899567cb3dc6a6f76268d1dbb1",
+   "s": 6353
   },
   {
    "p": "server/boards/detect.js",
@@ -176,8 +176,8 @@
   },
   {
    "p": "server/index.js",
-   "h": "4f9d1c9a6342d13b6df886063b39ed253155420d413b5f82022850506fe2e5d0",
-   "s": 69969
+   "h": "95c90b1d6c18075f3b8efb83b4f234e5f0974e7787c11d6b5bf6076b02e96064",
+   "s": 69849
   },
   {
    "p": "server/listen.js",
@@ -236,8 +236,8 @@
   },
   {
    "p": "server/mind/vault.js",
-   "h": "71970b0becf171be183c6938021f2a0c0ce9fead53af833b1d599079dbb35e38",
-   "s": 16987
+   "h": "42fe1c9d2feefb741f6183cef04c396209048655ccf43b727518084ac2a5f9a0",
+   "s": 17385
   },
   {
    "p": "server/notify.js",
@@ -246,8 +246,8 @@
   },
   {
    "p": "server/pcAccess.js",
-   "h": "bcad6aed0c942235593c6669e5d0cbc227d9ae8946b56a8f2c1796033b24c1fa",
-   "s": 4934
+   "h": "80c6258a46003131716512fe0662dbdae7b753840c48a4e3c5295605fecf2feb",
+   "s": 5351
   },
   {
    "p": "server/permissions.js",
@@ -271,13 +271,18 @@
   },
   {
    "p": "server/prompts.js",
-   "h": "ac16792637cd0d543d769c7182713d91d1c0c6a99b53472d8faa8c2d43a600af",
-   "s": 6361
+   "h": "fded58bb395f753815c9facd76ba6ec3b6dae36f4876a627c0d1bcd8472d86cb",
+   "s": 6737
   },
   {
    "p": "server/providers.js",
    "h": "cf333b73a7cba0fdc0db0914dde2122954b6fce3ddd793c984d0c98142bc7c96",
    "s": 1274
+  },
+  {
+   "p": "server/redact.js",
+   "h": "5f2fcce04a5248679f0d6abc811fcc473b300b6605bf19a6078420ba09afc364",
+   "s": 2390
   },
   {
    "p": "server/reflection.js",
@@ -311,8 +316,8 @@
   },
   {
    "p": "server/skills.js",
-   "h": "4534caea2ac2602352f69dd4b4269d0e75f31d70a3dfbcd5d2b7df2113fc40d2",
-   "s": 5648
+   "h": "3bf2eeb55fa979af225a630e0b33adaa01121d200101ebed447a41d167cc0062",
+   "s": 5961
   },
   {
    "p": "server/stats.js",
@@ -331,13 +336,13 @@
   },
   {
    "p": "server/toolRegistry.js",
-   "h": "312086df1f74766eab9e8c3d6bf43c7921bb134db51d13e8a57d72e65ad71930",
-   "s": 7925
+   "h": "ee6ea9c277ffb3ff003d7e0ef4dff11a70ad44837f926d1b76e63ac3a3a6980e",
+   "s": 8277
   },
   {
    "p": "server/tools.js",
-   "h": "447e120c0e90411ce1438caea9816dd12e447d53cc24b008d718bf77901ab6a3",
-   "s": 18532
+   "h": "2e8fa883da71ce08e43c44e527c0a9b200220e2f11d1ef618466b2a83e79657c",
+   "s": 21437
   },
   {
    "p": "server/tools/admin.js",
@@ -376,8 +381,8 @@
   },
   {
    "p": "server/tools/fs.js",
-   "h": "d0b748ddba0a6e855796548b7232c10234eb6718d91f1bd7bd64f424d8928762",
-   "s": 14354
+   "h": "7ce51576ea87f7d2dd400cd62b19dd005898da97dde04bbfbfd75486c34e22fd",
+   "s": 14872
   },
   {
    "p": "server/tools/media.js",
@@ -466,8 +471,8 @@
   },
   {
    "p": "server/workspace.js",
-   "h": "cd04ace2eff2e7a09f09ea83e46197d162d71c1418ea8fe4d1877be2d811f7c3",
-   "s": 8989
+   "h": "6c2dbc620db5f9d8f71563296854a645afc14c99d989deedc22681b00a758f6d",
+   "s": 9900
   },
   {
    "p": "server/workspaceFiles.js",
@@ -1091,8 +1096,8 @@
   },
   {
    "p": "src/components/PreviewPanel.jsx",
-   "h": "0b3679092f2cae7859b65cd6e763c23f1c38cd728c220d78a3ac87ced179aeee",
-   "s": 1858
+   "h": "dd87ba1a56adfc48f74c2c899b58582512de116e6fcd6ec1ec1b113ed68ff851",
+   "s": 2057
   },
   {
    "p": "src/components/ProjectBar.css",
@@ -1301,8 +1306,8 @@
   },
   {
    "p": "src/utils/gameFiles.js",
-   "h": "d33e7a1382d66887eb5ef192ea8def4168e71cf9a961cf290ece41d7631fe282",
-   "s": 11272
+   "h": "a4a180156b9c18859c8a7d678e291aa1334d613a79b373890935d4488cbefb37",
+   "s": 12065
   },
   {
    "p": "src/utils/previewFiles.js",

@@ -15,6 +15,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
   resolveInWorkspace,
+  assertAgentWritable,
   toWorkspaceRelative,
   getWorkspaceRoot,
   walkWorkspace,
@@ -22,6 +23,7 @@ import {
 } from '../workspace.js';
 import { registerTool } from '../toolRegistry.js';
 import { isDocument, imageTypeOf, extractDocumentText } from '../attachments.js';
+import { isKeyFile } from '../pcAccess.js';
 
 const MAX_READ_BYTES = 2 * 1024 * 1024;
 const DEFAULT_READ_LINES = 2000;
@@ -55,6 +57,8 @@ registerTool({
     if (!fs.existsSync(abs)) return { ok: false, error: `No such file: ${p}` };
     const stat = fs.statSync(abs);
     if (stat.isDirectory()) return { ok: false, error: `${p} is a directory. Use list_dir.` };
+    // Whatever is read goes to the AI provider: keys stay on this PC.
+    if (isKeyFile(abs) || isKeyFile(fs.realpathSync(abs))) return { ok: false, error: `${p} holds keys or passwords. Omi-One never reads those: anything it reads is sent to the AI provider. Ask the user for the value you need instead (never the key itself).` };
     if (imageTypeOf(abs)) return { ok: false, error: `${p} is a picture. Use view_image to look at it.` };
     if (isDocument(abs)) {
       if (stat.size > MAX_DOC_BYTES) return { ok: false, error: `${p} is ${stat.size} bytes, over the ${MAX_DOC_BYTES} limit for documents.` };
@@ -108,6 +112,7 @@ registerTool({
   affectedPaths: ({ path: p }) => [p],
   handler: async ({ path: p, content }) => {
     const abs = resolveInWorkspace(p);
+    assertAgentWritable(abs);
     if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) {
       return { ok: false, error: `${p} is a directory.` };
     }
@@ -142,6 +147,7 @@ registerTool({
   affectedPaths: ({ path: p }) => [p],
   handler: async ({ path: p, old_string: oldStr, new_string: newStr, replace_all: replaceAll = false }) => {
     const abs = resolveInWorkspace(p);
+    assertAgentWritable(abs);
     if (!fs.existsSync(abs)) return { ok: false, error: `No such file: ${p}` };
     if (oldStr === newStr) return { ok: false, error: 'old_string and new_string are identical.' };
 
@@ -283,7 +289,7 @@ registerTool({
       const r = spawnSync('rg', args, { cwd: getWorkspaceRoot(), encoding: 'utf8', timeout: 30000, maxBuffer: 8 * 1024 * 1024 });
       // rg exits 1 for "no matches", which is a result, not an error.
       if (r.status === 0 || r.status === 1) {
-        const matches = parseRipgrep(r.stdout || '', limit);
+        const matches = parseRipgrep(r.stdout || '', limit).filter((m) => !isKeyFile(m.file));
         return { ok: true, result: { pattern, engine: 'ripgrep', count: matches.length, matches } };
       }
       // Anything else (bad regex, missing binary) falls through to the JS path.
@@ -296,7 +302,7 @@ registerTool({
     const fileRe = globPat ? globToRegex(globPat) : null;
     const matches = [];
     for (const { relPath, abs, isDir } of walkWorkspace('.')) {
-      if (isDir) continue;
+      if (isDir || isKeyFile(abs)) continue;
       if (fileRe && !fileRe.test(relPath)) continue;
       let buf;
       try { buf = fs.readFileSync(abs); } catch { continue; }

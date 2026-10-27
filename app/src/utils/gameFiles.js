@@ -163,6 +163,21 @@ export function combineForPreview(files) {
   try {
     const ERROR_FORWARDER = `<script data-gwn-preview="error-forwarder">
 (function(){
+  // The preview runs with an opaque origin, where localStorage and
+  // sessionStorage throw. Give projects an in-memory stand-in.
+  ['localStorage', 'sessionStorage'].forEach(function (k) {
+    try { window[k].getItem('x'); return; } catch (e) { /* opaque origin */ }
+    var m = {};
+    var s = {
+      getItem: function (n) { return Object.prototype.hasOwnProperty.call(m, n) ? m[n] : null; },
+      setItem: function (n, v) { m[n] = String(v); },
+      removeItem: function (n) { delete m[n]; },
+      clear: function () { m = {}; },
+      key: function (i) { return Object.keys(m)[i] || null; },
+      get length() { return Object.keys(m).length; },
+    };
+    try { Object.defineProperty(window, k, { value: s, configurable: true }); } catch (e) { /* leave it */ }
+  });
   function post(level, info) {
     try {
       parent.postMessage({

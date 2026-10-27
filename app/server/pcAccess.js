@@ -48,6 +48,14 @@ const SECRET_FILES = [
   /^(pagefile|hiberfil|swapfile)\.sys$/,
 ];
 
+/* Files that hold keys by what they are (.env, private keys, credential
+ * files), not just by a name that mentions one. Used inside the workspace,
+ * where a project's own secrets.js is source code the agent should read. */
+const KEY_FILES = SECRET_FILES.filter((re) => !re.source.startsWith('(api'));
+export function isKeyFile(abs) {
+  return KEY_FILES.some((re) => re.test(path.basename(lower(abs))));
+}
+
 export function isSecretPath(abs) {
   const p = lower(abs);
   const asDir = p.endsWith('\\') ? p : p + '\\';
